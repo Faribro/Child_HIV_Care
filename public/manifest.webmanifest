@@ -1,0 +1,41 @@
+{
+  "name": "Model Paperless ART Centre Dashboard",
+  "short_name": "MPAC Portal",
+  "description": "Enterprise Equipment and Personnel mapping dashboard - Alliance India",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#09090b",
+  "theme_color": "#09090b",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "/icons/icon-192x192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-192x192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "maskable"
+    }
+  ]
+}

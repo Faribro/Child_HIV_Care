@@ -1,0 +1,4291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cloud logs - ART Centre Equipment Mapping Form Dashboard</title>
+  <!-- Google Fonts and Material Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+  
+  <!-- Chart.js and Plugins -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <!-- Leaflet.js Mapping Library (SRI attributes removed for sandboxed environment compatibility) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  
+  <!-- SheetJS Excel Library -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <style>
+    /* Premium CSS Variables and Themes Layout */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      /* Theme Classic: Cloud logs Blue & Gold Accent */
+      --primary: #0D47A1;
+      --primary-dark: #0A3A80;
+      --primary-light: #E3F2FD;
+      --accent: #FFC107;
+      --accent-hover: #FFA000;
+      --success: #2E7D32;
+      --success-light: #E8F5E9;
+      --warning: #F57C00;
+      --warning-light: #FFF3E0;
+      --danger: #C62828;
+      --danger-light: #FFEBEE;
+      --background: #F4F6F9;
+      --card-bg: #FFFFFF;
+      --text: #1E293B;
+      --text-muted: #64748B;
+      --border: #E2E8F0;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+      --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.08), 0 2px 4px -1px rgba(0,0,0,0.04);
+      --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -2px rgba(0,0,0,0.04);
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    body.theme-dark {
+      --primary: #2563EB;
+      --primary-dark: #1D4ED8;
+      --primary-light: #1E293B;
+      --accent: #F59E0B;
+      --accent-hover: #D97706;
+      --success: #10B981;
+      --success-light: #064E3B;
+      --warning: #F59E0B;
+      --warning-light: #78350F;
+      --danger: #EF4444;
+      --danger-light: #7F1D1D;
+      --background: #0F172A;
+      --card-bg: #1E293B;
+      --text: #F8FAFC;
+      --text-muted: #94A3B8;
+      --border: #334155;
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.2);
+      --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.3);
+      --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.4);
+    }
+
+    body.theme-emerald {
+      --primary: #005F54;
+      --primary-dark: #004D40;
+      --primary-light: #E0F2F1;
+      --accent: #E0A96D;
+      --accent-hover: #D49B5D;
+      --success: #00796B;
+      --success-light: #E0F2F1;
+      --warning: #EF6C00;
+      --warning-light: #FFF3E0;
+      --danger: #D84315;
+      --danger-light: #FFEBEE;
+      --background: #F0F4F4;
+      --card-bg: #FFFFFF;
+      --text: #263238;
+      --text-muted: #546E7A;
+      --border: #CFD8DC;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background-color: var(--background);
+      color: var(--text);
+      transition: var(--transition);
+    }
+
+    /* Screen Layout */
+    #app-container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      width: 100%;
+    }
+
+    /* Topbar styling */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 72px;
+      padding: 0 24px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #FFFFFF;
+      box-shadow: var(--shadow-lg);
+      z-index: 1000;
+      flex-shrink: 0;
+      border-bottom: 2px solid rgba(255,255,255,0.1);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(5px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 12px rgba(255, 193, 7, 0.3);
+      border: 1px solid rgba(255,255,255,0.3);
+    }
+
+    .brand-logo .material-icons-outlined {
+      color: var(--accent);
+      font-size: 26px;
+    }
+
+    .brand-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .brand-name {
+      font-family: 'Outfit', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      line-height: 1.2;
+    }
+
+    .brand-subtitle {
+      font-size: 11px;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.7);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .topbar-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .sync-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,255,255,0.1);
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+
+    .sync-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: #4CAF50;
+      box-shadow: 0 0 8px #4CAF50;
+    }
+
+    .sync-indicator.syncing {
+      background-color: var(--accent);
+      box-shadow: 0 0 8px var(--accent);
+      animation: pulse 1s infinite alternate;
+    }
+
+    .sync-indicator.offline {
+      background-color: #F44336;
+      box-shadow: 0 0 8px #F44336;
+    }
+
+    @keyframes pulse {
+      from { opacity: 0.4; transform: scale(0.8); }
+      to { opacity: 1; transform: scale(1.2); }
+    }
+
+    .btn-topbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #FFFFFF;
+      padding: 8px 16px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      transition: var(--transition);
+    }
+
+    .btn-topbar:hover {
+      background: rgba(255, 255, 255, 0.22);
+      transform: translateY(-1px);
+    }
+
+    .btn-topbar.accent {
+      background: var(--accent);
+      color: #0F172A;
+      border: none;
+    }
+
+    .btn-topbar.accent:hover {
+      background: var(--accent-hover);
+      box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+    }
+
+    /* Navigation Tabs */
+    .nav-tabs {
+      display: flex;
+      background-color: var(--card-bg);
+      padding: 0 24px;
+      box-shadow: var(--shadow-sm);
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+      flex-shrink: 0;
+      scrollbar-width: thin;
+    }
+
+    .nav-tab {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 16px 20px;
+      border: none;
+      background: none;
+      color: var(--text-muted);
+      font-family: 'Outfit', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: var(--transition);
+      white-space: nowrap;
+      position: relative;
+    }
+
+    .nav-tab:hover {
+      color: var(--primary);
+      background-color: rgba(13, 71, 161, 0.03);
+    }
+
+    .nav-tab.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+      font-weight: 700;
+    }
+
+    .tab-badge {
+      background-color: var(--danger);
+      color: #FFFFFF;
+      padding: 2px 6px;
+      border-radius: 10px;
+      font-size: 10px;
+      font-weight: 700;
+      margin-left: 4px;
+    }
+
+    /* Dashboard Workspace Content */
+    .workspace {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      padding: 24px;
+      position: relative;
+    }
+
+    .tab-pane {
+      display: none;
+      animation: fadeIn 0.4s ease;
+      flex-direction: column;
+      gap: 24px;
+      min-height: 100%;
+    }
+
+    .tab-pane.active {
+      display: flex;
+      flex: 1;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Info Alerts / Banner */
+    .alert-banner {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background-color: var(--warning-light);
+      border-left: 5px solid var(--warning);
+      color: var(--text);
+      padding: 16px;
+      border-radius: var(--radius-sm);
+      box-shadow: var(--shadow-sm);
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    /* Overview Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+    }
+
+    .stat-card {
+      background-color: var(--card-bg);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      box-shadow: var(--shadow-md);
+      border: 1px solid var(--border);
+      border-left: 5px solid var(--primary);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      transition: var(--transition);
+    }
+
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .stat-card.success { border-left-color: var(--success); }
+    .stat-card.warning { border-left-color: var(--warning); }
+    .stat-card.danger { border-left-color: var(--danger); }
+
+    .stat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .stat-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    .stat-icon-wrapper {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: var(--primary-light);
+      color: var(--primary);
+    }
+
+    .stat-card.success .stat-icon-wrapper { background-color: var(--success-light); color: var(--success); }
+    .stat-card.warning .stat-icon-wrapper { background-color: var(--warning-light); color: var(--warning); }
+    .stat-card.danger .stat-icon-wrapper { background-color: var(--danger-light); color: var(--danger); }
+
+    .stat-value {
+      font-family: 'Outfit', sans-serif;
+      font-size: 32px;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.1;
+      margin-bottom: 6px;
+    }
+
+    .stat-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    /* Layout Grids */
+    .dashboard-layout-2col {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+      gap: 24px;
+      flex: 1;
+    }
+
+    .dashboard-card {
+      background-color: var(--card-bg);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      min-height: 380px;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .card-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-card {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 6px 10px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: var(--transition);
+    }
+
+    .btn-card:hover {
+      color: var(--primary);
+      border-color: var(--primary);
+      background-color: var(--primary-light);
+    }
+
+    .card-body {
+      padding: 20px;
+      flex: 1;
+      position: relative;
+    }
+
+    /* Leaflet Map Styling */
+    #map-element {
+      width: 100%;
+      height: 580px;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-md);
+      border: 1px solid var(--border);
+      z-index: 10;
+      transition: all 0.3s ease;
+      flex: 1;
+      min-height: 400px;
+    }
+
+    #map-element.fullscreen-map {
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      z-index: 9999 !important;
+      border-radius: 0 !important;
+      box-shadow: none !important;
+      border: none !important;
+    }
+
+    .leaflet-popup-content-wrapper {
+      background-color: var(--card-bg) !important;
+      color: var(--text) !important;
+      border-radius: var(--radius-sm) !important;
+      font-family: 'DM Sans', sans-serif !important;
+    }
+    .leaflet-popup-tip {
+      background-color: var(--card-bg) !important;
+    }
+
+    .map-popup-header {
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 6px;
+      font-size: 14px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 4px;
+    }
+
+    .map-popup-row {
+      margin: 4px 0;
+      font-size: 12px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    /* AI Insights Page */
+    .insights-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .insight-item {
+      background-color: var(--card-bg);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      padding: 20px;
+      display: flex;
+      gap: 16px;
+      box-shadow: var(--shadow-sm);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .insight-item:hover {
+      box-shadow: var(--shadow-md);
+      transform: translateX(4px);
+    }
+
+    .insight-icon-container {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .insight-item.critical { border-left: 5px solid var(--danger); }
+    .insight-item.critical .insight-icon-container { background-color: var(--danger-light); color: var(--danger); }
+    .insight-item.warning { border-left: 5px solid var(--warning); }
+    .insight-item.warning .insight-icon-container { background-color: var(--warning-light); color: var(--warning); }
+    .insight-item.success { border-left: 5px solid var(--success); }
+    .insight-item.success .insight-icon-container { background-color: var(--success-light); color: var(--success); }
+
+    .insight-details {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .insight-tag {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .insight-item.critical .insight-tag { color: var(--danger); }
+    .insight-item.warning .insight-tag { color: var(--warning); }
+    .insight-item.success .insight-tag { color: var(--success); }
+
+    .insight-text {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .insight-recommendation {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    /* Table, Filtering and Pagination */
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      background-color: var(--card-bg);
+      padding: 16px 20px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .filter-input-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background-color: var(--background);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      flex: 1;
+      min-width: 260px;
+      transition: var(--transition);
+    }
+
+    .filter-input-wrapper:focus-within {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-light);
+    }
+
+    .filter-input-wrapper input {
+      border: none;
+      background: none;
+      outline: none;
+      width: 100%;
+      font-size: 14px;
+      color: var(--text);
+      font-family: inherit;
+    }
+
+    .filter-dropdown {
+      padding: 8px 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background-color: var(--card-bg);
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 500;
+      font-family: inherit;
+      outline: none;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .filter-dropdown:focus {
+      border-color: var(--primary);
+    }
+
+    .active-filters-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .filter-tag {
+      background-color: var(--primary-light);
+      color: var(--primary);
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .filter-tag span.clear {
+      cursor: pointer;
+      font-weight: 900;
+    }
+
+    .table-container {
+      background-color: var(--card-bg);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #tab-records .table-container {
+      flex: 1;
+    }
+
+    .table-responsive {
+      overflow-x: auto;
+      overflow-y: auto;
+      flex: 1;
+      min-height: 250px;
+    }
+
+    /* Status Badges */
+    .status-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      text-align: center;
+    }
+    .status-badge.active {
+      background-color: var(--success-light);
+      color: var(--success);
+      border: 1px solid rgba(46, 125, 50, 0.2);
+    }
+    .status-badge.inactive {
+      background-color: var(--danger-light);
+      color: var(--danger);
+      border: 1px solid rgba(198, 40, 40, 0.2);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      text-align: left;
+    }
+
+    thead {
+      background-color: var(--background);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    thead th {
+      padding: 14px 18px;
+      font-weight: 700;
+      color: var(--text-muted);
+      border-bottom: 2px solid var(--border);
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    thead th:hover {
+      color: var(--primary);
+    }
+
+    thead th.sorted-asc::after { content: " ▴"; }
+    thead th.sorted-desc::after { content: " ▾"; }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: var(--transition);
+    }
+
+    tbody tr:hover {
+      background-color: rgba(13, 71, 161, 0.02);
+    }
+
+    tbody td {
+      padding: 12px 18px;
+      color: var(--text);
+      vertical-align: middle;
+    }
+
+    .action-badge {
+      padding: 4px 8px;
+      border-radius: var(--radius-sm);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      display: inline-block;
+    }
+
+    .action-badge.yes { background-color: var(--success-light); color: var(--success); }
+    .action-badge.no { background-color: var(--danger-light); color: var(--danger); }
+
+    .table-actions-cell {
+      display: flex;
+      gap: 6px;
+    }
+
+    .btn-action-round {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .btn-action-round.view { background-color: var(--primary-light); color: var(--primary); }
+    .btn-action-round.view:hover { background-color: var(--primary); color: #FFFFFF; }
+    .btn-action-round.edit { background-color: var(--success-light); color: var(--success); }
+    .btn-action-round.edit:hover { background-color: var(--success); color: #FFFFFF; }
+    .btn-action-round.delete { background-color: var(--danger-light); color: var(--danger); }
+    .btn-action-round.delete:hover { background-color: var(--danger); color: #FFFFFF; }
+    .btn-action-round.pdf { background-color: var(--warning-light); color: var(--warning); }
+    .btn-action-round.pdf:hover { background-color: var(--warning); color: #FFFFFF; }
+
+    /* Pagination controls */
+    .pagination-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 24px;
+      border-top: 1px solid var(--border);
+      background-color: var(--background);
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .pagination-info {
+      font-weight: 500;
+    }
+
+    .pagination-controls {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .btn-page {
+      padding: 6px 12px;
+      border: 1px solid var(--border);
+      background-color: var(--card-bg);
+      color: var(--text);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-weight: 600;
+      transition: var(--transition);
+    }
+
+    .btn-page:hover:not(:disabled) {
+      border-color: var(--primary);
+      color: var(--primary);
+      background-color: var(--primary-light);
+    }
+
+    .btn-page.active {
+      background-color: var(--primary);
+      color: #FFFFFF;
+      border-color: var(--primary);
+    }
+
+    .btn-page:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* Modals CSS */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background-color: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(5px);
+      z-index: 9999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-backdrop.active {
+      display: flex;
+    }
+
+    .modal-window {
+      background-color: var(--card-bg);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      width: 100%;
+      max-width: 800px;
+      display: flex;
+      flex-direction: column;
+      max-height: 85vh;
+      animation: modalSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      border: 1px solid var(--border);
+    }
+
+    @keyframes modalSlideUp {
+      from { transform: translateY(32px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .modal-header {
+      padding: 20px 28px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #FFFFFF;
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    }
+
+    .modal-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .btn-modal-close {
+      background: rgba(255,255,255,0.15);
+      border: none;
+      color: #FFFFFF;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition);
+    }
+
+    .btn-modal-close:hover {
+      background: rgba(255,255,255,0.3);
+      transform: rotate(90deg);
+    }
+
+    .modal-body {
+      padding: 28px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .modal-footer {
+      padding: 18px 28px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      background-color: var(--background);
+      border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+    }
+
+    /* Forms */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 18px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group.full-width {
+      grid-column: 1 / -1;
+    }
+
+    .form-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .form-control {
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      border: 2px solid var(--border);
+      background-color: var(--card-bg);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 14px;
+      outline: none;
+      transition: var(--transition);
+    }
+
+    .form-control:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-light);
+    }
+
+    .form-error-msg {
+      color: var(--danger);
+      font-size: 11px;
+      font-weight: 600;
+      margin-top: 4px;
+      display: none;
+    }
+
+    /* Detail Viewer Layout */
+    .view-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .view-item {
+      background-color: var(--background);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+    }
+
+    .view-label {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .view-value {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    /* Settings tab components */
+    .settings-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      background-color: var(--card-bg);
+      padding: 24px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .settings-section-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--primary);
+      border-bottom: 2px solid var(--primary-light);
+      padding-bottom: 6px;
+      margin-bottom: 12px;
+    }
+
+    .shortcut-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .shortcut-table tr {
+      border-bottom: 1px solid var(--border);
+    }
+
+    .shortcut-table td {
+      padding: 8px 12px;
+    }
+
+    .shortcut-key {
+      background-color: var(--background);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-family: monospace;
+      font-weight: 700;
+      box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+    }
+
+    /* Loading overlay */
+    #loading-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      background: linear-gradient(135deg, #0D47A1, #0A3A80);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    .premium-spinner {
+      position: relative;
+      width: 80px;
+      height: 80px;
+    }
+
+    .premium-spinner::before, .premium-spinner::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 5px solid transparent;
+    }
+
+    .premium-spinner::before {
+      border-top-color: var(--accent);
+      animation: spin 1.2s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite;
+    }
+
+    .premium-spinner::after {
+      border-bottom-color: #FFFFFF;
+      animation: spin 1.2s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite reverse;
+      opacity: 0.7;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg) scale(0.9); }
+      50% { transform: rotate(180deg) scale(1.1); }
+      100% { transform: rotate(360deg) scale(0.9); }
+    }
+
+    .loading-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: #FFFFFF;
+    }
+
+    .loading-desc {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    #loading-console {
+      width: 80%;
+      max-width: 600px;
+      height: 120px;
+      background-color: rgba(0,0,0,0.3);
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(255,255,255,0.1);
+      padding: 12px;
+      overflow-y: auto;
+      font-family: monospace;
+      font-size: 11px;
+      color: #00FF00;
+      text-align: left;
+    }
+
+    /* Custom Theme Toggles */
+    .theme-selector-grid {
+      display: flex;
+      gap: 16px;
+    }
+
+    .theme-btn {
+      flex: 1;
+      padding: 16px;
+      border-radius: var(--radius-md);
+      border: 2px solid var(--border);
+      background-color: var(--card-bg);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: 13px;
+      color: var(--text);
+      transition: var(--transition);
+    }
+
+    .theme-btn.active {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px var(--primary-light);
+    }
+
+    .theme-color-preview {
+      width: 100%;
+      height: 24px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      overflow: hidden;
+      border: 1px solid rgba(0,0,0,0.05);
+    }
+
+    /* GLASSMORPHIC LOGIN/SIGNUP UI OVERLAY */
+    #login-screen-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #0a0f1d 0%, #070a13 100%);
+      overflow: hidden;
+      font-family: 'Outfit', 'Inter', sans-serif;
+    }
+    .login-bg-shapes {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      z-index: 1;
+      overflow: hidden;
+    }
+    .login-bg-shapes .shape {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(100px);
+      opacity: 0.4;
+      animation: floatShape 20s infinite ease-in-out alternate;
+    }
+    .login-bg-shapes .shape-1 {
+      width: 400px;
+      height: 400px;
+      background: var(--primary);
+      top: -10%;
+      left: 10%;
+    }
+    .login-bg-shapes .shape-2 {
+      width: 500px;
+      height: 500px;
+      background: var(--accent);
+      bottom: -15%;
+      right: 5%;
+      animation-delay: -5s;
+    }
+    .login-bg-shapes .shape-3 {
+      width: 350px;
+      height: 350px;
+      background: #0284c7;
+      top: 40%;
+      right: 20%;
+      animation-delay: -10s;
+    }
+    @keyframes floatShape {
+      0% { transform: translate(0, 0) scale(1); }
+      100% { transform: translate(60px, 40px) scale(1.15); }
+    }
+    .login-card-container {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      max-width: 450px;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+    .login-card {
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 24px;
+      padding: 40px;
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5), 0 0 80px rgba(99, 102, 241, 0.1);
+      box-sizing: border-box;
+      text-align: center;
+    }
+    .login-logo {
+      width: 64px;
+      height: 64px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px auto;
+      box-shadow: 0 8px 20px rgba(99, 102, 241, 0.3);
+    }
+    .login-logo span {
+      color: white;
+      font-size: 32px;
+    }
+    .login-header h2 {
+      color: white;
+      font-size: 26px;
+      font-weight: 700;
+      margin: 0 0 8px 0;
+      letter-spacing: -0.5px;
+    }
+    .login-header p {
+      color: var(--text-muted);
+      font-size: 13.5px;
+      margin: 0 0 32px 0;
+    }
+    .input-group {
+      position: relative;
+      margin-bottom: 20px;
+      text-align: left;
+    }
+    .input-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #64748b;
+      font-size: 20px;
+      pointer-events: none;
+      transition: color 0.3s;
+    }
+    .input-group input, .input-group select {
+      width: 100%;
+      padding: 14px 16px 14px 44px;
+      background: rgba(30, 41, 59, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      color: white;
+      font-size: 14px;
+      outline: none;
+      transition: all 0.3s;
+      box-sizing: border-box;
+      font-family: inherit;
+    }
+    .input-group select option {
+      background: #0f172a;
+      color: white;
+    }
+    .input-group input:focus, .input-group select:focus {
+      border-color: var(--primary);
+      background: rgba(30, 41, 59, 0.7);
+      box-shadow: 0 0 12px rgba(99, 102, 241, 0.25);
+    }
+    .input-group label {
+      position: absolute;
+      left: 44px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: #64748b;
+      font-size: 14px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      pointer-events: none;
+    }
+    .input-group input:focus ~ label,
+    .input-group input:not(:placeholder-shown) ~ label {
+      transform: translate(-30px, -28px) scale(0.8);
+      color: #818cf8;
+      font-weight: 600;
+    }
+    .btn-login {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, var(--primary) 0%, #3b82f6 100%);
+      border: none;
+      border-radius: 12px;
+      color: white;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 4px 16px rgba(99, 102, 241, 0.25);
+      font-family: inherit;
+    }
+    .btn-login:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(99, 102, 241, 0.4);
+      filter: brightness(1.15);
+    }
+    .btn-login:active {
+      transform: translateY(0);
+    }
+    .btn-spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 0.8s linear infinite;
+    }
+    .login-alert {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+      border-radius: 10px;
+      padding: 12px 16px;
+      color: #fca5a5;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 24px;
+      text-align: left;
+      line-height: 1.4;
+    }
+    .login-alert span.material-icons-outlined {
+      font-size: 20px;
+      color: #ef4444;
+      flex-shrink: 0;
+    }
+    .login-footer {
+      text-align: center;
+      margin-top: 28px;
+      font-size: 13.5px;
+      color: var(--text-muted);
+    }
+    .login-footer a {
+      color: #818cf8;
+      text-decoration: none;
+      font-weight: 600;
+      margin-left: 6px;
+      transition: color 0.2s;
+    }
+    .login-footer a:hover {
+      color: #a5b4fc;
+      text-decoration: underline;
+    }
+    .login-console {
+      background: rgba(10, 15, 30, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 10px;
+      padding: 14px;
+      font-family: monospace;
+      font-size: 11.5px;
+      color: #34d399;
+      margin-top: 24px;
+      max-height: 90px;
+      overflow-y: auto;
+      text-align: left;
+      box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
+    }
+  </style>
+</head>
+<body class="theme-classic">
+
+  <div id="loading-overlay">
+    <div class="premium-spinner"></div>
+    <div class="loading-title">Cloud logs Equipment Mapping Dashboard</div>
+    <div class="loading-desc" id="loading-desc">Initializing design tokens...</div>
+    <div id="loading-console"></div>
+  </div>
+
+  <!-- LOGIN/SIGNUP OVERLAY -->
+  <div id="login-screen-overlay" style="display:none;">
+    <div class="login-bg-shapes">
+      <div class="shape shape-1"></div>
+      <div class="shape shape-2"></div>
+      <div class="shape shape-3"></div>
+    </div>
+    
+    <div class="login-card-container">
+      <div class="login-card">
+        <div class="login-header">
+          <div class="login-logo">
+            <span class="material-icons-outlined">health_and_safety</span>
+          </div>
+          <h2>Cloud logs Portal</h2>
+          <p id="login-subtitle">Sign in to access the ART Centre Mappings</p>
+        </div>
+
+        <div id="login-alert" class="login-alert" style="display:none;">
+          <span class="material-icons-outlined">error_outline</span>
+          <span id="login-alert-text">Error message goes here</span>
+        </div>
+        
+        <!-- LOGIN FORM -->
+        <form id="form-login" onsubmit="handleLoginSubmit(event)">
+          <div class="input-group">
+            <span class="material-icons-outlined input-icon">email</span>
+            <input type="email" id="login-email" required placeholder=" " />
+            <label for="login-email">Email Address</label>
+          </div>
+          
+          <div class="input-group">
+            <span class="material-icons-outlined input-icon">lock</span>
+            <input type="password" id="login-password" required placeholder=" " />
+            <label for="login-password">Password</label>
+          </div>
+          
+          <button type="submit" class="btn-login" id="btn-login-submit">
+            <span class="btn-text">Sign In</span>
+            <div class="btn-spinner" style="display:none;"></div>
+          </button>
+        </form>
+
+        <!-- SIGNUP FORM -->
+        <form id="form-signup" onsubmit="handleSignupSubmit(event)" style="display:none;">
+          <div class="input-group">
+            <span class="material-icons-outlined input-icon">person</span>
+            <input type="text" id="signup-name" required placeholder=" " />
+            <label for="signup-name">Full Name</label>
+          </div>
+          
+          <div class="input-group">
+            <span class="material-icons-outlined input-icon">email</span>
+            <input type="email" id="signup-email" required placeholder=" " />
+            <label for="signup-email">Email Address</label>
+          </div>
+          
+          <div class="input-group">
+            <span class="material-icons-outlined input-icon">lock</span>
+            <input type="password" id="signup-password" required placeholder=" " />
+            <label for="signup-password">Password</label>
+          </div>
+          
+          <div class="input-group">
+            <span class="material-icons-outlined input-icon">admin_panel_settings</span>
+            <select id="signup-role" required style="padding-left: 44px; color: white;">
+              <option value="Viewer">Viewer (Read-only observer)</option>
+              <option value="Editor">Editor (Can edit and delete records)</option>
+              <option value="Admin">Admin (Full administrative control)</option>
+            </select>
+            <label for="signup-role" style="transform: translate(-32px, -28px) scale(0.8); color: #818cf8; font-weight: 600;">Request Access Role</label>
+          </div>
+          
+          <button type="submit" class="btn-login" id="btn-signup-submit">
+            <span class="btn-text">Create Account</span>
+            <div class="btn-spinner" style="display:none;"></div>
+          </button>
+        </form>
+
+        <div class="login-footer">
+          <span id="login-footer-text">Don't have an account?</span>
+          <a href="javascript:void(0)" onclick="toggleAuthMode()" id="login-toggle-link">Sign Up</a>
+        </div>
+        
+        <div class="login-console" id="login-status-console" style="display:none;">
+          <div class="login-console-line">&gt; Initiating auth handshake...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="app-container" style="display:none;">
+    
+    <!-- TOPBAR -->
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-logo">
+          <span class="material-icons-outlined">health_and_safety</span>
+        </div>
+        <div class="brand-info">
+          <div class="brand-name">Model Paperless ART Centre</div>
+          <div class="brand-subtitle">Equipment & Staffing Dashboard</div>
+        </div>
+      </div>
+      
+      <div class="topbar-actions">
+        <div class="sync-status">
+          <div class="sync-indicator" id="sync-led"></div>
+          <span id="sync-text">Live Sync Connected</span>
+        </div>
+        <button class="btn-topbar" onclick="toggleFullScreen()" title="Toggle fullscreen view (F)"><span class="material-icons-outlined">fullscreen</span>Fullscreen</button>
+        <button class="btn-topbar" id="btn-web-app" onclick="openWebAppTab()" title="Open dashboard in full browser tab" style="display:none;"><span class="material-icons-outlined">open_in_new</span>Open in Tab</button>
+        <button class="btn-topbar" onclick="refreshData()" title="Reload data (R)"><span class="material-icons-outlined">refresh</span>Refresh</button>
+        
+        <!-- User Profile Badge & Logout -->
+        <div id="user-profile-badge" style="display: none; align-items: center; gap: 8px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); padding: 4px 12px; border-radius: 99px; margin-left: 8px;">
+          <div id="user-avatar" style="width: 24px; height: 24px; border-radius: 50%; background: linear-gradient(135deg, #818cf8, #db2777); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; color: white; text-transform: uppercase;">A</div>
+          <div style="display: flex; flex-direction: column; text-align: left; gap: 1px;">
+            <span id="user-display-name" style="font-size: 11px; font-weight: 700; color: white; line-height: 1;">Admin</span>
+            <span id="user-display-role" style="font-size: 9px; color: #94a3b8; font-weight: 600; text-transform: uppercase; line-height: 1;">Administrator</span>
+          </div>
+        </div>
+        <button class="btn-topbar" id="btn-logout" onclick="handleLogout()" style="display: none; background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.2); color: #ef4444;" title="Sign out of your account"><span class="material-icons-outlined" style="font-size:16px;">logout</span>Logout</button>
+        
+        <button class="btn-topbar" id="simulate-role-topbar-indicator" style="background-color: rgba(255,255,255,0.05); font-weight:700; font-size:11px; text-transform:uppercase;">Role: Viewer</button>
+      </div>
+    </header>
+
+    <!-- NAVIGATION TABS -->
+    <nav class="nav-tabs" id="nav-tabs-container">
+      <button class="nav-tab active" onclick="switchTab('overview')"><span class="material-icons-outlined">grid_view</span>Overview</button>
+      <button class="nav-tab" onclick="switchTab('staffing')"><span class="material-icons-outlined">badge</span>Staffing</button>
+      <button class="nav-tab" onclick="switchTab('equipment')"><span class="material-icons-outlined">devices</span>Equipment</button>
+      <button class="nav-tab" onclick="switchTab('power')"><span class="material-icons-outlined">bolt</span>Power Backup</button>
+      <button class="nav-tab" onclick="switchTab('geography')"><span class="material-icons-outlined">map</span>Geo Mapping</button>
+      <button class="nav-tab" onclick="switchTab('insights')"><span class="material-icons-outlined">tips_and_updates</span>AI Gaps Analysis</button>
+      <button class="nav-tab" onclick="switchTab('records')"><span class="material-icons-outlined">table_view</span>Records</button>
+      <button class="nav-tab" onclick="switchTab('duplicates')" id="nav-duplicates-tab"><span class="material-icons-outlined">copy_all</span>Duplicates <span class="tab-badge" id="duplicates-badge">0</span></button>
+      <button class="nav-tab" onclick="switchTab('settings')"><span class="material-icons-outlined">settings</span>Settings</button>
+    </nav>
+
+    <!-- WORKSPACE -->
+    <main class="workspace">
+      
+      <!-- OFFLINE WARNING BANNER -->
+      <div class="alert-banner" id="offline-banner" style="display:none; margin-bottom: 24px;">
+        <span class="material-icons-outlined" style="color:var(--warning); font-size:24px;">wifi_off</span>
+        <div>
+          <strong>Offline Mode Active</strong> — Connection to the Google Sheet was lost. Using cached data. Edits will queue and attempt syncing on reconnect.
+        </div>
+      </div>
+
+      <!-- OVERVIEW TAB -->
+      <div id="tab-overview" class="tab-pane active">
+        <!-- Stats Widgets -->
+        <div class="stats-grid" id="overview-widgets-container">
+          <div class="stat-card" id="widget-total-centres">
+            <div class="stat-header">
+              <span class="stat-title">ART Centres</span>
+              <div class="stat-icon-wrapper"><span class="material-icons-outlined">corporate_fare</span></div>
+            </div>
+            <div class="stat-value" id="stat-total-centres">-</div>
+            <div class="stat-desc">Mapped in network</div>
+          </div>
+          <div class="stat-card success" id="widget-total-plhiv">
+            <div class="stat-header">
+              <span class="stat-title">PLHIV Patients</span>
+              <div class="stat-icon-wrapper"><span class="material-icons-outlined">people_alt</span></div>
+            </div>
+            <div class="stat-value" id="stat-total-plhiv">-</div>
+            <div class="stat-desc">Currently on ART regimen</div>
+          </div>
+          <div class="stat-card warning" id="widget-total-staff">
+            <div class="stat-header">
+              <span class="stat-title">Staff Posts</span>
+              <div class="stat-icon-wrapper"><span class="material-icons-outlined">assignment_ind</span></div>
+            </div>
+            <div class="stat-value" id="stat-total-staff">-</div>
+            <div class="stat-desc"><span id="stat-staff-filled">-</span> filled, <span id="stat-staff-vacant">-</span> vacant</div>
+          </div>
+          <div class="stat-card danger" id="widget-pc-computers">
+            <div class="stat-header">
+              <span class="stat-title">Computer Coverage</span>
+              <div class="stat-icon-wrapper"><span class="material-icons-outlined">computer</span></div>
+            </div>
+            <div class="stat-value" id="stat-pct-computers">-%</div>
+            <div class="stat-desc">Centres with functional computers</div>
+          </div>
+        </div>
+
+        <div class="dashboard-layout-2col">
+          <div class="dashboard-card" id="widget-chart-equipment">
+            <div class="card-header">
+              <div class="card-title"><span class="material-icons-outlined">donut_large</span>Equipment Status Overview</div>
+              <div class="card-actions">
+                <button class="btn-card" onclick="copyChartToClipboard('chart-overview-equipment')"><span class="material-icons-outlined">content_copy</span>Copy</button>
+              </div>
+            </div>
+            <div class="card-body">
+              <canvas id="chart-overview-equipment"></canvas>
+            </div>
+          </div>
+          
+          <div class="dashboard-card" id="widget-chart-power">
+            <div class="card-header">
+              <div class="card-title"><span class="material-icons-outlined">battery_saver</span>Power Backup Distribution</div>
+              <div class="card-actions">
+                <button class="btn-card" onclick="copyChartToClipboard('chart-overview-power')"><span class="material-icons-outlined">content_copy</span>Copy</button>
+              </div>
+            </div>
+            <div class="card-body">
+              <canvas id="chart-overview-power"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STAFFING TAB -->
+      <div id="tab-staffing" class="tab-pane">
+        <div class="dashboard-layout-2col">
+          <div class="dashboard-card">
+            <div class="card-header">
+              <div class="card-title">Staff Posts Filled vs Vacant</div>
+            </div>
+            <div class="card-body">
+              <canvas id="chart-staff-filled-vacant"></canvas>
+            </div>
+          </div>
+          <div class="dashboard-card">
+            <div class="card-header">
+              <div class="card-title">Computers by Staff Designation</div>
+            </div>
+            <div class="card-body">
+              <canvas id="chart-staff-computers"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- EQUIPMENT TAB -->
+      <div id="tab-equipment" class="tab-pane">
+        <div class="dashboard-card" style="min-height: 480px;">
+          <div class="card-header">
+            <div class="card-title">Functional Equipment Count breakdown</div>
+          </div>
+          <div class="card-body">
+            <canvas id="chart-equipment-distribution"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- POWER TAB -->
+      <div id="tab-power" class="tab-pane">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-header">
+              <span class="stat-title">UPS Backup</span>
+              <div class="stat-icon-wrapper"><span class="material-icons-outlined">power_input</span></div>
+            </div>
+            <div class="stat-value" id="stat-power-ups">-</div>
+            <div class="stat-desc">Centres equipped (Avg: <span id="stat-power-ups-hrs">-</span> hrs)</div>
+          </div>
+          <div class="stat-card success">
+            <div class="stat-header">
+              <span class="stat-title">Inverter Backup</span>
+              <div class="stat-icon-wrapper"><span class="material-icons-outlined">bolt</span></div>
+            </div>
+            <div class="stat-value" id="stat-power-inverter">-</div>
+            <div class="stat-desc">Centres equipped (Avg: <span id="stat-power-inverter-hrs">-</span> hrs)</div>
+          </div>
+        </div>
+        <div class="dashboard-card" style="min-height: 400px;">
+          <div class="card-header">
+            <div class="card-title">Backup Duration Availability (UPS + Inverters)</div>
+          </div>
+          <div class="card-body">
+            <canvas id="chart-power-backup-hours"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- GEOGRAPHY TAB -->
+      <div id="tab-geography" class="tab-pane">
+        <div class="map-controls-bar" style="margin-bottom: 12px; display: flex; justify-content: flex-end; gap: 8px;">
+          <button class="btn-topbar" onclick="toggleMapMaximize()" id="btn-maximize-map" style="background-color: var(--card-bg); border: 1px solid var(--border); font-size: 12px; height: 32px; padding: 0 12px; border-radius: var(--radius-sm); font-weight: 600; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; color: var(--text);">
+            <span class="material-icons-outlined" style="font-size:18px;">fullscreen</span>Maximize Map
+          </button>
+        </div>
+        <div id="map-element"></div>
+        <p style="font-size: 12px; color: var(--text-muted); font-weight:500;">
+          💡 <strong>Interactive Drill-down:</strong> Click on any state bubble map marker to instantly filter records to that state and browse details.
+        </p>
+      </div>
+
+      <!-- INSIGHTS TAB -->
+      <div id="tab-insights" class="tab-pane">
+        <h3 style="font-family:'Outfit',sans-serif; font-size:18px; margin-bottom: 8px;">AI-Powered Recommendations & Equipment Gaps</h3>
+        <p style="font-size: 13px; color:var(--text-muted); margin-bottom: 16px;">
+          The analysis engine automatically monitors centre capacity constraints, computer-to-staff ratios, power backup adequacy, and scanner requirements. Click any insight to filter matching records.
+        </p>
+        <div class="insights-grid" id="ai-insights-container"></div>
+      </div>
+
+      <!-- RECORDS TAB -->
+      <div id="tab-records" class="tab-pane">
+        <!-- FILTER BAR -->
+        <div class="filter-bar">
+          <div class="filter-input-wrapper">
+            <span class="material-icons-outlined" style="color:var(--text-muted)">search</span>
+            <input type="text" id="table-search" placeholder="Search by name, state, district..." oninput="handleTableSearch()">
+          </div>
+          
+          <select class="filter-dropdown" id="filter-state" onchange="handleDropdownFilter()"></select>
+          <select class="filter-dropdown" id="filter-power" onchange="handleDropdownFilter()">
+            <option value="">All Power Backup</option>
+            <option value="ups">UPS Available</option>
+            <option value="inverter">Inverter Available</option>
+            <option value="none">No Power Backup</option>
+          </select>
+          <select class="filter-dropdown" id="filter-gaps" onchange="handleDropdownFilter()">
+            <option value="">All Centres</option>
+            <option value="staff_gap">Staffing Gaps</option>
+            <option value="comp_gap">Computer Shortages</option>
+            <option value="scanner_gap">Scanner Shortages</option>
+            <option value="power_gap">No Power Backup</option>
+          </select>
+
+          <button class="btn-card" style="padding: 10px 14px;" onclick="clearAllFilters()"><span class="material-icons-outlined">clear_all</span>Clear</button>
+
+          <div style="margin-left: auto; display: flex; gap: 8px;">
+            <button class="btn-card" style="border-color: #4CAF50; color: #4CAF50;" onclick="exportData('excel')"><span class="material-icons-outlined">description</span>Excel</button>
+            <button class="btn-card" style="border-color: #2196F3; color: #2196F3;" onclick="exportData('csv')"><span class="material-icons-outlined">table_chart</span>CSV</button>
+            <button class="btn-card" style="border-color: #9C27B0; color: #9C27B0;" onclick="exportData('json')"><span class="material-icons-outlined">code</span>JSON</button>
+          </div>
+        </div>
+
+        <div class="active-filters-row" id="active-filters-tags" style="display:none;"></div>
+
+        <!-- RECORDS TABLE -->
+        <div class="table-container">
+          <div class="table-responsive">
+            <table id="data-table">
+              <thead>
+                <tr>
+                  <th onclick="handleSort('art_centre')" id="th-art_centre">ART Centre</th>
+                  <th onclick="handleSort('state')" id="th-state">State</th>
+                  <th onclick="handleSort('district')" id="th-district">District</th>
+                  <th onclick="handleSort('plhiv_on_art')" id="th-plhiv_on_art">PLHIV Patients</th>
+                  <th>UPS?</th>
+                  <th>Inverter?</th>
+                  <th>Gaps Detected</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="table-body"></tbody>
+            </table>
+          </div>
+          
+          <!-- PAGINATION -->
+          <div class="pagination-bar">
+            <div class="pagination-info" id="pagination-info">Showing 0 to 0 of 0 records</div>
+            <div style="display: flex; align-items:center; gap: 12px;">
+              <select class="filter-dropdown" style="padding: 4px 8px;" id="page-size-selector" onchange="changePageSize()">
+                <option value="10">10 / page</option>
+                <option value="25" selected>25 / page</option>
+                <option value="50">50 / page</option>
+                <option value="100">100 / page</option>
+              </select>
+              <div class="pagination-controls" id="pagination-buttons"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DUPLICATES TAB -->
+      <div id="tab-duplicates" class="tab-pane">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <h3 style="font-family:'Outfit',sans-serif; font-size:18px;">Duplicate Records Cleanup Helper</h3>
+          <button class="btn-topbar accent" onclick="checkFuzzyDuplicates()"><span class="material-icons-outlined">search</span>Run Duplicates Check</button>
+        </div>
+        <div id="duplicates-list-container" style="display: flex; flex-direction:column; gap:16px; margin-top:16px;"></div>
+      </div>
+
+      <!-- SETTINGS TAB -->
+      <div id="tab-settings" class="tab-pane">
+        
+        <!-- Role Resolution -->
+        <div class="settings-panel">
+          <div class="settings-section-title">User Roles & Authorization (RBAC)</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Logged In Email</label>
+              <input type="text" class="form-control" id="settings-user-email" readonly value="Loading...">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Resolved Server Role</label>
+              <input type="text" class="form-control" id="settings-user-role" readonly value="Loading...">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Simulate Role UI (Testing/Demo)</label>
+              <select class="form-control" id="settings-simulate-role" onchange="simulateRoleChange()">
+                <option value="Viewer">Viewer (Read-only)</option>
+                <option value="Data Manager">Data Manager (Edit records, no deletes)</option>
+                <option value="Admin" selected>Admin (Full Control)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Custom Dashboard Builder -->
+        <div class="settings-panel">
+          <div class="settings-section-title">Custom Dashboard Builder Widget Settings</div>
+          <div class="form-grid">
+            <div class="form-group" style="flex-direction:row; gap:12px; align-items:center;">
+              <input type="checkbox" id="chk-widget-centres" checked onchange="toggleWidgetVisibility('widget-total-centres')">
+              <label class="form-label" style="margin:0; cursor:pointer;" for="chk-widget-centres">Show Total ART Centres Widget</label>
+            </div>
+            <div class="form-group" style="flex-direction:row; gap:12px; align-items:center;">
+              <input type="checkbox" id="chk-widget-plhiv" checked onchange="toggleWidgetVisibility('widget-total-plhiv')">
+              <label class="form-label" style="margin:0; cursor:pointer;" for="chk-widget-plhiv">Show Total PLHIV Patients Widget</label>
+            </div>
+            <div class="form-group" style="flex-direction:row; gap:12px; align-items:center;">
+              <input type="checkbox" id="chk-widget-staff" checked onchange="toggleWidgetVisibility('widget-total-staff')">
+              <label class="form-label" style="margin:0; cursor:pointer;" for="chk-widget-staff">Show Total Staff Widget</label>
+            </div>
+            <div class="form-group" style="flex-direction:row; gap:12px; align-items:center;">
+              <input type="checkbox" id="chk-widget-comp" checked onchange="toggleWidgetVisibility('widget-pc-computers')">
+              <label class="form-label" style="margin:0; cursor:pointer;" for="chk-widget-comp">Show Computer Coverage Widget</label>
+            </div>
+            <div class="form-group" style="flex-direction:row; gap:12px; align-items:center;">
+              <input type="checkbox" id="chk-widget-chart-eq" checked onchange="toggleWidgetVisibility('widget-chart-equipment')">
+              <label class="form-label" style="margin:0; cursor:pointer;" for="chk-widget-chart-eq">Show Equipment Chart Widget</label>
+            </div>
+            <div class="form-group" style="flex-direction:row; gap:12px; align-items:center;">
+              <input type="checkbox" id="chk-widget-chart-pwr" checked onchange="toggleWidgetVisibility('widget-chart-power')">
+              <label class="form-label" style="margin:0; cursor:pointer;" for="chk-widget-chart-pwr">Show Power Chart Widget</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Theme customizer -->
+        <div class="settings-panel">
+          <div class="settings-section-title">Customizable Dashboard Themes</div>
+          <div class="theme-selector-grid">
+            <button class="theme-btn active" id="theme-btn-classic" onclick="setTheme('classic')">
+              <div class="theme-color-preview"><div style="flex:2; background:#0D47A1;"></div><div style="flex:1; background:#FFC107;"></div></div>
+              Cloud logs
+            </button>
+            <button class="theme-btn" id="theme-btn-dark" onclick="setTheme('dark')">
+              <div class="theme-color-preview"><div style="flex:2; background:#1E293B;"></div><div style="flex:1; background:#F59E0B;"></div></div>
+              Slate Dark Mode
+            </button>
+            <button class="theme-btn" id="theme-btn-emerald" onclick="setTheme('emerald')">
+              <div class="theme-color-preview"><div style="flex:2; background:#005F54;"></div><div style="flex:1; background:#E0A96D;"></div></div>
+              Emerald Breeze
+            </button>
+          </div>
+        </div>
+
+        <!-- Email Report scheduler -->
+        <div class="settings-panel">
+          <div class="settings-section-title">
+            <span class="material-icons-outlined" style="vertical-align: middle; margin-right: 4px;">schedule_send</span>
+            Scheduled Reports Email Configuration
+          </div>
+          <div class="form-grid">
+            <div class="form-group" style="flex-direction:row; gap:12px; align-items:center; grid-column: 1/-1;">
+              <input type="checkbox" id="report-schedule-enabled">
+              <label class="form-label" style="margin:0; cursor:pointer;" for="report-schedule-enabled">Enable Scheduled Email Summary Reports</label>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Report Frequency</label>
+              <select class="form-control" id="report-schedule-freq">
+                <option value="weekly">Weekly (Monday 8:00 AM)</option>
+                <option value="monthly">Monthly (1st Day 8:00 AM)</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn-topbar accent" style="width:fit-content; margin-top:12px;" onclick="saveReportSettings()"><span class="material-icons-outlined">save</span>Save Scheduled Report Config</button>
+        </div>
+
+        <!-- Report Recipients Management -->
+        <div class="settings-panel" id="recipients-settings-panel">
+          <div class="settings-section-title">
+            <span class="material-icons-outlined" style="vertical-align: middle; margin-right: 4px;">group</span>
+            Scheduled Report Email Recipients
+          </div>
+          
+          <div style="display: flex; gap: 16px; margin-bottom: 20px; align-items: flex-end; flex-wrap: wrap;">
+            <div class="form-group" style="flex: 1; min-width: 200px;">
+              <label class="form-label">Recipient Name</label>
+              <input type="text" class="form-control" id="new-recipient-name" placeholder="e.g. Dr. Jane Smith">
+            </div>
+            <div class="form-group" style="flex: 1; min-width: 250px;">
+              <label class="form-label">Recipient Email</label>
+              <input type="email" class="form-control" id="new-recipient-email" placeholder="e.g. j.smith@cloudlogs.com">
+            </div>
+            <button class="btn-topbar accent" onclick="addNewRecipient()" style="height: 38px; margin-bottom: 2px;"><span class="material-icons-outlined">add</span>Add Recipient</button>
+          </div>
+          
+          <!-- Recipients Grid Table -->
+          <div class="table-container" style="box-shadow: none; border-color: var(--border); margin-top: 12px;">
+            <div class="table-responsive" style="max-height: 250px; min-height: 120px;">
+              <table style="width: 100%;">
+                <thead>
+                  <tr style="background-color: var(--primary-light); color: var(--text);">
+                    <th style="padding: 10px 14px; font-size: 11px; font-weight: 700; text-transform: uppercase;">Name</th>
+                    <th style="padding: 10px 14px; font-size: 11px; font-weight: 700; text-transform: uppercase;">Email</th>
+                    <th style="padding: 10px 14px; font-size: 11px; font-weight: 700; text-transform: uppercase;">Status</th>
+                    <th style="padding: 10px 14px; font-size: 11px; font-weight: 700; text-transform: uppercase;">Date Added</th>
+                    <th style="padding: 10px 14px; font-size: 11px; font-weight: 700; text-transform: uppercase; text-align: center; width: 120px;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="recipients-table-body">
+                  <tr>
+                    <td colspan="5" style="text-align: center; padding: 20px; color: var(--text-muted);">Loading recipients...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Decoupled API Gateway Settings -->
+        <div class="settings-panel" id="api-settings-panel" style="display: none;">
+          <div class="settings-section-title">
+            <span class="material-icons-outlined" style="vertical-align: middle; margin-right: 4px;">api</span>
+            Decoupled API Gateway Settings
+          </div>
+          <div class="form-grid">
+            <div class="form-group" style="grid-column: 1/-1;">
+              <label class="form-label">Linked Google Apps Script Web App URL</label>
+              <div style="display: flex; gap: 8px; width: 100%;">
+                <input type="text" class="form-control" id="linked-api-url" placeholder="https://script.google.com/macros/s/.../exec">
+                <button class="btn-topbar accent" onclick="updateLinkedApiUrl()" style="height: 38px; margin-bottom: 2px;"><span class="material-icons-outlined">link</span>Link API</button>
+              </div>
+              <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">
+                Required only when this dashboard is hosted on external static platforms like Vercel. Keeps the frontend synced with your Google Sheets data.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Keyboard Shortcuts -->
+        <div class="settings-panel">
+          <div class="settings-section-title">Intuitive Navigation Keyboard Shortcuts</div>
+          <table class="shortcut-table">
+            <tr><td><span class="shortcut-key">/</span></td><td>Focus the Search field on Records Tab</td></tr>
+            <tr><td><span class="shortcut-key">Esc</span></td><td>Close any open Modal popup window</td></tr>
+            <tr><td><span class="shortcut-key">R</span></td><td>Refresh / reload data from source Google Sheet</td></tr>
+            <tr><td><span class="shortcut-key">T</span></td><td>Toggle theme (Classic / Dark / Emerald)</td></tr>
+            <tr><td><span class="shortcut-key">1</span> - <span class="shortcut-key">9</span></td><td>Quickly switch between workspace tabs</td></tr>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- MODALS -->
+  <!-- VIEW MODAL -->
+  <div class="modal-backdrop" id="modal-view">
+    <div class="modal-window">
+      <div class="modal-header">
+        <div class="modal-title" id="modal-view-title">ART Centre Details View</div>
+        <button class="btn-modal-close" onclick="closeModal('modal-view')"><span class="material-icons-outlined">close</span></button>
+      </div>
+      <div class="modal-body">
+        <div class="view-grid" id="modal-view-body-grid"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-topbar" style="background:#ECEFF1; color:#1E293B; border-color:#CFD8DC;" onclick="closeModal('modal-view')">Close Details</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- EDIT FORM MODAL -->
+  <div class="modal-backdrop" id="modal-edit">
+    <div class="modal-window">
+      <div class="modal-header">
+        <div class="modal-title" id="modal-edit-title">Edit ART Centre Equipment Mapping Record</div>
+        <button class="btn-modal-close" onclick="closeModal('modal-edit')"><span class="material-icons-outlined">close</span></button>
+      </div>
+      <div class="modal-body">
+        <form id="edit-record-form" class="form-grid"></form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-topbar" style="background:#ECEFF1; color:#1E293B; border-color:#CFD8DC;" onclick="closeModal('modal-edit')">Cancel</button>
+        <button class="btn-topbar accent" onclick="submitEditForm()"><span class="material-icons-outlined">save</span>Save updates</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- WEB APP REDIRECT WARNING MODAL -->
+  <div class="modal-backdrop" id="web-app-modal">
+    <div class="modal-window" style="max-width: 580px;">
+      <div class="modal-header">
+        <div class="modal-title" style="display:flex; align-items:center; gap:8px;">
+          <span class="material-icons-outlined" style="color:var(--accent);">open_in_new</span>
+          Open Dashboard in Browser Tab
+        </div>
+        <button class="btn-modal-close" onclick="closeModal('web-app-modal')"><span class="material-icons-outlined">close</span></button>
+      </div>
+      <div class="modal-body" style="display:flex; flex-direction:column; gap:16px;">
+        <div class="alert-banner" style="background-color: var(--warning-light); border-left-color: var(--warning); font-size: 13px; line-height: 1.5; margin: 0; padding:12px 16px;">
+          <span class="material-icons-outlined" style="color:var(--warning); font-size:20px;">warning</span>
+          <div>
+            <strong>Google Account Conflict Notice:</strong> Google Drive often displays a <em>"Sorry, unable to open the file at present"</em> error page if you are signed into multiple Google accounts in the same browser session.
+          </div>
+        </div>
+        <p style="font-size: 13.5px; margin: 0; color: var(--text); line-height: 1.5;">
+          To open this dashboard in a dedicated web browser tab, click the <strong>Launch Tab</strong> button below. If you hit Google's error screen, please use one of these workarounds:
+        </p>
+        <ul style="font-size: 12.5px; margin: 0; padding-left: 20px; color: var(--text-muted); display: flex; flex-direction: column; gap: 8px;">
+          <li>Copy the URL below and paste it in an <strong>Incognito or Private Window</strong>.</li>
+          <li>Or open the link in a dedicated browser profile where only one Google account is signed in.</li>
+          <li>Or sign out of all other Google accounts in your browser and try again.</li>
+        </ul>
+        
+        <div style="display: flex; flex-direction: column; gap: 6px; margin-top: 8px;">
+          <label style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Dashboard Web App URL</label>
+          <div style="display: flex; gap: 8px; width: 100%;">
+            <input type="text" id="web-app-url-input" readonly style="flex: 1; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 12px; background-color: var(--primary-light); color: var(--text); outline: none; border-color:var(--primary);" onclick="this.select()">
+            <button class="btn-topbar" onclick="copyWebAppUrl()" style="background-color: var(--primary); color: white; border: none; height: 36px; padding: 0 12px; font-size: 12px;"><span class="material-icons-outlined" style="font-size:16px;">content_copy</span>Copy</button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" style="display:flex; justify-content:flex-end; gap:12px;">
+        <button class="btn-topbar" style="background:#ECEFF1; color:#1E293B; border-color:#CFD8DC;" onclick="closeModal('web-app-modal')">Cancel</button>
+        <button class="btn-topbar accent" onclick="confirmOpenWebApp()" style="height:36px; padding: 0 16px; font-size: 12px;"><span class="material-icons-outlined" style="font-size:16px;">launch</span>Launch Tab</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Global context check for external hosting (Vercel, Netlify, Localhost)
+    if (typeof google === 'undefined') {
+      window.google = {
+        script: {
+          run: {
+            withSuccessHandler: function(successCallback) {
+              this._success = successCallback;
+              return this;
+            },
+            withFailureHandler: function(failureCallback) {
+              this._failure = failureCallback;
+              return this;
+            },
+            _execute: function(funcName, args) {
+              const success = this._success;
+              const failure = this._failure;
+              
+              this._success = null;
+              this._failure = null;
+              
+              const apiEndpoint = webAppUrl || localStorage.getItem('cloud_logs_web_app_url') || '';
+              if (!apiEndpoint) {
+                const promptUrl = prompt("Enter your Google Apps Script Web App URL to link this dashboard:\n\nFormat: https://script.google.com/macros/s/.../exec");
+                if (promptUrl && promptUrl.includes('/exec')) {
+                  localStorage.setItem('cloud_logs_web_app_url', promptUrl.trim());
+                  location.reload();
+                } else {
+                  alert("Error: Google Apps Script API endpoint not configured. Operations will fail.");
+                  if (failure) failure(new Error("API endpoint not configured."));
+                  return;
+                }
+              }
+              
+              const sessionUser = JSON.parse(localStorage.getItem('cloud_logs_session') || '{}');
+              const sessionEmail = sessionUser.email || '';
+              
+              fetch(apiEndpoint, {
+                method: 'POST',
+                mode: 'cors',
+                headers: {
+                  'Content-Type': 'text/plain;charset=utf-8'
+                },
+                body: JSON.stringify({
+                  functionName: funcName,
+                  arguments: args,
+                  sessionEmail: sessionEmail
+                })
+              })
+              .then(response => {
+                if (!response.ok) {
+                  throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+              })
+              .then(res => {
+                if (res && res.success !== false) {
+                  if (success) success(res);
+                } else {
+                  if (failure) failure(new Error(res ? res.error : 'Unknown API error'));
+                }
+              })
+              .catch(err => {
+                const errorObj = err instanceof Error ? err : new Error(err ? String(err) : 'CORS Network Request Failed');
+                logConsole('CORS Fetch Error: ' + errorObj.message);
+                if (failure) failure(errorObj);
+              });
+            }
+          }
+        }
+      };
+      
+      const whitelistedFunctions = [
+        'getDashboardData',
+        'getRecords',
+        'editRecord',
+        'deleteRecord',
+        'findFuzzyDuplicates',
+        'getUserRole',
+        'getScheduledReportConfig',
+        'setScheduledReportConfig',
+        'getRecipientsList',
+        'addRecipient',
+        'deleteRecipient',
+        'toggleRecipientStatus',
+        'generatePDF',
+        'getWebAppUrl',
+        'loginUser',
+        'signupUser'
+      ];
+      
+      whitelistedFunctions.forEach(funcName => {
+        window.google.script.run[funcName] = function() {
+          const args = Array.prototype.slice.call(arguments);
+          window.google.script.run._execute(funcName, args);
+        };
+      });
+      
+      logConsole('Decoupled environment detected. Initialized CORS Apps Script API gateway client mock.');
+    }
+
+    // App Constants
+    const COLUMNS = [
+      ["_uuid", "UUID"], ["_id", "Kobo ID"], ["_submission_time", "Submission Time"], ["_submitted_by", "Submitted By"],
+      ["state", "State / UT"], ["district", "District"], ["art_centre", "ART Centre Name"], ["artc_code", "ART Centre Code"],
+      ["plhiv_on_art", "Total PLHIV on ART"], ["artc_email", "ART Centre Email"], ["contact_number", "Contact Number"],
+      ["artc_address", "Complete Address"],
+      ["filled_posts_smo", "Filled Posts SMO"], ["vacant_posts_smo", "Vacant Posts SMO"], ["computers_smo", "Computers SMO"], ["workstations_smo", "Tablets SMO"], ["internet_smo", "Internet SMO"],
+      ["filled_posts_mo", "Filled Posts MO"], ["vacant_posts_mo", "Vacant Posts MO"], ["computers_mo", "Computers MO"], ["workstations_mo", "Tablets MO"], ["internet_mo", "Internet MO"],
+      ["filled_posts_staff_nurse", "Filled Posts SN"], ["vacant_posts_staff_nurse", "Vacant Posts SN"], ["computers_staff_nurse", "Computers SN"], ["workstations_staff_nurse", "Tablets SN"], ["internet_staff_nurse", "Internet SN"],
+      ["filled_posts_counsellor", "Filled Posts Counsellor"], ["vacant_posts_counsellor", "Vacant Posts Counsellor"], ["computers_counsellor", "Computers Counsellor"], ["workstations_counsellor", "Tablets Counsellor"], ["internet_counsellor", "Internet Counsellor"],
+      ["filled_posts_data_manager", "Filled Posts DM"], ["vacant_posts_data_manager", "Vacant Posts DM"], ["computers_data_manager", "Computers DM"], ["workstations_data_manager", "Tablets DM"], ["internet_data_manager", "Internet DM"],
+      ["filled_posts_pharmacist", "Filled Posts Pharm"], ["vacant_posts_pharmacist", "Vacant Posts Pharm"], ["computers_pharmacist", "Computers Pharm"], ["scanners_pharmacist", "Scanners Pharm"], ["workstations_pharmacist", "Tablets Pharm"], ["internet_pharmacist", "Internet Pharm"],
+      ["filled_posts_lab_tech", "Filled Posts LT"], ["vacant_posts_lab_tech", "Vacant Posts LT"], ["computers_lab_tech", "Computers LT"], ["scanners_lab_tech", "Scanners LT"], ["workstations_lab_tech", "Tablets LT"], ["internet_lab_tech", "Internet LT"],
+      ["filled_posts_ccc", "Filled Posts CCC"], ["vacant_posts_ccc", "Vacant Posts CCC"], ["computers_ccc", "Computers CCC"], ["workstations_ccc", "Tablets CCC"], ["internet_ccc", "Internet CCC"],
+      ["filled_posts_other", "Filled Posts Other"], ["vacant_posts_other", "Vacant Posts Other"], ["computers_other", "Computers Other"], ["workstations_other", "Tablets Other"], ["other_designation", "Designation Other"], ["internet_other", "Internet Other"],
+      ["ups_available", "UPS Available?"], ["ups_count", "# of UPS"], ["ups_backup_hrs", "Backup (hrs)"], ["ups_remarks", "UPS Remarks"],
+      ["inverter_available", "Inverter?"], ["inverter_backup_hrs", "Backup (hrs)"], ["inverter_remarks", "Inverter Remarks"],
+      ["infra_challenges", "Infra Challenges"], ["infra_other_specify", "Other Infra"],
+      ["capacity_challenges", "Capacity Challenges"], ["capacity_sacs_example", "SACS Example"], ["capacity_other_specify", "Other Capacity"],
+      ["suggestions", "Suggestions"]
+    ];
+
+    const STATE_CENTROIDS = {
+      "Uttar Pradesh": [26.8467, 80.9462], "Maharashtra": [19.7515, 75.7139], "Bihar": [25.0961, 85.3131],
+      "West Bengal": [22.9868, 87.8550], "Madhya Pradesh": [22.9734, 78.6569], "Tamil Nadu": [11.1271, 78.6569],
+      "Rajasthan": [27.0238, 74.2179], "Karnataka": [15.3173, 75.7139], "Gujarat": [22.2587, 71.1924],
+      "Andhra Pradesh": [15.9129, 79.7400], "Odisha": [20.9517, 85.0985], "Telangana": [18.1124, 79.0193],
+      "Kerala": [10.8505, 76.2711], "Jharkhand": [23.6102, 85.2799], "Assam": [26.2006, 92.9376],
+      "Punjab": [31.1471, 75.3412], "Haryana": [29.0588, 76.0856], "Chhattisgarh": [21.2787, 81.8661],
+      "Jammu & Kashmir": [33.7780, 76.5762], "Uttarakhand": [30.0668, 79.0193], "Himachal Pradesh": [31.7825, 76.9902],
+      "Tripura": [23.9408, 91.9882], "Meghalaya": [25.4670, 91.3662], "Manipur": [24.6637, 93.9063],
+      "Nagaland": [26.1584, 94.5624], "Goa": [15.2993, 74.1240], "Arunachal Pradesh": [28.2180, 94.7278],
+      "Mizoram": [23.1645, 92.9376], "Sikkim": [27.5330, 88.5122], "Delhi": [28.7041, 77.1025],
+      "Puducherry": [11.9416, 79.8083], "Chandigarh": [30.7333, 76.7794], "Andaman & Nicobar Islands": [11.7401, 92.6586],
+      "Dadra & Nagar Haveli and Daman & Diu": [20.1809, 73.0169], "Lakshadweep": [10.5667, 72.6417], "Ladakh": [34.1526, 77.5771]
+    };
+
+    // State Variables
+    let dashboardData = null;
+    let allRecords = [];
+    let filteredRecords = [];
+    let duplicates = [];
+    let stats = {};
+    let charts = {};
+    let leafMap = null;
+    let mapMarkers = [];
+
+    // Paginated Table settings
+    let currentPage = 1;
+    let pageSize = 25;
+    let sortField = 'art_centre';
+    let sortOrder = 'asc';
+
+    // Filters state
+    let searchQuery = '';
+    let filterStateVal = '';
+    let filterPowerVal = '';
+    let filterGapsVal = '';
+
+    // Active User Role
+    let activeUserRole = 'Viewer';
+    let activeUserEmail = 'anonymous@cloudlogs.com';
+    let webAppUrl = 'https://script.google.com/macros/s/AKfycbzrlHfVsPiTF2lVyqRgNmP26609dgN3fDsTJxDUE8Kqcnbg4UsWBtxFPqVnxlXgJNls/exec';
+
+    // Edit form tracking
+    let activeEditUuid = null;
+
+    // Logging Console Helper
+    function logConsole(msg) {
+      console.log(msg);
+      const consoleEl = document.getElementById('loading-console');
+      if (consoleEl) {
+        consoleEl.innerHTML += `&gt; ${new Date().toLocaleTimeString()} - ${msg}<br>`;
+        consoleEl.scrollTop = consoleEl.scrollHeight;
+      }
+      const descEl = document.getElementById('loading-desc');
+      if (descEl) descEl.textContent = msg;
+    }
+
+    // Initialize application on DOM ready
+    document.addEventListener('DOMContentLoaded', function() {
+      try {
+        logConsole('Bootstrapping Cloud logs dashboard runtime...');
+        
+        // Load stored themes & preferences
+        const savedTheme = localStorage.getItem('cloud_logs_theme') || 'classic';
+        setTheme(savedTheme);
+        
+        const savedPageSize = localStorage.getItem('cloud_logs_page_size');
+        if (savedPageSize) {
+          pageSize = parseInt(savedPageSize, 10);
+          document.getElementById('page-size-selector').value = savedPageSize;
+        }
+
+        // Restore widgets
+        const widgetConfig = localStorage.getItem('cloud_logs_widget_builder');
+        if (widgetConfig) {
+          try {
+            const conf = JSON.parse(widgetConfig);
+            Object.keys(conf).forEach(id => {
+              toggleWidgetVisibility(id, conf[id], false);
+              const chk = document.getElementById('chk-' + id.replace('widget-', ''));
+              if (chk) chk.checked = conf[id];
+            });
+          } catch(e) { logConsole('Failed widget parsing config'); }
+        }
+
+        // Check offline cache
+        const cacheDataStr = localStorage.getItem('cloud_logs_dashboard_cache');
+        if (cacheDataStr) {
+          try {
+            logConsole('Loading from local offline cache...');
+            const cache = JSON.parse(cacheDataStr);
+            processLoadedData(cache);
+          } catch (e) {
+            logConsole('Failed parsing cache: ' + e.message);
+          }
+        }
+
+        // Resolve container-bound vs decoupled session logic
+        const isContainerBound = window.location.hostname.includes('script.google.com') || window.location.hostname.includes('googleusercontent.com');
+        
+        if (isContainerBound) {
+          logConsole('Container-bound Google Sheets context detected. Authenticating native session...');
+          const appContainer = document.getElementById('app-container');
+          if (appContainer) appContainer.style.display = 'flex';
+          const loginOverlay = document.getElementById('login-screen-overlay');
+          if (loginOverlay) loginOverlay.style.display = 'none';
+          
+          fetchUserRoleAndConfig();
+          fetchRecipientsFromServer();
+          fetchDashboardDataFromServer();
+        } else {
+          // Decoupled context (Vercel/Localhost)
+          const session = localStorage.getItem('cloud_logs_session');
+          if (session) {
+            try {
+              const sessionUser = JSON.parse(session);
+              logConsole(`Active session detected: ${sessionUser.email} (${sessionUser.role})`);
+              
+              activeUserEmail = sessionUser.email;
+              activeUserRole = sessionUser.role;
+              
+              const appContainer = document.getElementById('app-container');
+              if (appContainer) appContainer.style.display = 'flex';
+              const loginOverlay = document.getElementById('login-screen-overlay');
+              if (loginOverlay) loginOverlay.style.display = 'none';
+              
+              // Hide topbar role indicators designed for mock testing
+              const simulateIndicator = document.getElementById('simulate-role-topbar-indicator');
+              if (simulateIndicator) simulateIndicator.style.display = 'none';
+              
+              updateUserProfileBadge();
+              
+              fetchUserRoleAndConfig();
+              fetchRecipientsFromServer();
+              fetchDashboardDataFromServer();
+            } catch (e) {
+              logConsole('Session parsing error. Redirecting to login...');
+              showLoginScreen();
+            }
+          } else {
+            logConsole('No active session found. Redirecting to login...');
+            showLoginScreen();
+          }
+        }
+
+        // Keyboard shortcuts setup
+        window.addEventListener('keydown', handleGlobalKeydown);
+      } catch(err) {
+        logConsole('Global initialization error: ' + err.message);
+      }
+    });
+
+    // Handle Keyboard Shortcuts
+    function handleGlobalKeydown(e) {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+      const key = e.key.toLowerCase();
+      // Tab switching: 1-9 keys
+      if (key >= '1' && key <= '9') {
+        const tabs = ['overview', 'staffing', 'equipment', 'power', 'geography', 'insights', 'records', 'duplicates', 'settings'];
+        const targetTab = tabs[parseInt(key, 10) - 1];
+        if (targetTab) {
+          e.preventDefault();
+          switchTab(targetTab);
+        }
+      }
+      
+      // Focus Search: '/'
+      if (e.key === '/') {
+        e.preventDefault();
+        switchTab('records');
+        setTimeout(() => {
+          const searchIn = document.getElementById('table-search');
+          if (searchIn) searchIn.focus();
+        }, 100);
+      }
+      
+      // Escape closes modals
+      if (e.key === 'Escape') {
+        closeModal('modal-view');
+        closeModal('modal-edit');
+      }
+
+      // Refresh data: 'r'
+      if (key === 'r') {
+        e.preventDefault();
+        refreshData();
+      }
+
+      // Theme toggle: 't'
+      if (key === 't') {
+        e.preventDefault();
+        const themes = ['classic', 'dark', 'emerald'];
+        const currentTheme = document.body.className.replace('theme-', '');
+        const nextIndex = (themes.indexOf(currentTheme) + 1) % themes.length;
+        setTheme(themes[nextIndex]);
+      }
+
+      // Fullscreen: 'f'
+      if (key === 'f') {
+        e.preventDefault();
+        toggleFullScreen();
+      }
+    }
+
+    // Theme Customizer
+    function setTheme(themeName) {
+      document.body.className = '';
+      document.body.classList.add('theme-' + themeName);
+      localStorage.setItem('cloud_logs_theme', themeName);
+      
+      // Update selector buttons
+      document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.remove('active'));
+      const activeBtn = document.getElementById('theme-btn-' + themeName);
+      if (activeBtn) activeBtn.classList.add('active');
+      logConsole(`Swapped dashboard theme context: ${themeName}`);
+    }
+
+    // Role simulation
+    function simulateRoleChange() {
+      const selectedSim = document.getElementById('settings-simulate-role').value;
+      applyRoleInterface(selectedSim);
+      logConsole(`Simulating User UI Access Role: ${selectedSim}`);
+    }
+
+    function applyRoleInterface(role) {
+      try {
+        const btn = document.getElementById('simulate-role-topbar-indicator');
+        if (btn) btn.textContent = 'Role: ' + role;
+        
+        // Update global simulated flag
+        activeUserRole = role;
+        
+        // Hide or show edit/delete buttons dynamically in active table rows
+        renderTableData();
+        
+        // Re-render recipients grid to enable/disable admin controls
+        renderRecipientsGrid();
+      } catch (err) {
+        logConsole('applyRoleInterface failed: ' + err.message);
+      }
+    }
+
+    // Custom Widget Visibility
+    function toggleWidgetVisibility(id, visible = null, save = true) {
+      try {
+        const el = document.getElementById(id);
+        const chk = document.getElementById('chk-' + id.replace('widget-', '').replace('widget-chart-', 'chart-'));
+        if (visible === null) {
+          visible = chk ? chk.checked : !el.style.display;
+        }
+        
+        if (el) {
+          el.style.display = visible ? '' : 'none';
+        }
+        
+        if (save) {
+          const current = JSON.parse(localStorage.getItem('cloud_logs_widget_builder') || '{}');
+          current[id] = visible;
+          localStorage.setItem('cloud_logs_widget_builder', JSON.stringify(current));
+        }
+      } catch(e) { logConsole('Widget visibility failed: ' + e.message); }
+    }
+
+    // Utility Helpers
+    function isYes(val) {
+      if (!val) return false;
+      const str = String(val).toLowerCase().trim();
+      return str === 'yes' || str === 'y' || str === '1' || str === 'true';
+    }
+
+    function normalizeCell(value) {
+      return (value === null || value === undefined) ? '' : String(value).trim();
+    }
+
+    function toggleFullScreen() {
+      try {
+        const doc = window.document;
+        const docEl = doc.documentElement;
+
+        const requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen;
+        const cancelFullScreen = doc.exitFullscreen || doc.mozCancelFullScreen || doc.webkitExitFullscreen || doc.msExitFullscreen;
+
+        if (!doc.fullscreenElement && !doc.mozFullScreenElement && !doc.webkitFullscreenElement && !doc.msFullscreenElement) {
+          if (requestFullScreen) {
+            requestFullScreen.call(docEl);
+            logConsole('Fullscreen mode enabled');
+          } else {
+            logConsole('Fullscreen not supported in this browser context');
+            alert('Fullscreen mode is not supported by this container dialog. Please click "Open in Tab" for a full screen tab view.');
+          }
+        } else {
+          if (cancelFullScreen) {
+            cancelFullScreen.call(doc);
+            logConsole('Fullscreen mode disabled');
+          }
+        }
+      } catch (e) {
+        logConsole('Fullscreen toggle error: ' + e.message);
+      }
+    }
+
+    function openWebAppTab() {
+      if (webAppUrl) {
+        const input = document.getElementById('web-app-url-input');
+        if (input) input.value = webAppUrl;
+        document.getElementById('web-app-modal').classList.add('active');
+      } else {
+        alert('Web App URL is not loaded yet. Please verify script web app deployment.');
+      }
+    }
+
+    function confirmOpenWebApp() {
+      if (webAppUrl) {
+        window.open(webAppUrl, '_blank');
+        closeModal('web-app-modal');
+      }
+    }
+
+    function copyWebAppUrl() {
+      const input = document.getElementById('web-app-url-input');
+      if (input) {
+        input.select();
+        input.setSelectionRange(0, 99999);
+        navigator.clipboard.writeText(input.value)
+          .then(() => alert('Web App URL copied to clipboard! You can now paste it in an Incognito window.'))
+          .catch(err => alert('Failed to copy text: ' + err));
+      }
+    }
+
+    function toggleMapMaximize() {
+      const mapEl = document.getElementById('map-element');
+      const text = document.getElementById('btn-maximize-map');
+      
+      if (!mapEl) return;
+      
+      const isMaximized = mapEl.classList.contains('fullscreen-map');
+      if (!isMaximized) {
+        mapEl.classList.add('fullscreen-map');
+        if (text) {
+          text.innerHTML = '<span class="material-icons-outlined" style="font-size:18px;">fullscreen_exit</span>Minimize Map';
+        }
+      } else {
+        mapEl.classList.remove('fullscreen-map');
+        if (text) {
+          text.innerHTML = '<span class="material-icons-outlined" style="font-size:18px;">fullscreen</span>Maximize Map';
+        }
+      }
+      
+      if (leafMap) {
+        setTimeout(() => leafMap.invalidateSize(), 150);
+      }
+    }
+
+    // API fetches
+    function fetchUserRoleAndConfig() {
+      const sessionUser = JSON.parse(localStorage.getItem('cloud_logs_session') || '{}');
+      const emailArg = sessionUser.email || '';
+      
+      try {
+        google.script.run
+          .withSuccessHandler(res => {
+            try {
+              if (res && res.success) {
+                activeUserEmail = res.email;
+                document.getElementById('settings-user-email').value = res.email;
+                document.getElementById('settings-user-role').value = res.role;
+                document.getElementById('settings-simulate-role').value = res.role;
+                applyRoleInterface(res.role);
+                logConsole(`RBAC context resolved: ${res.email} as ${res.role}`);
+              } else {
+                logConsole('RBAC context returned failure: ' + (res ? res.error : 'null'));
+              }
+            } catch(e) { logConsole('Error inside getUserRole success handler: ' + e.message); }
+          })
+          .withFailureHandler(err => logConsole('RBAC Resolution failed: ' + err.message))
+          .getUserRole(emailArg);
+      } catch(e) { logConsole('getUserRole dispatch error: ' + e.message); }
+
+      try {
+        google.script.run
+          .withSuccessHandler(res => {
+            try {
+              if (res && res.success) {
+                document.getElementById('report-schedule-enabled').checked = res.enabled;
+                document.getElementById('report-schedule-freq').value = res.frequency;
+                logConsole('Email scheduler config parsed');
+              } else {
+                logConsole('Report config returned failure: ' + (res ? res.error : 'null'));
+              }
+            } catch(e) { logConsole('Error inside getScheduledReportConfig success handler: ' + e.message); }
+          })
+          .withFailureHandler(err => logConsole('Failed pulling email config: ' + err.message))
+          .getScheduledReportConfig();
+      } catch(e) { logConsole('getScheduledReportConfig dispatch error: ' + e.message); }
+
+      try {
+        google.script.run
+          .withSuccessHandler(res => {
+            try {
+              if (res && res.success && res.url) {
+                webAppUrl = res.url;
+                const btn = document.getElementById('btn-web-app');
+                if (btn) btn.style.display = 'inline-flex';
+                logConsole('Web App URL retrieved successfully');
+              }
+            } catch(e) { logConsole('Error inside getWebAppUrl success handler: ' + e.message); }
+          })
+          .withFailureHandler(err => logConsole('Failed to retrieve web app URL: ' + err.message))
+          .getWebAppUrl();
+      } catch(e) { logConsole('getWebAppUrl dispatch error: ' + e.message); }
+    }
+
+    function fetchDashboardDataFromServer() {
+      try {
+        const syncLed = document.getElementById('sync-led');
+        const syncText = document.getElementById('sync-text');
+        
+        if (syncLed) {
+          syncLed.className = 'sync-indicator syncing';
+          syncLed.style.backgroundColor = '';
+        }
+        if (syncText) syncText.textContent = 'Updating from spreadsheet...';
+
+        google.script.run
+          .withSuccessHandler(res => {
+            try {
+              if (res && res.success) {
+                localStorage.setItem('cloud_logs_dashboard_cache', JSON.stringify(res));
+                processLoadedData(res);
+                
+                if (syncLed) syncLed.className = 'sync-indicator';
+                if (syncText) syncText.textContent = 'Live Sync Active';
+                document.getElementById('offline-banner').style.display = 'none';
+              } else {
+                handleFetchError(res ? res.error : 'Unknown response structure');
+              }
+            } catch(e) {
+              logConsole('Error inside getDashboardData success handler: ' + e.message);
+              handleFetchError(e.message);
+            }
+          })
+          .withFailureHandler(err => {
+            handleFetchError(err.message);
+          })
+          .getDashboardData();
+      } catch(e) {
+        logConsole('getDashboardData dispatch error: ' + e.message);
+        handleFetchError(e.message);
+      }
+    }
+
+    function handleFetchError(errorMsg) {
+      logConsole('Data fetch failed: ' + errorMsg);
+      try {
+        const syncLed = document.getElementById('sync-led');
+        const syncText = document.getElementById('sync-text');
+        
+        if (syncLed) syncLed.className = 'sync-indicator offline';
+        if (syncText) syncText.textContent = 'Offline Mode Active';
+        document.getElementById('offline-banner').style.display = '';
+        
+        // Try resolving layout if data was loaded from cache
+        if (allRecords && allRecords.length > 0) {
+          document.getElementById('loading-overlay').style.display = 'none';
+          document.getElementById('app-container').style.display = 'flex';
+          initLeafletMap();
+        } else {
+          const consoleEl = document.getElementById('loading-console');
+          if (consoleEl) {
+            consoleEl.innerHTML += `<br><span style="color:red; font-weight:bold;">❌ FATAL CRITICAL ERROR: Fetch failed and no cached records exist. Please check your sheet or trigger a refresh.</span>`;
+          }
+        }
+      } catch(err) { logConsole('handleFetchError failed: ' + err.message); }
+    }
+
+    function refreshData() {
+      logConsole('Manually triggering data synchronization check...');
+      fetchDashboardDataFromServer();
+    }
+
+    // Process loaded stats and data
+    function processLoadedData(data) {
+      try {
+        dashboardData = data;
+        allRecords = data.records || [];
+        filteredRecords = allRecords;
+        stats = data.stats || {};
+        
+        // Resolve duplicate count (Trigger background check)
+        scanDuplicatesBadge();
+
+        logConsole(`Loaded ${allRecords.length} records into dashboard runtime`);
+        
+        // Update UI Widgets (fully isolated to ensure load completion even if minor widget fails)
+        try { renderStatWidgets(); } catch (e) { logConsole('Error in renderStatWidgets: ' + e.message); }
+        try { renderChartsData(); } catch (e) { logConsole('Error in renderChartsData: ' + e.message); }
+        try { populateStateFilterDropdown(); } catch (e) { logConsole('Error in populateStateFilterDropdown: ' + e.message); }
+        try { applyFiltersAndSorting(); } catch (e) { logConsole('Error in applyFiltersAndSorting: ' + e.message); }
+        
+        // Hide loading screen
+        document.getElementById('loading-overlay').style.display = 'none';
+        document.getElementById('app-container').style.display = 'flex';
+        
+        // Delay map initialization slightly for correct DOM dimensions
+        setTimeout(initLeafletMap, 200);
+        
+        // Trigger insights analysis
+        try { generateLocalAIInsights(); } catch (e) { logConsole('Error in generateLocalAIInsights: ' + e.message); }
+      } catch (err) {
+        logConsole('Error processing loaded data: ' + err.message);
+        // Ensure screen hides
+        document.getElementById('loading-overlay').style.display = 'none';
+        document.getElementById('app-container').style.display = 'flex';
+      }
+    }
+
+    function renderStatWidgets() {
+      document.getElementById('stat-total-centres').textContent = stats.totalCentres || 0;
+      document.getElementById('stat-total-plhiv').textContent = (stats.totalPlhiv || 0).toLocaleString();
+      document.getElementById('stat-total-staff').textContent = stats.totalStaff || 0;
+      document.getElementById('stat-staff-filled').textContent = stats.filledPosts || 0;
+      document.getElementById('stat-staff-vacant').textContent = stats.vacantPosts || 0;
+      document.getElementById('stat-power-ups').textContent = stats.withUps || 0;
+      document.getElementById('stat-power-ups-hrs').textContent = stats.avgUpsBackupHrs || 0;
+      document.getElementById('stat-power-inverter').textContent = stats.withInverter || 0;
+      document.getElementById('stat-power-inverter-hrs').textContent = stats.avgInverterBackupHrs || 0;
+      
+      const pcComp = stats.totalCentres > 0 ? Math.round((stats.withComputers / stats.totalCentres) * 100) : 0;
+      document.getElementById('stat-pct-computers').textContent = pcComp + '%';
+    }
+
+    // Chart.js render methods
+    function renderChartsData() {
+      const designNames = {
+        'smo': 'SMO', 'mo': 'MO', 'staff_nurse': 'Staff Nurse', 'counsellor': 'Counsellor',
+        'data_manager': 'Data Manager', 'pharmacist': 'Pharmacist', 'lab_tech': 'Lab Tech', 'ccc': 'CCC', 'other': 'Other'
+      };
+
+      // Chart 1: Equipment Coverage
+      createOrUpdateChart('chart-overview-equipment', {
+        type: 'bar',
+        data: {
+          labels: ['Computers', 'Tablets', 'Internet', 'Barcode Scanners'],
+          datasets: [{
+            label: 'Centres Mapped',
+            data: [stats.withComputers || 0, stats.withTablets || 0, stats.withInternet || 0, stats.withBarcodeScanners || 0],
+            backgroundColor: ['#1E3A8A', '#10B981', '#F59E0B', '#EF4444'],
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          onClick: (e, elements) => {
+            if (elements.length > 0) {
+              const elementIdx = elements[0].index;
+              const labels = ['computers', 'tablets', 'internet', 'scanners'];
+              const label = labels[elementIdx];
+              logConsole('Chart click drill-down: ' + label);
+              filterGapsVal = label === 'computers' ? 'comp_gap' : '';
+              document.getElementById('filter-gaps').value = filterGapsVal;
+              applyFiltersAndSorting();
+              switchTab('records');
+            }
+          }
+        }
+      });
+
+      // Chart 2: Power Backup Distribution
+      createOrUpdateChart('chart-overview-power', {
+        type: 'doughnut',
+        data: {
+          labels: ['UPS Only', 'Inverter Only', 'Both Backups', 'No Backup'],
+          datasets: [{
+            data: [
+              Math.max(0, (stats.withUps || 0) - Math.min(stats.withUps || 0, stats.withInverter || 0)),
+              Math.max(0, (stats.withInverter || 0) - Math.min(stats.withUps || 0, stats.withInverter || 0)),
+              Math.min(stats.withUps || 0, stats.withInverter || 0),
+              Math.max(0, (stats.totalCentres || 0) - (stats.withAnyPowerBackup || 0))
+            ],
+            backgroundColor: ['#2563EB', '#10B981', '#F59E0B', '#64748B']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false
+        }
+      });
+
+      // Chart 3: Staffing Filled vs Vacant
+      createOrUpdateChart('chart-staff-filled-vacant', {
+        type: 'bar',
+        data: {
+          labels: ['Filled Posts', 'Vacant Posts'],
+          datasets: [{
+            label: 'Post Count',
+            data: [stats.filledPosts || 0, stats.vacantPosts || 0],
+            backgroundColor: ['#10B981', '#EF4444'],
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false
+        }
+      });
+
+      // Chart 4: Computers by Staff Designation
+      const desLabels = [];
+      const desComps = [];
+      if (stats.designations) {
+        Object.entries(stats.designations).forEach(([key, val]) => {
+          desLabels.push(designNames[key] || key);
+          desComps.push(val.withComputers || 0);
+        });
+      }
+
+      createOrUpdateChart('chart-staff-computers', {
+        type: 'bar',
+        data: {
+          labels: desLabels,
+          datasets: [{
+            label: 'Centres with Computers',
+            data: desComps,
+            backgroundColor: '#3B82F6',
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false
+        }
+      });
+
+      // Chart 5: Equipment Distribution Detailed
+      createOrUpdateChart('chart-equipment-distribution', {
+        type: 'bar',
+        data: {
+          labels: ['Functional Computers', 'Functional Tablets', 'Functional Scanners'],
+          datasets: [{
+            label: 'Total Active Units',
+            data: [stats.withComputers || 0, stats.withTablets || 0, stats.withBarcodeScanners || 0],
+            backgroundColor: ['#1E3A8A', '#10B981', '#D97706'],
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false
+        }
+      });
+
+      // Chart 6: Power Backup Hours detailed ranges
+      let hrsUnder2 = 0;
+      let hrs2To4 = 0;
+      let hrsOver4 = 0;
+      allRecords.forEach(r => {
+        const maxHr = Math.max(Number(r.ups_backup_hrs || 0), Number(r.inverter_backup_hrs || 0));
+        if (maxHr > 0 && maxHr < 2) hrsUnder2++;
+        else if (maxHr >= 2 && maxHr <= 4) hrs2To4++;
+        else if (maxHr > 4) hrsOver4++;
+      });
+
+      createOrUpdateChart('chart-power-backup-hours', {
+        type: 'pie',
+        data: {
+          labels: ['< 2 Hours', '2 - 4 Hours', '> 4 Hours', 'No Power Backup'],
+          datasets: [{
+            data: [hrsUnder2, hrs2To4, hrsOver4, Math.max(0, allRecords.length - (stats.withAnyPowerBackup || 0))],
+            backgroundColor: ['#EF4444', '#F59E0B', '#10B981', '#64748B']
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false
+        }
+      });
+    }
+
+    function createOrUpdateChart(id, config) {
+      try {
+        const canvas = document.getElementById(id);
+        if (!canvas) return;
+        
+        if (charts[id]) {
+          try { charts[id].destroy(); } catch(e) {}
+        }
+        
+        if (typeof Chart === 'undefined') {
+          logConsole(`Warning: Chart.js library is not loaded. Cannot render chart: ${id}`);
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.font = '13px DM Sans';
+            ctx.fillStyle = '#64748B';
+            ctx.textAlign = 'center';
+            ctx.fillText('Chart not available (lib offline)', canvas.width / 2, canvas.height / 2);
+          }
+          return;
+        }
+
+        config.options = config.options || {};
+        config.options.plugins = config.options.plugins || {};
+        config.options.plugins.legend = config.options.plugins.legend || {};
+        config.options.plugins.legend.labels = config.options.plugins.legend.labels || {};
+        config.options.plugins.legend.labels.font = {
+          family: 'DM Sans',
+          size: 11,
+          weight: 600
+        };
+        
+        charts[id] = new Chart(canvas, config);
+      } catch(err) {
+        logConsole(`Error inside createOrUpdateChart for ${id}: ${err.message}`);
+      }
+    }
+
+    function copyChartToClipboard(canvasId) {
+      try {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) return;
+        canvas.toBlob(blob => {
+          if (!blob) return;
+          navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })])
+            .then(() => alert('✅ Chart image copied to clipboard successfully!'))
+            .catch(err => alert('❌ Clipboard access blocked by sandboxing.'));
+        });
+      } catch(e) { logConsole('Clipboard copy error: ' + e.message); }
+    }
+
+    // Leaflet Maps logic
+    function initLeafletMap() {
+      try {
+        const mapContainer = document.getElementById('map-element');
+        if (!mapContainer || leafMap) return;
+
+        if (typeof L === 'undefined') {
+          logConsole('Warning: Leaflet mapping library not loaded. Map will display offline.');
+          mapContainer.innerHTML = `
+            <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; border:2px dashed var(--border); border-radius:var(--radius-md); background:var(--card-bg); padding:40px;">
+              <span class="material-icons-outlined" style="font-size:48px; color:var(--text-muted); margin-bottom:12px;">map</span>
+              <div style="font-weight:700; font-size:15px; color:var(--text)">Geographic Mapping Offline</div>
+              <div style="font-size:12px; color:var(--text-muted); margin-top:4px;">The Leaflet.js library failed to load. Check your internet connection.</div>
+            </div>
+          `;
+          return;
+        }
+
+        logConsole('Initializing Leaflet mapping frame...');
+        leafMap = L.map('map-element', { zoomSnap: 0.1, zoomDelta: 0.5 }).setView([21.0, 78.9629], 4.3);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; OpenStreetMap'
+        }).addTo(leafMap);
+
+        renderMapMarkers();
+      } catch(err) {
+        logConsole('Map init error: ' + err.message);
+      }
+    }
+
+    function renderMapMarkers() {
+      try {
+        if (!leafMap || typeof L === 'undefined') return;
+        
+        // Clear old markers
+        mapMarkers.forEach(m => leafMap.removeLayer(m));
+        mapMarkers = [];
+
+        // Calculate state statistics dynamically
+        const stateStats = {};
+        allRecords.forEach(r => {
+          const stName = r.state;
+          if (!stName) return;
+          
+          // Fuzzy match against coordinates centroids dictionary
+          let matchingKey = Object.keys(STATE_CENTROIDS).find(k => k.toLowerCase().replace(/\s/g, '_') === stName.toLowerCase().replace(/\s/g, '_'));
+          if (!matchingKey) matchingKey = stName;
+
+          if (!stateStats[matchingKey]) {
+            stateStats[matchingKey] = { count: 0, plhiv: 0 };
+          }
+          stateStats[matchingKey].count++;
+          stateStats[matchingKey].plhiv += Number(r.plhiv_on_art || 0);
+        });
+
+        Object.entries(stateStats).forEach(([state, data]) => {
+          const coords = STATE_CENTROIDS[state];
+          if (!coords) {
+            logConsole(`No geocode centroid found for state key: ${state}`);
+            return;
+          }
+
+          const radius = Math.sqrt(data.count) * 8 + 5;
+          const color = data.plhiv > 5000 ? '#7F1D1D' : data.plhiv > 2000 ? '#C62828' : '#1E3A8A';
+
+          const circle = L.circleMarker(coords, {
+            radius: radius,
+            fillColor: color,
+            color: '#FFFFFF',
+            weight: 2,
+            opacity: 0.9,
+            fillOpacity: 0.6
+          }).addTo(leafMap);
+
+          const popupContent = `
+            <div class="map-popup-header">${state}</div>
+            <div class="map-popup-row"><span>Mapped Centres:</span><strong>${data.count}</strong></div>
+            <div class="map-popup-row"><span>PLHIV Patients:</span><strong>${data.plhiv.toLocaleString()}</strong></div>
+            <div style="font-size:10px; color:#64748B; margin-top:8px; font-style:italic; text-align:center;">Click to filter records</div>
+          `;
+
+          circle.bindPopup(popupContent);
+          
+          circle.on('mouseover', function(e) {
+            this.openPopup();
+            this.setStyle({ fillOpacity: 0.85 });
+          });
+          circle.on('mouseout', function(e) {
+            this.setStyle({ fillOpacity: 0.6 });
+          });
+
+          // Click Drill-down
+          circle.on('click', function() {
+            logConsole(`Map drill-down selected state: ${state}`);
+            filterStateVal = state;
+            document.getElementById('filter-state').value = state;
+            applyFiltersAndSorting();
+            switchTab('records');
+          });
+
+          mapMarkers.push(circle);
+        });
+      } catch(err) {
+        logConsole('renderMapMarkers error: ' + err.message);
+      }
+    }
+
+    // Dynamic AI Insights generator
+    function generateLocalAIInsights() {
+      try {
+        const insightsContainer = document.getElementById('ai-insights-container');
+        if (!insightsContainer) return;
+        
+        insightsContainer.innerHTML = '';
+        
+        const insights = [];
+        let highPlhivNoMo = [];
+        let filledNoComp = [];
+        let filledNoScanner = [];
+        let noPower = [];
+        let filledNoInternet = [];
+
+        allRecords.forEach(r => {
+          const plhiv = Number(r.plhiv_on_art || 0);
+          const filledSmo = Number(r.filled_posts_smo || 0);
+          const filledMo = Number(r.filled_posts_mo || 0);
+          const name = r.art_centre || 'Unnamed Centre';
+
+          // 1. Staffing Gap
+          if (plhiv > 1000 && filledSmo === 0 && filledMo === 0) {
+            highPlhivNoMo.push(name);
+          }
+
+          // 2. Computers shortage
+          const designations = ['smo', 'mo', 'staff_nurse', 'counsellor', 'data_manager', 'pharmacist', 'lab_tech', 'ccc'];
+          let hasCompIssue = false;
+          designations.forEach(des => {
+            if (Number(r['filled_posts_' + des] || 0) > 0 && !isYes(r['computers_' + des])) {
+              hasCompIssue = true;
+            }
+          });
+          if (hasCompIssue) filledNoComp.push(name);
+
+          // 3. Barcode Scanners Gaps
+          let scannerIssue = false;
+          if (Number(r.filled_posts_pharmacist || 0) > 0 && !isYes(r.scanners_pharmacist)) scannerIssue = true;
+          if (Number(r.filled_posts_lab_tech || 0) > 0 && !isYes(r.scanners_lab_tech)) scannerIssue = true;
+          if (scannerIssue) filledNoScanner.push(name);
+
+          // 4. Power Gaps
+          if (!isYes(r.ups_available) && !isYes(r.inverter_available)) {
+            noPower.push(name);
+          }
+
+          // 5. Internet Gaps
+          let internetIssue = false;
+          designations.forEach(des => {
+            if (Number(r['filled_posts_' + des] || 0) > 0 && !isYes(r['internet_' + des])) {
+              internetIssue = true;
+            }
+          });
+          if (internetIssue) filledNoInternet.push(name);
+        });
+
+        // Format Insights array
+        if (highPlhivNoMo.length > 0) {
+          insights.push({
+            level: 'critical',
+            tag: 'Staffing Shortage',
+            icon: 'error_outline',
+            text: `${highPlhivNoMo.length} ART Centres face critical workload with missing Medical Officers.`,
+            recommendation: `Action Required: Prioritize doctor recruitments at high-volume centres: ${highPlhivNoMo.slice(0,3).join(', ')}...`,
+            filterKey: 'staff_gap'
+          });
+        }
+
+        if (filledNoComp.length > 0) {
+          insights.push({
+            level: 'critical',
+            tag: 'Equipment Deficit',
+            icon: 'computer',
+            text: `${filledNoComp.length} centres report staffed desks missing functional computers.`,
+            recommendation: `Supply Request: Dispatch computers to support digitisation goals. Gaps found at: ${filledNoComp.slice(0,3).join(', ')}...`,
+            filterKey: 'comp_gap'
+          });
+        }
+
+        if (filledNoScanner.length > 0) {
+          insights.push({
+            level: 'warning',
+            tag: 'Supply Chain Barrier',
+            icon: 'qr_code_scanner',
+            text: `${filledNoScanner.length} sites have active Pharmacist/Lab Tech posts but no Barcode Scanners.`,
+            recommendation: `Logistics Dispatch: Procure and distribute scanners to enable digital stock checkins: ${filledNoScanner.slice(0,3).join(', ')}...`,
+            filterKey: 'scanner_gap'
+          });
+        }
+
+        if (noPower.length > 0) {
+          insights.push({
+            level: 'warning',
+            tag: 'Resilience Shortfall',
+            icon: 'electric_meter',
+            text: `${noPower.length} centres operate without any UPS or Inverter power backups.`,
+            recommendation: `Infrastructure Upgrade: Allocate backup battery units to secure data logs at: ${noPower.slice(0,3).join(', ')}...`,
+            filterKey: 'power_gap'
+          });
+        }
+
+        if (insights.length === 0) {
+          insights.push({
+            level: 'success',
+            tag: 'System Optimal',
+            icon: 'check_circle_outline',
+            text: `All checked centres meet active hardware, staffing, and backup baseline requirements!`,
+            recommendation: `Maintenance mode active. Continue periodic syncing.`,
+            filterKey: ''
+          });
+        }
+
+        insights.forEach(ins => {
+          const item = document.createElement('div');
+          item.className = `insight-item ${ins.level}`;
+          item.innerHTML = `
+            <div class="insight-icon-container">
+              <span class="material-icons-outlined" style="font-size:28px;">${ins.icon}</span>
+            </div>
+            <div class="insight-details">
+              <div class="insight-tag">${ins.tag}</div>
+              <div class="insight-text">${ins.text}</div>
+              <div class="insight-recommendation">${ins.recommendation}</div>
+            </div>
+          `;
+
+          item.onclick = () => {
+            if (ins.filterKey) {
+              filterGapsVal = ins.filterKey;
+              document.getElementById('filter-gaps').value = ins.filterKey;
+              applyFiltersAndSorting();
+              switchTab('records');
+              logConsole(`Filtering records by insight criteria: ${ins.filterKey}`);
+            }
+          };
+
+          insightsContainer.appendChild(item);
+        });
+      } catch(err) { logConsole('AI insights failed: ' + err.message); }
+    }
+
+    // Populate Filters
+    function populateStateFilterDropdown() {
+      try {
+        const selector = document.getElementById('filter-state');
+        if (!selector) return;
+        
+        const statesSet = new Set();
+        allRecords.forEach(r => { if (r.state) statesSet.add(r.state); });
+        
+        const sortedStates = Array.from(statesSet).sort();
+        selector.innerHTML = '<option value="">All States / UTs</option>';
+        sortedStates.forEach(st => {
+          selector.innerHTML += `<option value="${st}">${st}</option>`;
+        });
+      } catch(err) { logConsole('Dropdown state populate error: ' + err.message); }
+    }
+
+    // Tab switcher
+    function switchTab(tabId) {
+      logConsole(`Navigating to tab: ${tabId}`);
+      try {
+        if (tabId !== 'geography') {
+          const mapEl = document.getElementById('map-element');
+          if (mapEl && mapEl.classList.contains('fullscreen-map')) {
+            toggleMapMaximize();
+          }
+        }
+
+        document.querySelectorAll('.nav-tab').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('active'));
+
+        const tabBtn = document.querySelector(`.nav-tab[onclick="switchTab('${tabId}')"]`);
+        if (tabBtn) tabBtn.classList.add('active');
+
+        const pane = document.getElementById('tab-' + tabId);
+        if (pane) pane.classList.add('active');
+
+        if (tabId === 'geography' && leafMap) {
+          setTimeout(() => leafMap.invalidateSize(), 100);
+        }
+      } catch(e) { logConsole('switchTab failed: ' + e.message); }
+    }
+
+    // Filter and Sort Engine
+    function handleTableSearch() {
+      searchQuery = document.getElementById('table-search').value.toLowerCase();
+      currentPage = 1;
+      applyFiltersAndSorting();
+    }
+
+    function handleDropdownFilter() {
+      filterStateVal = document.getElementById('filter-state').value;
+      filterPowerVal = document.getElementById('filter-power').value;
+      filterGapsVal = document.getElementById('filter-gaps').value;
+      currentPage = 1;
+      applyFiltersAndSorting();
+    }
+
+    function clearAllFilters() {
+      document.getElementById('table-search').value = '';
+      document.getElementById('filter-state').value = '';
+      document.getElementById('filter-power').value = '';
+      document.getElementById('filter-gaps').value = '';
+      
+      searchQuery = '';
+      filterStateVal = '';
+      filterPowerVal = '';
+      filterGapsVal = '';
+      currentPage = 1;
+      
+      applyFiltersAndSorting();
+    }
+
+    function applyFiltersAndSorting() {
+      try {
+        filteredRecords = allRecords.filter(r => {
+          const matchesSearch = !searchQuery || 
+            (r.art_centre || '').toLowerCase().includes(searchQuery) ||
+            (r.state || '').toLowerCase().includes(searchQuery) ||
+            (r.district || '').toLowerCase().includes(searchQuery) ||
+            (r.artc_code || '').toLowerCase().includes(searchQuery);
+
+          const matchesState = !filterStateVal || r.state === filterStateVal;
+
+          let matchesPower = true;
+          if (filterPowerVal === 'ups') matchesPower = isYes(r.ups_available);
+          else if (filterPowerVal === 'inverter') matchesPower = isYes(r.inverter_available);
+          else if (filterPowerVal === 'none') matchesPower = !isYes(r.ups_available) && !isYes(r.inverter_available);
+
+          let matchesGaps = true;
+          if (filterGapsVal === 'staff_gap') {
+            const pl = Number(r.plhiv_on_art || 0);
+            matchesGaps = (pl > 1000 && Number(r.filled_posts_smo || 0) === 0 && Number(r.filled_posts_mo || 0) === 0);
+          } else if (filterGapsVal === 'comp_gap') {
+            const desig = ['smo','mo','staff_nurse','counsellor','data_manager','pharmacist','lab_tech','ccc'];
+            let missing = false;
+            desig.forEach(d => { if (Number(r['filled_posts_' + d] || 0) > 0 && !isYes(r['computers_' + d])) missing = true; });
+            matchesGaps = missing;
+          } else if (filterGapsVal === 'scanner_gap') {
+            let missing = false;
+            if (Number(r.filled_posts_pharmacist || 0) > 0 && !isYes(r.scanners_pharmacist)) missing = true;
+            if (Number(r.filled_posts_lab_tech || 0) > 0 && !isYes(r.scanners_lab_tech)) missing = true;
+            matchesGaps = missing;
+          } else if (filterGapsVal === 'power_gap') {
+            matchesGaps = !isYes(r.ups_available) && !isYes(r.inverter_available);
+          }
+
+          return matchesSearch && matchesState && matchesPower && matchesGaps;
+        });
+
+        // Sorting
+        filteredRecords.sort((a, b) => {
+          let valA = a[sortField] || '';
+          let valB = b[sortField] || '';
+
+          if (sortField === 'plhiv_on_art') {
+            valA = Number(valA || 0);
+            valB = Number(valB || 0);
+          } else {
+            valA = String(valA).toLowerCase();
+            valB = String(valB).toLowerCase();
+          }
+
+          if (valA < valB) return sortOrder === 'asc' ? -1 : 1;
+          if (valA > valB) return sortOrder === 'asc' ? 1 : -1;
+          return 0;
+        });
+
+        updateFilterTags();
+        renderTableData();
+      } catch(err) { logConsole('applyFiltersAndSorting error: ' + err.message); }
+    }
+
+    function updateFilterTags() {
+      try {
+        const tagsContainer = document.getElementById('active-filters-tags');
+        if (!tagsContainer) return;
+
+        tagsContainer.innerHTML = '';
+        let hasTags = false;
+
+        const addTag = (text, onClick) => {
+          hasTags = true;
+          const tag = document.createElement('div');
+          tag.className = 'filter-tag';
+          tag.innerHTML = `${text} <span class="clear" onclick="${onClick}">×</span>`;
+          tagsContainer.appendChild(tag);
+        };
+
+        if (searchQuery) addTag(`Search: "${searchQuery}"`, "document.getElementById('table-search').value=''; handleTableSearch();");
+        if (filterStateVal) addTag(`State: ${filterStateVal}`, "document.getElementById('filter-state').value=''; handleDropdownFilter();");
+        if (filterPowerVal) addTag(`Power: ${filterPowerVal.toUpperCase()}`, "document.getElementById('filter-power').value=''; handleDropdownFilter();");
+        if (filterGapsVal) addTag(`Gaps: ${filterGapsVal.replace('_', ' ').toUpperCase()}`, "document.getElementById('filter-gaps').value=''; handleDropdownFilter();");
+
+        tagsContainer.style.display = hasTags ? 'flex' : 'none';
+      } catch(e) { logConsole('Filter tags render failed: ' + e.message); }
+    }
+
+    // Sort handlers
+    function handleSort(field) {
+      if (sortField === field) {
+        sortOrder = sortOrder === 'asc' ? 'desc' : 'asc';
+      } else {
+        sortField = field;
+        sortOrder = 'asc';
+      }
+
+      document.querySelectorAll('thead th').forEach(th => {
+        th.className = '';
+      });
+      const activeTh = document.getElementById('th-' + field);
+      if (activeTh) {
+        activeTh.className = sortOrder === 'asc' ? 'sorted-asc' : 'sorted-desc';
+      }
+
+      applyFiltersAndSorting();
+    }
+
+    // Pagination render and changes
+    function renderTableData() {
+      try {
+        const tbody = document.getElementById('table-body');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+
+        if (filteredRecords.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding: 40px; color:var(--text-muted);">No records match criteria</td></tr>';
+          document.getElementById('pagination-info').textContent = 'Showing 0 to 0 of 0 records';
+          document.getElementById('pagination-buttons').innerHTML = '';
+          return;
+        }
+
+        const startIndex = (currentPage - 1) * pageSize;
+        const endIndex = Math.min(startIndex + pageSize, filteredRecords.length);
+        const pageData = filteredRecords.slice(startIndex, endIndex);
+
+        pageData.forEach(r => {
+          const tr = document.createElement('tr');
+          const hasUps = isYes(r.ups_available);
+          const hasInv = isYes(r.inverter_available);
+
+          const plhiv = Number(r.plhiv_on_art || 0);
+          const gapsList = [];
+          if (plhiv > 1000 && Number(r.filled_posts_smo || 0) === 0 && Number(r.filled_posts_mo || 0) === 0) {
+            gapsList.push('Doctor Vacancy');
+          }
+          
+          let compShort = false;
+          const desig = ['smo','mo','staff_nurse','counsellor','data_manager','pharmacist','lab_tech','ccc'];
+          desig.forEach(d => { if (Number(r['filled_posts_' + d] || 0) > 0 && !isYes(r['computers_' + d])) compShort = true; });
+          if (compShort) gapsList.push('Missing PC');
+
+          if (!hasUps && !hasInv) gapsList.push('No Backup');
+
+          const gapsHtml = gapsList.length > 0 
+            ? gapsList.map(g => `<span style="background:#FFE6E6; color:#D32F2F; border:1px solid #FFCCCC; border-radius:4px; padding:2px 6px; font-size:10px; margin-right:4px; font-weight:700;">${g}</span>`).join('')
+            : '<span style="color:#2E7D32; font-weight:700;">Optimal</span>';
+
+          const showEdit = activeUserRole === 'Admin' || activeUserRole === 'Data Manager';
+          const showDelete = activeUserRole === 'Admin';
+
+          tr.innerHTML = `
+            <td style="font-weight:600;">${r.art_centre || 'N/A'}</td>
+            <td>${r.state || 'N/A'}</td>
+            <td>${r.district || 'N/A'}</td>
+            <td style="font-weight:700;">${plhiv.toLocaleString()}</td>
+            <td><span class="action-badge ${hasUps ? 'yes' : 'no'}">${hasUps ? 'Yes' : 'No'}</span></td>
+            <td><span class="action-badge ${hasInv ? 'yes' : 'no'}">${hasInv ? 'Yes' : 'No'}</span></td>
+            <td>${gapsHtml}</td>
+            <td>
+              <div class="table-actions-cell">
+                <button class="btn-action-round view" onclick="viewRecordDetails('${r._uuid}')" title="View Details"><span class="material-icons-outlined" style="font-size:16px;">visibility</span></button>
+                ${showEdit ? `<button class="btn-action-round edit" onclick="editRecordDialog('${r._uuid}')" title="Edit Record"><span class="material-icons-outlined" style="font-size:16px;">edit</span></button>` : ''}
+                ${showDelete ? `<button class="btn-action-round delete" onclick="deleteRecord('${r._uuid}')" title="Delete Record"><span class="material-icons-outlined" style="font-size:16px;">delete</span></button>` : ''}
+                <button class="btn-action-round pdf" onclick="generateReportPDF('${r._uuid}')" title="Print PDF"><span class="material-icons-outlined" style="font-size:16px;">picture_as_pdf</span></button>
+              </div>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+        document.getElementById('pagination-info').textContent = `Showing ${startIndex + 1} to ${endIndex} of ${filteredRecords.length} records`;
+        renderPaginationButtons();
+      } catch(err) { logConsole('renderTableData failed: ' + err.message); }
+    }
+
+    function renderPaginationButtons() {
+      try {
+        const container = document.getElementById('pagination-buttons');
+        if (!container) return;
+        container.innerHTML = '';
+
+        const totalPages = Math.ceil(filteredRecords.length / pageSize);
+        if (totalPages <= 1) return;
+
+        const prevBtn = document.createElement('button');
+        prevBtn.className = 'btn-page';
+        prevBtn.innerHTML = '‹';
+        prevBtn.disabled = currentPage === 1;
+        prevBtn.onclick = () => { if (currentPage > 1) { currentPage--; renderTableData(); } };
+        container.appendChild(prevBtn);
+
+        const maxButtons = 5;
+        let startPage = Math.max(1, currentPage - 2);
+        let endPage = Math.min(totalPages, startPage + maxButtons - 1);
+        
+        if (endPage - startPage < maxButtons - 1) {
+          startPage = Math.max(1, endPage - maxButtons + 1);
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+          const btn = document.createElement('button');
+          btn.className = `btn-page ${i === currentPage ? 'active' : ''}`;
+          btn.textContent = i;
+          btn.onclick = () => { currentPage = i; renderTableData(); };
+          container.appendChild(btn);
+        }
+
+        const nextBtn = document.createElement('button');
+        nextBtn.className = 'btn-page';
+        nextBtn.innerHTML = '›';
+        nextBtn.disabled = currentPage === totalPages;
+        nextBtn.onclick = () => { if (currentPage < totalPages) { currentPage++; renderTableData(); } };
+        container.appendChild(nextBtn);
+      } catch(err) { logConsole('renderPaginationButtons error: ' + err.message); }
+    }
+
+    function changePageSize() {
+      pageSize = parseInt(document.getElementById('page-size-selector').value, 10);
+      localStorage.setItem('cloud_logs_page_size', pageSize);
+      currentPage = 1;
+      renderTableData();
+    }
+
+    // Modals open/close
+    function viewRecordDetails(uuid) {
+      try {
+        const record = allRecords.find(r => r._uuid === uuid);
+        if (!record) return;
+
+        const grid = document.getElementById('modal-view-body-grid');
+        grid.innerHTML = '';
+
+        document.getElementById('modal-view-title').textContent = `${record.art_centre || 'Unnamed Centre'} Details`;
+
+        const detailsToShow = [
+          ['state', 'State / UT'], ['district', 'District'], ['artc_code', 'ART Centre Code'], 
+          ['plhiv_on_art', 'Total PLHIV on ART'], ['artc_email', 'Centre Email'], ['contact_number', 'Contact Number'],
+          ['artc_address', 'Complete Address'], ['ups_available', 'UPS Available?'], ['ups_count', '# of UPS units'],
+          ['ups_backup_hrs', 'UPS Backup Hours'], ['inverter_available', 'Inverter Available?'], ['inverter_backup_hrs', 'Inverter Backup Hours'],
+          ['infra_challenges', 'Infra Challenges'], ['capacity_challenges', 'Capacity Gaps'], ['suggestions', 'Suggestions']
+        ];
+
+        detailsToShow.forEach(([key, label]) => {
+          const item = document.createElement('div');
+          item.className = 'view-item';
+          item.innerHTML = `<div class="view-label">${label}</div><div class="view-value">${record[key] || 'N/A'}</div>`;
+          grid.appendChild(item);
+        });
+
+        document.getElementById('modal-view').classList.add('active');
+      } catch(err) { logConsole('View details error: ' + err.message); }
+    }
+
+    function editRecordDialog(uuid) {
+      try {
+        const record = allRecords.find(r => r._uuid === uuid);
+        if (!record) return;
+
+        activeEditUuid = uuid;
+        const form = document.getElementById('edit-record-form');
+        form.innerHTML = '';
+
+        const fields = [
+          { key: 'art_centre', label: 'ART Centre Name', type: 'text', req: true },
+          { key: 'artc_code', label: 'Centre Code', type: 'text', req: true },
+          { key: 'state', label: 'State', type: 'text', req: true },
+          { key: 'district', label: 'District', type: 'text', req: true },
+          { key: 'plhiv_on_art', label: 'Total PLHIV on ART', type: 'number', req: true },
+          { key: 'artc_email', label: 'Centre Email', type: 'email', req: true },
+          { key: 'contact_number', label: 'Contact Number', type: 'text', req: true },
+          { key: 'artc_address', label: 'Address', type: 'textarea', req: false },
+          { key: 'ups_available', label: 'UPS Available?', type: 'select', options: ['', 'Yes', 'No'], req: false },
+          { key: 'ups_backup_hrs', label: 'UPS Backup Duration (Hours)', type: 'number', req: false },
+          { key: 'inverter_available', label: 'Inverter Available?', type: 'select', options: ['', 'Yes', 'No'], req: false },
+          { key: 'inverter_backup_hrs', label: 'Inverter Backup Duration (Hours)', type: 'number', req: false },
+          { key: 'suggestions', label: 'Suggestions', type: 'textarea', req: false }
+        ];
+
+        fields.forEach(f => {
+          const div = document.createElement('div');
+          div.className = `form-group ${f.type === 'textarea' ? 'full-width' : ''}`;
+          
+          let inputHtml = '';
+          const val = record[f.key] || '';
+          
+          if (f.type === 'textarea') {
+            inputHtml = `<textarea class="form-control" name="${f.key}">${val}</textarea>`;
+          } else if (f.type === 'select') {
+            inputHtml = `<select class="form-control" name="${f.key}">
+              ${f.options.map(opt => `<option value="${opt}" ${opt === val ? 'selected' : ''}>${opt || 'Select option'}</option>`).join('')}
+            </select>`;
+          } else {
+            inputHtml = `<input class="form-control" type="${f.type}" name="${f.key}" value="${val}">`;
+          }
+
+          div.innerHTML = `
+            <label class="form-label">${f.label} ${f.req ? '<span style="color:red">*</span>' : ''}</label>
+            ${inputHtml}
+            <div class="form-error-msg" id="err-${f.key}">This field is required</div>
+          `;
+          form.appendChild(div);
+        });
+
+        document.getElementById('modal-edit').classList.add('active');
+      } catch(err) { logConsole('Open edit dialog failed: ' + err.message); }
+    }
+
+    function submitEditForm() {
+      try {
+        if (!activeEditUuid) return;
+        const form = document.getElementById('edit-record-form');
+        const updates = {};
+        let isValid = true;
+
+        document.querySelectorAll('.form-error-msg').forEach(el => el.style.display = 'none');
+
+        const elements = Array.from(form.elements);
+        elements.forEach(el => {
+          if (!el.name) return;
+          const val = el.value.trim();
+          updates[el.name] = val;
+
+          if (el.name === 'art_centre' || el.name === 'state' || el.name === 'district' || el.name === 'artc_code') {
+            if (!val) {
+              isValid = false;
+              document.getElementById('err-' + el.name).style.display = 'block';
+            }
+          }
+          if (el.name === 'plhiv_on_art') {
+            if (!val || isNaN(val) || parseInt(val, 10) < 0) {
+              isValid = false;
+              const err = document.getElementById('err-' + el.name);
+              err.textContent = 'Must be a positive integer';
+              err.style.display = 'block';
+            }
+          }
+          if (el.name === 'artc_email' && val) {
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailPattern.test(val)) {
+              isValid = false;
+              const err = document.getElementById('err-' + el.name);
+              err.textContent = 'Invalid email format';
+              err.style.display = 'block';
+            }
+          }
+        });
+
+        if (!isValid) return;
+
+        logConsole('Submitting record edits to server: ' + activeEditUuid);
+        closeModal('modal-edit');
+        
+        const localRecord = allRecords.find(r => r._uuid === activeEditUuid);
+        if (localRecord) {
+          Object.assign(localRecord, updates);
+          applyFiltersAndSorting();
+        }
+
+        google.script.run
+          .withSuccessHandler(res => {
+            if (res && res.success) {
+              alert('✅ Changes successfully saved & logged in spreadsheet!');
+              fetchDashboardDataFromServer();
+            } else {
+              alert('❌ Write failed: ' + (res ? res.error : 'Null response'));
+              fetchDashboardDataFromServer();
+            }
+          })
+          .withFailureHandler(err => {
+            alert('❌ Connection failed: ' + err.message);
+            fetchDashboardDataFromServer();
+          })
+          .editRecord(activeEditUuid, updates);
+      } catch(err) { logConsole('Submit edit form failed: ' + err.message); }
+    }
+
+    function deleteRecord(uuid) {
+      try {
+        const record = allRecords.find(r => r._uuid === uuid);
+        if (!record) return;
+
+        if (!confirm(`⚠️ WARNING: Are you sure you want to delete ${record.art_centre || 'this record'}?\nThis will remove it from the Google Sheet and log the action in the Audit Log.`)) return;
+
+        logConsole('Sending delete command for UUID: ' + uuid);
+        
+        allRecords = allRecords.filter(r => r._uuid !== uuid);
+        applyFiltersAndSorting();
+
+        google.script.run
+          .withSuccessHandler(res => {
+            if (res && res.success) {
+              alert('✅ Record deleted successfully!');
+              fetchDashboardDataFromServer();
+            } else {
+              alert('❌ Deletion failed: ' + (res ? res.error : 'Null response'));
+              fetchDashboardDataFromServer();
+            }
+          })
+          .withFailureHandler(err => {
+            alert('❌ Connection error: ' + err.message);
+            fetchDashboardDataFromServer();
+          })
+          .deleteRecord(uuid);
+      } catch(err) { logConsole('Delete command error: ' + err.message); }
+    }
+
+    function generateReportPDF(uuid) {
+      try {
+        logConsole('Generating printable PDF Report for UUID: ' + uuid);
+        alert('ℹ️ PDF compilation started. Google Drive will generate the report PDF shortly in a new tab.');
+        google.script.run
+          .withSuccessHandler(res => {
+            if (res && res.success) {
+              window.open(res.pdfUrl, '_blank');
+            } else {
+              alert('❌ Failed generating PDF: ' + (res ? res.error : 'Null response'));
+            }
+          })
+          .withFailureHandler(err => alert('❌ Error: ' + err.message))
+          .generatePDF(uuid);
+      } catch(err) { logConsole('PDF generation error: ' + err.message); }
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.remove('active');
+    }
+
+    // Fuzzy Duplicates Check
+    function checkFuzzyDuplicates() {
+      try {
+        const container = document.getElementById('duplicates-list-container');
+        if (!container) return;
+
+        container.innerHTML = '<div style="text-align:center; padding:40px;"><div class="premium-spinner" style="margin: 0 auto 12px auto; width:50px; height:50px;"></div>Searching duplicate records list...</div>';
+        
+        google.script.run
+          .withSuccessHandler(res => {
+            if (res && res.success) {
+              duplicates = res.duplicates || [];
+              
+              const badge = document.getElementById('duplicates-badge');
+              if (badge) badge.textContent = duplicates.length || '0';
+
+              if (duplicates.length === 0) {
+                container.innerHTML = `
+                  <div style="text-align:center; padding: 60px; background:var(--card-bg); border-radius:var(--radius-md); border:1px solid var(--border);">
+                    <span class="material-icons-outlined" style="font-size:64px; color:var(--success);">verified_user</span>
+                    <h4 style="font-family:'Outfit',sans-serif; margin-top:12px; font-size:18px;">No duplicates detected!</h4>
+                    <p style="color:var(--text-muted); font-size:13px; margin-top:6px;">All centres have unique identifiers and distinct names.</p>
+                  </div>
+                `;
+                return;
+              }
+
+              container.innerHTML = '';
+              duplicates.forEach((dup, idx) => {
+                const div = document.createElement('div');
+                div.className = 'insight-item warning';
+                div.style.flexDirection = 'column';
+                div.style.cursor = 'default';
+                
+                // Color badge based on score severity
+                const badgeColor = dup.score === 100 ? '#e11d48' : '#f59e0b';
+                const badgeBg = dup.score === 100 ? '#fff1f2' : '#fffbeb';
+                const badgeBorder = dup.score === 100 ? '#ffe4e6' : '#fef3c7';
+
+                div.innerHTML = `
+                  <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--border); padding-bottom:8px; width:100%;">
+                    <span class="insight-tag" style="color:var(--warning); font-weight:700;">Duplicate Match #${idx + 1} (${dup.reason})</span>
+                    <span style="background-color: ${badgeBg}; color: ${badgeColor}; border: 1px solid ${badgeBorder}; font-size:11px; padding: 4px 10px; border-radius: 20px; font-weight:800; text-transform:uppercase;">
+                      ${dup.score}% Match
+                    </span>
+                  </div>
+                  <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; width:100%; margin-top:12px;">
+                    <div style="padding:12px; background:var(--background); border-radius:var(--radius-sm);">
+                      <div style="font-weight:700; color:var(--primary); font-size:12px; margin-bottom:4px;">Record A (Row ${dup.record1.__rowNum || 'N/A'})</div>
+                      <div><strong>Centre:</strong> ${dup.record1.art_centre}</div>
+                      <div><strong>Code:</strong> ${dup.record1.artc_code || 'N/A'}</div>
+                      <div><strong>State:</strong> ${dup.record1.state}</div>
+                      <div style="font-size:11px; color:var(--text-muted); margin-top:4px;"><strong>ID:</strong> ${dup.record1._id || dup.record1._uuid || 'N/A'}</div>
+                      <div style="margin-top:10px; display:flex; gap:6px;">
+                        <button class="btn-card" onclick="viewRecordDetails('${dup.record1._uuid}')">View</button>
+                        ${activeUserRole === 'Admin' ? `<button class="btn-card" style="border-color:var(--danger); color:var(--danger);" onclick="deleteRecord('${dup.record1._uuid}')">Delete</button>` : ''}
+                      </div>
+                    </div>
+                    <div style="padding:12px; background:var(--background); border-radius:var(--radius-sm);">
+                      <div style="font-weight:700; color:var(--primary); font-size:12px; margin-bottom:4px;">Record B (Row ${dup.record2.__rowNum || 'N/A'})</div>
+                      <div><strong>Centre:</strong> ${dup.record2.art_centre}</div>
+                      <div><strong>Code:</strong> ${dup.record2.artc_code || 'N/A'}</div>
+                      <div><strong>State:</strong> ${dup.record2.state}</div>
+                      <div style="font-size:11px; color:var(--text-muted); margin-top:4px;"><strong>ID:</strong> ${dup.record2._id || dup.record2._uuid || 'N/A'}</div>
+                      <div style="margin-top:10px; display:flex; gap:6px;">
+                        <button class="btn-card" onclick="viewRecordDetails('${dup.record2._uuid}')">View</button>
+                        ${activeUserRole === 'Admin' ? `<button class="btn-card" style="border-color:var(--danger); color:var(--danger);" onclick="deleteRecord('${dup.record2._uuid}')">Delete</button>` : ''}
+                      </div>
+                    </div>
+                  </div>
+                `;
+                container.appendChild(div);
+              });
+            } else {
+              container.innerHTML = `<div style="color:red; text-align:center; padding:20px;">Fuzzy duplicates check failed: ${res ? res.error : 'Null response'}</div>`;
+            }
+          })
+          .withFailureHandler(err => {
+            container.innerHTML = `<div style="color:red; text-align:center; padding:20px;">Connection failed: ${err.message}</div>`;
+          })
+          .findFuzzyDuplicates();
+      } catch(err) { logConsole('Fuzzy duplicates method error: ' + err.message); }
+    }
+
+    function scanDuplicatesBadge() {
+      try {
+        google.script.run
+          .withSuccessHandler(res => {
+            if (res && res.success) {
+              duplicates = res.duplicates || [];
+              const badge = document.getElementById('duplicates-badge');
+            if (badge) badge.textContent = duplicates.length || '0';
+            }
+          })
+          .findFuzzyDuplicates();
+      } catch (e) { logConsole('Silent duplicates scan error: ' + e.message); }
+    }
+
+    // Save Scheduled Report settings
+    function saveReportSettings() {
+      try {
+        const enabled = document.getElementById('report-schedule-enabled').checked;
+        const freq = document.getElementById('report-schedule-freq').value;
+
+        logConsole('Saving email summary schedule configuration...');
+        google.script.run
+          .withSuccessHandler(res => {
+            if (res && res.success) {
+              alert('✅ Scheduled report settings saved successfully!');
+            } else {
+              alert('❌ Action failed: ' + (res ? res.error : 'Null response'));
+            }
+          })
+          .withFailureHandler(err => alert('❌ Error: ' + err.message))
+          .setScheduledReportConfig({ enabled, emailList: '', frequency: freq });
+      } catch(err) { logConsole('saveReportSettings error: ' + err.message); }
+    }
+
+    // Export Data (CSV, JSON, Excel)
+    function exportData(format) {
+      if (filteredRecords.length === 0) {
+        alert('No data matches to export!');
+        return;
+      }
+
+      logConsole(`Triggering data export format: ${format}`);
+      const filename = `ART_Centres_Report_${new Date().toISOString().split('T')[0]}`;
+      
+      const exportRows = filteredRecords.map(r => {
+        const exp = {};
+        COLUMNS.forEach(([key, title]) => {
+          if (!key.startsWith('__')) {
+            exp[title] = r[key] || '';
+          }
+        });
+        return exp;
+      });
+
+      if (format === 'json') {
+        const blob = new Blob([JSON.stringify(filteredRecords, null, 2)], { type: 'application/json' });
+        triggerDownload(blob, `${filename}.json`);
+      } else if (format === 'csv') {
+        const headers = COLUMNS.filter(([k]) => !k.startsWith('__')).map(([, t]) => t);
+        let csvContent = headers.map(h => `"${h.replace(/"/g, '""')}"`).join(',') + '\r\n';
+        
+        filteredRecords.forEach(r => {
+          const row = COLUMNS.filter(([k]) => !k.startsWith('__')).map(([k]) => {
+            const val = String(r[k] || '').replace(/"/g, '""');
+            return `"${val}"`;
+          });
+          csvContent += row.join(',') + '\r\n';
+        });
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        triggerDownload(blob, `${filename}.csv`);
+      } else if (format === 'excel') {
+        try {
+          const worksheet = XLSX.utils.json_to_sheet(exportRows);
+          const workbook = XLSX.utils.book_new();
+          XLSX.utils.book_append_sheet(workbook, worksheet, "ART Centres Data");
+          XLSX.writeFile(workbook, `${filename}.xlsx`);
+          alert('✅ Excel file compiled and downloaded successfully!');
+        } catch (e) {
+          alert('❌ SheetJS compilation failed. Defaulting to CSV export.');
+          exportData('csv');
+        }
+      }
+    }
+
+    function triggerDownload(blob, fullFilename) {
+      const link = document.createElement("a");
+      const url = URL.createObjectURL(blob);
+      link.setAttribute("href", url);
+      link.setAttribute("download", fullFilename);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // Global recipients array
+    let recipientsList = [];
+
+    // Fetch recipients
+    function fetchRecipientsFromServer() {
+      try {
+        google.script.run
+          .withSuccessHandler(res => {
+            try {
+              if (res && res.success && res.recipients) {
+                recipientsList = res.recipients;
+                renderRecipientsGrid();
+              } else {
+                logConsole('Failed to retrieve recipients: ' + (res ? res.error : 'null'));
+              }
+            } catch(e) { logConsole('Error inside getRecipientsList success handler: ' + e.message); }
+          })
+          .withFailureHandler(err => logConsole('Failed to fetch recipients: ' + err.message))
+          .getRecipientsList();
+      } catch(e) { logConsole('getRecipientsList dispatch error: ' + e.message); }
+    }
+
+    // Render recipients table
+    function renderRecipientsGrid() {
+      const tbody = document.getElementById('recipients-table-body');
+      if (!tbody) return;
+      
+      tbody.innerHTML = '';
+      
+      const showAdminActions = (activeUserRole === 'Admin');
+      
+      if (recipientsList.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="5" style="text-align: center; padding: 24px; color: var(--text-muted); font-style: italic;">
+              No recipients configured. Add a recipient below to start sending scheduled reports.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+      
+      recipientsList.forEach(r => {
+        const dateStr = r.dateAdded ? new Date(r.dateAdded).toLocaleDateString('en-IN', {
+          year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+        }) : 'N/A';
+        
+        const isActive = r.status === 'Active';
+        const badgeClass = isActive ? 'status-badge active' : 'status-badge inactive';
+        
+        tbody.innerHTML += `
+          <tr style="border-bottom: 1px solid var(--border);">
+            <td style="padding: 12px 14px; font-weight:600; color:var(--text);">${escapeHtml(r.name || 'N/A')}</td>
+            <td style="padding: 12px 14px; color:var(--text);">${escapeHtml(r.email)}</td>
+            <td style="padding: 12px 14px;">
+              <span class="${badgeClass}">${r.status}</span>
+            </td>
+            <td style="padding: 12px 14px; font-size:12px; color:var(--text-muted);">${dateStr}</td>
+            <td style="padding: 12px 14px; text-align: center;">
+              <div style="display:flex; justify-content:center; gap:8px;">
+                <button class="btn-action-round edit" onclick="toggleRecipientActiveState('${r.email}', '${r.status}')" title="${isActive ? 'Deactivate' : 'Activate'}" ${!showAdminActions ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : ''}>
+                  <span class="material-icons-outlined" style="font-size:16px;">${isActive ? 'block' : 'check_circle'}</span>
+                </button>
+                <button class="btn-action-round delete" onclick="removeRecipientRecord('${r.email}')" title="Delete Recipient" ${!showAdminActions ? 'disabled style="opacity:0.5; cursor:not-allowed;"' : ''}>
+                  <span class="material-icons-outlined" style="font-size:16px;">delete</span>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    // Add new recipient
+    function addNewRecipient() {
+      try {
+        if (activeUserRole !== 'Admin') {
+          alert('Unauthorized: Only Admin users can manage scheduled report recipients.');
+          return;
+        }
+        
+        const nameInput = document.getElementById('new-recipient-name');
+        const emailInput = document.getElementById('new-recipient-email');
+        
+        const name = nameInput.value.trim();
+        const email = emailInput.value.trim().toLowerCase();
+        
+        if (!email || !email.includes('@')) {
+          alert('Please enter a valid email address.');
+          return;
+        }
+        
+        logConsole(`Adding email recipient: ${name} (${email})`);
+        
+        google.script.run
+          .withSuccessHandler(res => {
+            if (res && res.success) {
+              nameInput.value = '';
+              emailInput.value = '';
+              alert(res.message || 'Recipient added successfully.');
+              fetchRecipientsFromServer();
+            } else {
+              alert('Error adding recipient: ' + (res ? res.error : 'unknown'));
+            }
+          })
+          .withFailureHandler(err => alert('Add recipient failed: ' + err.message))
+          .addRecipient(email, name, 'Active');
+      } catch(err) { logConsole('addNewRecipient error: ' + err.message); }
+    }
+
+    // Toggle active state
+    function toggleRecipientActiveState(email, currentStatus) {
+      try {
+        if (activeUserRole !== 'Admin') {
+          alert('Unauthorized: Only Admin users can manage scheduled report recipients.');
+          return;
+        }
+        
+        const newStatus = currentStatus === 'Active' ? 'Inactive' : 'Active';
+        logConsole(`Toggling recipient ${email} status to ${newStatus}`);
+        
+        google.script.run
+          .withSuccessHandler(res => {
+            if (res && res.success) {
+              fetchRecipientsFromServer();
+            } else {
+              alert('Error toggling recipient: ' + (res ? res.error : 'unknown'));
+            }
+          })
+          .withFailureHandler(err => alert('Toggle status failed: ' + err.message))
+          .toggleRecipientStatus(email, newStatus);
+      } catch(err) { logConsole('toggleRecipientActiveState error: ' + err.message); }
+    }
+
+    // Remove recipient record
+    function removeRecipientRecord(email) {
+      try {
+        if (activeUserRole !== 'Admin') {
+          alert('Unauthorized: Only Admin users can manage scheduled report recipients.');
+          return;
+        }
+        
+        if (!confirm(`Are you sure you want to remove ${email} from the scheduled reports recipient list?`)) {
+          return;
+        }
+        
+        logConsole(`Deleting recipient: ${email}`);
+        
+        google.script.run
+          .withSuccessHandler(res => {
+            if (res && res.success) {
+              alert(res.message || 'Recipient removed successfully.');
+              fetchRecipientsFromServer();
+            } else {
+              alert('Error removing recipient: ' + (res ? res.error : 'unknown'));
+            }
+          })
+          .withFailureHandler(err => alert('Delete recipient failed: ' + err.message))
+          .deleteRecipient(email);
+      } catch(err) { logConsole('removeRecipientRecord error: ' + err.message); }
+    }
+
+    // Helper to escape HTML characters
+    function escapeHtml(unsafe) {
+      return String(unsafe || '')
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    // Decoupled environment initializers
+    document.addEventListener('DOMContentLoaded', function() {
+      try {
+        if (window.location.hostname !== 'script.google.com') {
+          const apiPanel = document.getElementById('api-settings-panel');
+          if (apiPanel) apiPanel.style.display = 'block';
+          const urlInput = document.getElementById('linked-api-url');
+          if (urlInput) urlInput.value = localStorage.getItem('cloud_logs_web_app_url') || '';
+        }
+      } catch(err) { console.log('Decoupled initializers failed: ' + err.message); }
+    });
+
+    function updateLinkedApiUrl() {
+      const url = document.getElementById('linked-api-url').value.trim();
+      if (url && url.includes('/exec')) {
+        localStorage.setItem('cloud_logs_web_app_url', url);
+        alert('API Gateway URL linked successfully! Refreshing dashboard data...');
+        location.reload();
+      } else {
+        alert('Please enter a valid Google Apps Script Web App URL ending in /exec');
+      }
+    }
+
+    // ============================================================
+    // DECOUPLED AUTHENTICATION SYSTEM (LOCALSTORAGE + API GATEWAY)
+    // ============================================================
+    
+    let isSignupMode = false;
+    
+    function toggleAuthMode() {
+      const loginForm = document.getElementById('form-login');
+      const signupForm = document.getElementById('form-signup');
+      const title = document.querySelector('.login-header h2');
+      const subtitle = document.getElementById('login-subtitle');
+      const footerText = document.getElementById('login-footer-text');
+      const toggleLink = document.getElementById('login-toggle-link');
+      const alertDiv = document.getElementById('login-alert');
+      
+      if (alertDiv) alertDiv.style.display = 'none';
+      
+      isSignupMode = !isSignupMode;
+      
+      if (isSignupMode) {
+        loginForm.style.display = 'none';
+        signupForm.style.display = 'block';
+        title.textContent = 'Create Portal Account';
+        subtitle.textContent = 'Register a new user profile on Cloud logs';
+        footerText.textContent = 'Already have an account?';
+        toggleLink.textContent = 'Sign In';
+      } else {
+        loginForm.style.display = 'block';
+        signupForm.style.display = 'none';
+        title.textContent = 'Cloud logs Portal';
+        subtitle.textContent = 'Sign in to access the ART Centre Mappings';
+        footerText.textContent = "Don't have an account?";
+        toggleLink.textContent = 'Sign Up';
+      }
+    }
+    
+    function showLoginScreen() {
+      const loader = document.getElementById('loading-overlay');
+      if (loader) loader.style.display = 'none';
+      const appContainer = document.getElementById('app-container');
+      if (appContainer) appContainer.style.display = 'none';
+      const loginOverlay = document.getElementById('login-screen-overlay');
+      if (loginOverlay) loginOverlay.style.display = 'flex';
+    }
+    
+    function handleLoginSubmit(e) {
+      e.preventDefault();
+      
+      const emailInput = document.getElementById('login-email');
+      const passwordInput = document.getElementById('login-password');
+      const btn = document.getElementById('btn-login-submit');
+      const btnText = btn.querySelector('.btn-text');
+      const spinner = btn.querySelector('.btn-spinner');
+      const alertDiv = document.getElementById('login-alert');
+      const alertText = document.getElementById('login-alert-text');
+      const consoleDiv = document.getElementById('login-status-console');
+      
+      const email = emailInput.value.trim();
+      const password = passwordInput.value;
+      
+      if (alertDiv) alertDiv.style.display = 'none';
+      
+      if (spinner) spinner.style.display = 'block';
+      if (btnText) btnText.style.display = 'none';
+      btn.disabled = true;
+      
+      if (consoleDiv) {
+        consoleDiv.style.display = 'block';
+        consoleDiv.innerHTML = `<div>&gt; ${new Date().toLocaleTimeString()} - Contacting API gateway...</div>`;
+      }
+      
+      function logAuthStatus(msg) {
+        if (consoleDiv) {
+          consoleDiv.innerHTML += `<div>&gt; ${new Date().toLocaleTimeString()} - ${msg}</div>`;
+          consoleDiv.scrollTop = consoleDiv.scrollHeight;
+        }
+      }
+      
+      google.script.run
+        .withSuccessHandler(res => {
+          if (res && res.success) {
+            logAuthStatus('Authentication handshake success.');
+            logAuthStatus('Decrypting user security metadata...');
+            logAuthStatus('Loading environment variables...');
+            
+            setTimeout(() => {
+              // Save session
+              localStorage.setItem('cloud_logs_session', JSON.stringify({
+                email: res.email,
+                name: res.name,
+                role: res.role
+              }));
+              
+              activeUserEmail = res.email;
+              activeUserRole = res.role;
+              
+              const simulateIndicator = document.getElementById('simulate-role-topbar-indicator');
+              if (simulateIndicator) simulateIndicator.style.display = 'none';
+              
+              updateUserProfileBadge();
+              
+              logConsole('Bootstrapping Cloud logs dashboard runtime...');
+              fetchUserRoleAndConfig();
+              fetchRecipientsFromServer();
+              fetchDashboardDataFromServer();
+              
+              const loginOverlay = document.getElementById('login-screen-overlay');
+              if (loginOverlay) loginOverlay.style.display = 'none';
+              const appContainer = document.getElementById('app-container');
+              if (appContainer) appContainer.style.display = 'flex';
+            }, 800);
+          } else {
+            if (spinner) spinner.style.display = 'none';
+            if (btnText) btnText.style.display = 'inline-block';
+            btn.disabled = false;
+            if (consoleDiv) consoleDiv.style.display = 'none';
+            
+            if (alertDiv) {
+              alertText.textContent = res ? res.error : 'Invalid email or password.';
+              alertDiv.style.display = 'flex';
+            }
+          }
+        })
+        .withFailureHandler(err => {
+          if (spinner) spinner.style.display = 'none';
+          if (btnText) btnText.style.display = 'inline-block';
+          btn.disabled = false;
+          if (consoleDiv) consoleDiv.style.display = 'none';
+          
+          if (alertDiv) {
+            alertText.textContent = 'Server response error: ' + (err.message || 'Check connection or CORS configuration.');
+            alertDiv.style.display = 'flex';
+          }
+        })
+        .loginUser(email, password);
+    }
+    
+    function handleSignupSubmit(e) {
+      e.preventDefault();
+      
+      const nameInput = document.getElementById('signup-name');
+      const emailInput = document.getElementById('signup-email');
+      const passwordInput = document.getElementById('signup-password');
+      const roleInput = document.getElementById('signup-role');
+      const btn = document.getElementById('btn-signup-submit');
+      const btnText = btn.querySelector('.btn-text');
+      const spinner = btn.querySelector('.btn-spinner');
+      const alertDiv = document.getElementById('login-alert');
+      const alertText = document.getElementById('login-alert-text');
+      
+      const name = nameInput.value.trim();
+      const email = emailInput.value.trim();
+      const password = passwordInput.value;
+      const role = roleInput.value;
+      
+      if (alertDiv) alertDiv.style.display = 'none';
+      
+      if (spinner) spinner.style.display = 'block';
+      if (btnText) btnText.style.display = 'none';
+      btn.disabled = true;
+      
+      google.script.run
+        .withSuccessHandler(res => {
+          if (res && res.success) {
+            alert('Signup Successful! profile saved in Google Sheets. You can now log in.');
+            toggleAuthMode();
+            
+            const loginEmail = document.getElementById('login-email');
+            if (loginEmail) loginEmail.value = email;
+            
+            nameInput.value = '';
+            emailInput.value = '';
+            passwordInput.value = '';
+            roleInput.value = 'Viewer';
+            
+            if (spinner) spinner.style.display = 'none';
+            if (btnText) btnText.style.display = 'inline-block';
+            btn.disabled = false;
+          } else {
+            if (spinner) spinner.style.display = 'none';
+            if (btnText) btnText.style.display = 'inline-block';
+            btn.disabled = false;
+            
+            if (alertDiv) {
+              alertText.textContent = res ? res.error : 'Signup failed.';
+              alertDiv.style.display = 'flex';
+            }
+          }
+        })
+        .withFailureHandler(err => {
+          if (spinner) spinner.style.display = 'none';
+          if (btnText) btnText.style.display = 'inline-block';
+          btn.disabled = false;
+          
+          if (alertDiv) {
+            alertText.textContent = 'Server response error: ' + (err.message || 'CORS request blocked.');
+            alertDiv.style.display = 'flex';
+          }
+        })
+        .signupUser(email, password, name, role);
+    }
+    
+    function handleLogout() {
+      if (confirm('Are you sure you want to sign out?')) {
+        localStorage.removeItem('cloud_logs_session');
+        location.reload();
+      }
+    }
+    
+    function updateUserProfileBadge() {
+      const badge = document.getElementById('user-profile-badge');
+      const btnLogout = document.getElementById('btn-logout');
+      const avatar = document.getElementById('user-avatar');
+      const displayName = document.getElementById('user-display-name');
+      const displayRole = document.getElementById('user-display-role');
+      
+      const session = localStorage.getItem('cloud_logs_session');
+      if (session) {
+        try {
+          const user = JSON.parse(session);
+          if (badge) badge.style.display = 'flex';
+          if (btnLogout) btnLogout.style.display = 'inline-flex';
+          
+          if (avatar && user.name) {
+            avatar.textContent = user.name.charAt(0).toUpperCase();
+          }
+          if (displayName) displayName.textContent = user.name || 'User';
+          if (displayRole) displayRole.textContent = user.role || 'Viewer';
+        } catch(e) { console.log('Error updating profile badge'); }
+      }
+    }
+  </script>
+</body>
+</html>

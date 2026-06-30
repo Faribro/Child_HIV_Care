@@ -1,0 +1,204 @@
+@import "tailwindcss";
+
+/* ─────────────────────────────────────────────
+   Child Nutrition Dashboard — Design System
+   Awwwards-Winning White/Light Aesthetic
+   ───────────────────────────────────────────── */
+
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  :root {
+    /* Pure White Premium Theme Settings */
+    --background: #f8fafc;
+    --foreground: #0f172a;
+    color-scheme: light;
+
+    /* Base Slate/Zinc color variables mapped for light-theme dominance */
+    --zinc-950: #f8fafc; /* Page Background */
+    --zinc-925: #f1f5f9; /* Inner Section Background */
+    --zinc-900: #ffffff; /* Card Backgrounds */
+    --zinc-850: #ffffff; /* Active Component Overlays */
+    --zinc-800: #e2e8f0; /* Borders */
+    --zinc-700: #cbd5e1; /* Hover Borders */
+    --zinc-600: #94a3b8; /* Muted Borders / Active Slate */
+    --zinc-500: #64748b; /* Secondary Muted Text */
+    --zinc-400: #475569; /* Regular Text */
+    --zinc-300: #334155; /* Bold Accent Text */
+    --zinc-200: #1e293b; /* Titles */
+    --zinc-100: #0f172a; /* Main Text */
+
+    /* Accent color palettes - Deep Sapphire & Rose Gold */
+    --blue-600: #2563eb;
+    --blue-500: #3b82f6;
+    --blue-400: #60a5fa;
+    --accent-gold: #b45309;
+    --accent-emerald: #10b981;
+  }
+
+  /* Force light theme across dashboard settings */
+  .theme-dark, .theme-classic, .theme-emerald {
+    --background: #f8fafc;
+    --foreground: #0f172a;
+    color-scheme: light;
+    --zinc-950: #f8fafc;
+    --zinc-925: #f1f5f9;
+    --zinc-900: #ffffff;
+    --zinc-850: #ffffff;
+    --zinc-800: #e2e8f0;
+    --zinc-700: #cbd5e1;
+    --zinc-600: #94a3b8;
+    --zinc-500: #64748b;
+    --zinc-400: #475569;
+    --zinc-300: #334155;
+    --zinc-200: #1e293b;
+    --zinc-100: #0f172a;
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    background-image: 
+      radial-gradient(at 0% 0%, rgba(241, 245, 249, 0.5) 0, transparent 50%),
+      radial-gradient(at 50% 0%, rgba(219, 234, 254, 0.3) 0, transparent 50%),
+      radial-gradient(at 100% 0%, rgba(254, 243, 199, 0.25) 0, transparent 50%);
+    background-attachment: fixed;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  /* Custom Thin Elegant Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 99px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+
+  /* Selection styling */
+  ::selection {
+    background-color: rgba(37, 99, 235, 0.1);
+    color: #1d4ed8;
+  }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  --color-zinc-950: var(--zinc-950);
+  --color-zinc-900: var(--zinc-900);
+  --color-zinc-850: var(--zinc-850);
+  --color-zinc-800: var(--zinc-800);
+  --color-zinc-700: var(--zinc-700);
+  --color-zinc-600: var(--zinc-600);
+  --color-zinc-500: var(--zinc-500);
+  --color-zinc-400: var(--zinc-400);
+  --color-zinc-300: var(--zinc-300);
+  --color-zinc-200: var(--zinc-200);
+  --color-zinc-100: var(--zinc-100);
+
+  --color-blue-600: var(--blue-600);
+  --color-blue-500: var(--blue-500);
+  --color-blue-400: var(--blue-400);
+}
+
+/* Custom premium layouts */
+@layer utilities {
+  .ring-focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.4);
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  /* Premium White Glassmorphic Card */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    box-shadow: 
+      0 4px 6px -1px rgba(0, 0, 0, 0.02),
+      0 2px 4px -1px rgba(0, 0, 0, 0.01),
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.6);
+    border-radius: 20px;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .glass-card:hover {
+    box-shadow: 
+      0 20px 25px -5px rgba(0, 0, 0, 0.04),
+      0 10px 10px -5px rgba(0, 0, 0, 0.02);
+  }
+
+  /* Soft Ambient Glows */
+  .glow-blue {
+    box-shadow: 
+      0 10px 30px rgba(59, 130, 246, 0.04),
+      0 1px 3px rgba(0, 0, 0, 0.01);
+  }
+
+  .glow-emerald {
+    box-shadow: 
+      0 10px 30px rgba(16, 185, 129, 0.04),
+      0 1px 3px rgba(0, 0, 0, 0.01);
+  }
+
+  /* Awwwards Interactive Shadow-Hover Effects */
+  .awwwards-shadow {
+    box-shadow: 
+      0 1px 2px rgba(0,0,0,0.02), 
+      0 4px 12px rgba(0,0,0,0.03);
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .awwwards-shadow:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+      0 1px 2px rgba(0,0,0,0.02), 
+      0 12px 28px rgba(0,0,0,0.06);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Premium radial lights for the white theme auth screen */
+.auth-bg {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(219, 234, 254, 0.8) 0%, transparent 40%),
+    radial-gradient(circle at 0% 100%, rgba(254, 243, 199, 0.6) 0%, transparent 40%),
+    #f8fafc;
+}

@@ -1,0 +1,9 @@
+# Ignore all files by default
+**/*
+
+# Except Apps Script backend files
+!Code.gs
+!appsscript.json
+!kobo_sync.gs
+!test_suite.gs
+!webhook_functions.gs
