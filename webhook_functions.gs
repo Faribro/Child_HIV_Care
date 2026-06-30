@@ -7,6 +7,9 @@
 /**
  * Handle inbound submissions from Kobo webhooks
  */
+/**
+ * Handle inbound submissions from Kobo webhooks
+ */
 function handleSubmission(payload) {
   try {
     Logger.log('📥 handleSubmission payload: ' + JSON.stringify(payload));
@@ -17,19 +20,17 @@ function handleSubmission(payload) {
       throw new Error('Missing UUID in webhook payload');
     }
     
-    const rowValues = buildRowFromWebhook_(payload);
     let rowNum = findRowByUuid(sheet, uuid);
-    
     if (rowNum === -1) {
+      const rowValues = buildRowFromWebhook_(payload);
       rowNum = Math.max(sheet.getLastRow() + 1, 4);
       Logger.log(`Adding new webhook entry at row: ${rowNum}`);
+      sheet.getRange(rowNum, 1, 1, rowValues.length).setValues([rowValues]);
+      formatDataRow(sheet, rowNum);
+      writeAuditLog_('WEBHOOK_SUBMIT', uuid, `Processed new webhook entry for child: ${payload.childname || 'N/A'}`);
     } else {
-      Logger.log(`Updating existing webhook entry at row: ${rowNum}`);
+      Logger.log(`Webhook entry with UUID ${uuid} already exists at row ${rowNum}. Skipping to avoid overwriting manually updated values.`);
     }
-    
-    sheet.getRange(rowNum, 1, 1, rowValues.length).setValues([rowValues]);
-    formatDataRow(sheet, rowNum);
-    writeAuditLog_('WEBHOOK_SUBMIT', uuid, `Processed webhook entry for child: ${payload.childname || 'N/A'}`);
     
     return { success: true, row: rowNum };
   } catch (e) {
@@ -63,8 +64,7 @@ function buildRowFromWebhook_(raw) {
       `grp_main/grp_review/${key}`,
       `grp_main/grp_final_review/${key}`,
       `grp_review/${key}`,
-      `grp_final_review/${key}`,
-      `meta/instanceID`
+      `grp_final_review/${key}`
     ];
     
     for (let i = 0; i < possibleKeys.length; i++) {
@@ -80,7 +80,7 @@ function buildRowFromWebhook_(raw) {
         let current = raw;
         let found = true;
         for (let j = 0; j < parts.length; j++) {
-          if (current && current.hasOwnProperty(parts[j])) {
+          if (current && typeof current === 'object' && current.hasOwnProperty(parts[j])) {
             current = current[parts[j]];
           } else {
             found = false;
@@ -94,15 +94,18 @@ function buildRowFromWebhook_(raw) {
       }
     }
     
-    // System fields overrides
-    if (key === '_uuid' && !val) {
-      val = raw['uuid'] || raw['_uuid'] || (raw.meta && raw.meta.instanceID) || '';
+    // System fields overrides (only apply to their exact keys)
+    if (key === '_uuid') {
+      val = val || raw['uuid'] || raw['_uuid'] || (raw.meta && raw.meta.instanceID) || '';
     }
-    if (key === '_submission_time' && !val) {
-      val = raw['_submission_time'] || raw['submission_time'] || new Date().toISOString();
+    if (key === '_id') {
+      val = val || raw['_id'] || raw['id'] || '';
     }
-    if (key === '_submitted_by' && !val) {
-      val = raw['_submitted_by'] || raw['submitted_by'] || 'Kobo Webhook';
+    if (key === '_submission_time') {
+      val = val || raw['_submission_time'] || raw['submission_time'] || new Date().toISOString();
+    }
+    if (key === '_submitted_by') {
+      val = val || raw['_submitted_by'] || raw['submitted_by'] || 'Kobo Webhook';
     }
     if (key === '__sync_needed') {
       val = 'false';

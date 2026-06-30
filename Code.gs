@@ -7,7 +7,7 @@ const CONFIG = {
   SHEET_NAME: "Child_Nutrition",
   TITLE_TEXT: "Child HIV Care & Nutrition Dashboard",
   KOBO_BASE_URL: "https://kf.kobotoolbox.org",
-  KOBO_ASSET_UID: "aBVsisGciJgQPrwHsTvM98", // Configurable
+  KOBO_ASSET_UID: "aZ8JH6QMCCy9hXKP8nhdv2", // Configurable
   KOBO_API_TOKEN: "925b27fab79455080ec00c41d47a7dea97598e5c",
   HELPER_KEYS: ["__sync_needed", "__last_updated"],
   
@@ -120,7 +120,7 @@ function oneClickSetupAll() {
 }
 
 /**
- * Ensure sheet headers match the column mapping
+ * Ensure sheet headers match the column mapping and rotate headers vertically
  */
 function ensureSheetSchema(sheet) {
   const numCols = CONFIG.COLUMN_MAP.length;
@@ -131,15 +131,38 @@ function ensureSheetSchema(sheet) {
     
     // Title block
     sheet.getRange(1, 1, 1, numCols).merge().setValue(CONFIG.TITLE_TEXT);
-    sheet.getRange(1, 1).setFontSize(16).setFontWeight('bold').setFontColor('#FFFFFF').setBackground('#1E3A8A').setHorizontalAlignment('center');
+    sheet.getRange(1, 1).setFontSize(16).setFontWeight('bold').setFontColor('#FFFFFF').setBackground('#1E3A8A').setHorizontalAlignment('center').setVerticalAlignment('middle');
     sheet.setRowHeight(1, 45);
+    
+    // Blank spacer row 2
+    sheet.setRowHeight(2, 15);
     
     // Headers list
     const headers = CONFIG.COLUMN_MAP.map(c => c[1]);
-    sheet.getRange(3, 1, 1, numCols).setValues([headers]);
-    sheet.getRange(3, 1, 1, numCols).setFontWeight('bold').setFontColor('#0F172A').setBackground('#F1F5F9').setHorizontalAlignment('center');
-    sheet.setRowHeight(3, 28);
+    const headerRange = sheet.getRange(3, 1, 1, numCols);
+    headerRange.setValues([headers]);
+    headerRange.setFontWeight('bold')
+               .setFontColor('#0F172A')
+               .setBackground('#F1F5F9')
+               .setHorizontalAlignment('center')
+               .setVerticalAlignment('middle')
+               .setTextRotation(90); // Rotate vertically
+    sheet.setRowHeight(3, 180); // Taller height to accommodate vertical text
     sheet.setFrozenRows(3);
+    
+    // Apply clean default column widths
+    for (let c = 1; c <= numCols; c++) {
+      const headerVal = headers[c - 1];
+      if (headerVal === "UUID") {
+        sheet.setColumnWidth(c, 100);
+      } else if (headerVal === "Child Name" || headerVal === "Caregiver Full Name" || headerVal === "Address" || headerVal === "Signature / Thumb Impression") {
+        sheet.setColumnWidth(c, 160);
+      } else if (headerVal === "Kobo ID" || headerVal === "Submission Time" || headerVal === "Submitted By" || headerVal === "Date of Birth" || headerVal === "Last Updated") {
+        sheet.setColumnWidth(c, 120);
+      } else {
+        sheet.setColumnWidth(c, 50); // Rotate headers allow narrow columns
+      }
+    }
   }
 }
 

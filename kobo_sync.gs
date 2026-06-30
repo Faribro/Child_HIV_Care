@@ -39,18 +39,18 @@ function pullAllKoboData() {
       
       if (!uuid) continue;
 
-      const rowValues = buildRowFromWebhook_(sub);
       let rowNum = findRowByUuid(sheet, uuid);
 
       if (rowNum === -1) {
+        const rowValues = buildRowFromWebhook_(sub);
         rowNum = Math.max(sheet.getLastRow() + 1, 4);
+        sheet.getRange(rowNum, 1, 1, rowValues.length).setValues([rowValues]);
+        formatDataRow(sheet, rowNum);
         addedCount++;
       } else {
+        // Skip overwrite of manually updated/existing sheet data
         updatedCount++;
       }
-
-      sheet.getRange(rowNum, 1, 1, rowValues.length).setValues([rowValues]);
-      formatDataRow(sheet, rowNum);
     }
 
     if (ui) {
