@@ -8,25 +8,25 @@ import {
   LayoutDashboard,
   Mic,
   FolderLock,
-  Layers,
+  Heart,
+  GraduationCap,
+  ShieldCheck,
+  AlertTriangle,
   Settings as SettingsIcon,
-  Activity,
   PanelLeftClose,
   PanelLeftOpen,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const NAV_ITEMS = [
-  {
-    id: 'overview',
-    label: 'Overview',
-    icon: LayoutDashboard,
-    badge: null as string | null,
-  },
-  { id: 'voiceform',  label: 'Voice Form',  icon: Mic,          badge: 'New' },
-  { id: 'records',    label: 'Child Registry', icon: FolderLock,   badge: null },
-  { id: 'duplicates', label: 'Deduplication', icon: Layers,       badge: null },
-  { id: 'settings',   label: 'Settings',   icon: SettingsIcon, badge: null },
+  { id: 'overview',   label: 'Overview',   icon: LayoutDashboard, badge: null },
+  { id: 'voiceform',  label: 'Voice Form',  icon: Mic,             badge: 'New' },
+  { id: 'children',   label: 'Registry',   icon: FolderLock,      badge: null },
+  { id: 'health',     label: 'Health',     icon: Heart,           badge: null },
+  { id: 'education',  label: 'Education',  icon: GraduationCap,   badge: null },
+  { id: 'summary',    label: 'Support',    icon: ShieldCheck,     badge: null },
+  { id: 'validation', label: 'Validation', icon: AlertTriangle,   badge: null },
+  { id: 'settings',   label: 'Settings',   icon: SettingsIcon,    badge: null },
 ] as const;
 
 export const Sidebar: React.FC = () => {
@@ -62,7 +62,7 @@ export const Sidebar: React.FC = () => {
                 className="overflow-hidden whitespace-nowrap"
               >
                 <div className="flex flex-col leading-none text-left">
-                  <span className="text-[11px] font-black text-zinc-900 tracking-wide uppercase">MPAC Portal</span>
+                  <span className="text-[11px] font-black text-zinc-900 tracking-wide uppercase">Childcare Portal</span>
                   <span className="text-[9px] text-zinc-400 font-semibold uppercase tracking-widest mt-0.5">Alliance India</span>
                 </div>
               </motion.div>

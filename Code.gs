@@ -4,6 +4,7 @@
    ============================================================ */
 
 const CONFIG = {
+  SPREADSHEET_ID: "1YORdIKiIdSILyOekMJ5BCO5WCujoZ87U7H65x88HKkM",
   SHEET_NAME: "Child_Nutrition",
   TITLE_TEXT: "Child HIV Care & Nutrition Dashboard",
   KOBO_BASE_URL: "https://kf.kobotoolbox.org",
@@ -88,6 +89,13 @@ const CONFIG = {
 
 const DATA_COL_COUNT = CONFIG.COLUMN_MAP.length - CONFIG.HELPER_KEYS.length;
 
+function getSpreadsheet_() {
+  if (CONFIG.SPREADSHEET_ID) {
+    return SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+  }
+  return SpreadsheetApp.getActiveSpreadsheet();
+}
+
 function onOpen() {
   const ui = SpreadsheetApp.getUi();
   ui.createMenu('Child Nutrition Registry')
@@ -101,7 +109,7 @@ function onOpen() {
  * Perform one-click setup of sheets & triggers
  */
 function oneClickSetupAll() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = getSpreadsheet_();
   
   // 1. Setup primary sheet
   let sheet = ss.getSheetByName(CONFIG.SHEET_NAME);
@@ -427,7 +435,7 @@ function signupUser(email, password, name, role) {
  * Helpers
  */
 function safeGetSheet_() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = getSpreadsheet_();
   const sheet = ss.getSheetByName(CONFIG.SHEET_NAME);
   if (!sheet) throw new Error(`Registry sheet "${CONFIG.SHEET_NAME}" not found.`);
   return sheet;
@@ -449,7 +457,7 @@ function formatDataRow(sheet, rowNum) {
 }
 
 function initProfilesSheet_() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = getSpreadsheet_();
   let sheet = ss.getSheetByName('User_Profiles');
   if (!sheet) {
     sheet = ss.insertSheet('User_Profiles');
@@ -462,7 +470,7 @@ function initProfilesSheet_() {
 }
 
 function initAuditSheet_() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = getSpreadsheet_();
   let sheet = ss.getSheetByName('Audit_Logs');
   if (!sheet) {
     sheet = ss.insertSheet('Audit_Logs');
@@ -475,7 +483,7 @@ function initAuditSheet_() {
 
 function writeAuditLog_(action, user, details) {
   try {
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const ss = getSpreadsheet_();
     let sheet = ss.getSheetByName('Audit_Logs');
     if (!sheet) sheet = initAuditSheet_();
     sheet.appendRow([new Date().toISOString(), action, user, details]);

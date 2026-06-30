@@ -1,7 +1,7 @@
 // lib/utils/crypto.ts
 import { User } from '@/types';
 
-const SECRET_KEY_STR = process.env.HMAC_SECRET || 'mpac_fallback_super_secret_key_change_me_in_prod';
+const SECRET_KEY_STR = process.env.HMAC_SECRET || 'childcare_fallback_super_secret_key_change_me_in_prod';
 
 // Helper to get crypto key
 async function getCryptoKey(): Promise<CryptoKey> {

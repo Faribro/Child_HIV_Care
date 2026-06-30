@@ -19,13 +19,22 @@ const OverviewTab = dynamic(() => import('./Overview'), {
 const RecordsTab = dynamic(() => import('./Records'), {
   loading: () => <TableSkeleton />,
 });
-const DuplicatesTab = dynamic(() => import('./Duplicates'), {
+const DuplicatesTab = dynamic(() => import('./DataValidation'), {
   loading: () => <TableSkeleton />,
 });
 const SettingsTab = dynamic(() => import('./Settings'), {
   loading: () => <TableSkeleton />,
 });
 const VoiceFormTab = dynamic(() => import('./VoiceForm'), {
+  loading: () => <TableSkeleton />,
+});
+const HealthTab = dynamic(() => import('./HealthAnalytics'), {
+  loading: () => <ChartSkeleton />,
+});
+const EducationTab = dynamic(() => import('./EducationPerformance'), {
+  loading: () => <ChartSkeleton />,
+});
+const SummaryTab = dynamic(() => import('./SupportSummary'), {
   loading: () => <TableSkeleton />,
 });
 
@@ -46,9 +55,15 @@ export const DashboardShell: React.FC = () => {
         return <OverviewTab />;
       case 'voiceform':
         return <VoiceFormTab />;
-      case 'records':
+      case 'children':
         return <RecordsTab />;
-      case 'duplicates':
+      case 'health':
+        return <HealthTab />;
+      case 'education':
+        return <EducationTab />;
+      case 'summary':
+        return <SummaryTab />;
+      case 'validation':
         return <DuplicatesTab />;
       case 'settings':
         return <SettingsTab />;

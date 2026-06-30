@@ -413,12 +413,12 @@ export const useStore = create<AuthSlice & DataSlice & ThemeSlice>()(
       setTheme: (theme) => {
         set({ theme });
         if (typeof window !== 'undefined') {
-          localStorage.setItem('mpac_dashboard_theme', theme);
+          localStorage.setItem('childcare_dashboard_theme', theme);
           document.body.classList.remove('theme-classic', 'theme-dark', 'theme-emerald');
           document.body.classList.add(`theme-${theme}`);
         }
       }
     })),
-    { name: 'MPAC-Store' }
+    { name: 'Childcare-Store' }
   )
 );

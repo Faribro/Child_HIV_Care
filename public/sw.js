@@ -1,5 +1,5 @@
 // public/sw.js
-const CACHE_NAME = 'mpac-cache-v1';
+const CACHE_NAME = 'childcare-cache-v1';
 const ASSETS_TO_CACHE = [
   '/',
   '/manifest.webmanifest',

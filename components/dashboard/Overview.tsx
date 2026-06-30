@@ -135,7 +135,7 @@ export const Overview: React.FC = () => {
         />
         <KPICard
           title="Avg Growth Indicators"
-          value={`${activeStats.avgWeight} kg / ${activeStats.avgHeight} cm`}
+          value={`${activeStats.avgWeight ?? 0} kg / ${activeStats.avgHeight ?? 0} cm`}
           delta="Weight & Height average"
           trend="up"
           icon={<Activity className="w-5 h-5 text-emerald-500" />}
@@ -225,7 +225,9 @@ export const Overview: React.FC = () => {
                   <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }} />
                   <span>{item.name}</span>
                 </div>
-                <span className="font-bold text-zinc-900 font-mono">{item.value}</span>
+                <span className="font-bold text-zinc-900 font-mono">
+                  {isNaN(Number(item.value)) ? '0' : item.value}
+                </span>
               </div>
             ))}
           </div>

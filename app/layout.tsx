@@ -15,8 +15,8 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Model Paperless ART Centre Dashboard',
-  description: 'MPAC Equipment and Staffing Mapping Portal - Alliance India',
+  title: 'Childcare Nutrition Dashboard',
+  description: 'Childcare Nutrition and Support Registry Portal - Alliance India',
   manifest: '/manifest.webmanifest',
   icons: {
     icon: '/favicon.ico',

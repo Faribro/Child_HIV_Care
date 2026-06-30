@@ -1,255 +1,182 @@
-// components/auth/SignupForm.tsx
-'use client';
-
-import * as React from 'react';
-import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { SignupSchema } from '@/lib/schemas';
+import React, { useState } from 'react';
 import { useStore } from '@/lib/store';
-import { Input } from '../ui/input';
-import { Button } from '../ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/Select';
-import {
-  Mail, Lock, User as UserIcon, Send, CheckCircle2,
-  AlertCircle, ChevronLeft, Shield,
-} from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { z } from 'zod';
-
-type SignupFormValues = z.infer<typeof SignupSchema>;
+import { Button } from '@/components/ui/button';
+import { Input, Select } from '@/components/ui/input';
+import { motion } from 'framer-motion';
+import { ChevronLeft, ShieldAlert, CheckCircle } from 'lucide-react';
+import { HolographicBackground } from '@/components/ui/HolographicBackground';
 
 interface SignupFormProps {
-  onSwitchToLogin: () => void;
+  onBackToLogin?: () => void;
+  onSwitchToLogin?: () => void;
 }
 
-const ROLE_OPTIONS = [
-  {
-    value: 'Viewer',
-    label: 'Viewer',
-    desc: 'Read-only access to dashboard data',
-  },
-  {
-    value: 'DataEntry',
-    label: 'Data Entry',
-    desc: 'Add & edit equipment mapping forms',
-  },
-  {
-    value: 'Editor',
-    label: 'Editor',
-    desc: 'Full edit & delete permissions',
-  },
-  {
-    value: 'Admin',
-    label: 'Admin',
-    desc: 'Reports, alerts & audit log access',
-  },
-] as const;
+export function SignupForm({ onBackToLogin, onSwitchToLogin }: SignupFormProps) {
+  const signup = useStore((state) => state.signup);
+  
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [role, setRole] = useState('Viewer');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
 
-export const SignupForm: React.FC<SignupFormProps> = ({ onSwitchToLogin }) => {
-  const signup = useStore((s) => s.signup);
-  const [successMsg, setSuccessMsg] = React.useState<string | null>(null);
-  const [serverError, setServerError] = React.useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setSuccessMsg('');
 
-  const {
-    register,
-    handleSubmit,
-    control,
-    formState: { errors },
-  } = useForm<SignupFormValues>({
-    resolver: zodResolver(SignupSchema),
-    mode: 'onBlur',       // validate on blur, not on every keystroke
-    reValidateMode: 'onChange',
-    defaultValues: {
-      email: '',
-      password: '',
-      name: '',
-      role: 'Viewer',
-    },
-  });
+    if (!name || !email || !password || !role) {
+      setError('Please fill in all requested profile details.');
+      return;
+    }
 
-  const onSubmit = async (values: SignupFormValues) => {
-    setIsSubmitting(true);
-    setServerError(null);
-    setSuccessMsg(null);
-
+    setLoading(true);
     try {
-      const res = await signup(values.email, values.password, values.name, values.role);
+      const res = await signup(email, password, name, role);
       if (res.success) {
-        setSuccessMsg(res.message || 'Account created! You can now sign in.');
+        setSuccessMsg(res.message || 'Account registered successfully! Contact admin to activate.');
+        setName('');
+        setEmail('');
+        setPassword('');
+        setRole('Viewer');
       } else {
-        setServerError(res.error || 'Registration failed. Please try again.');
+        setError(res.error || 'Registration failed.');
       }
     } catch (err: any) {
-      setServerError(err.message || 'An error occurred during account creation.');
+      setError(err.message || 'Network connectivity error.');
     } finally {
-      setIsSubmitting(false);
+      setLoading(false);
     }
   };
 
-  /* ── Success State ── */
-  if (successMsg) {
-    return (
-      <motion.div
-        initial={{ opacity: 0, scale: 0.97 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="flex flex-col items-center text-center gap-5 py-4 select-none"
-      >
-        <div className="w-16 h-16 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex items-center justify-center text-emerald-400">
-          <CheckCircle2 className="w-8 h-8" />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <h3 className="text-lg font-bold text-white">Account Created!</h3>
-          <p className="text-xs text-zinc-400 max-w-xs leading-relaxed">{successMsg}</p>
-        </div>
-        <div className="w-full pt-2 border-t border-zinc-800 mt-1">
-          <p className="text-[10px] text-zinc-600 mb-3">
-            You can now sign in with your registered credentials.
-          </p>
-          <Button variant="primary" className="w-full" onClick={onSwitchToLogin}>
-            <ChevronLeft className="w-4 h-4 mr-1" />
-            Go to Sign In
-          </Button>
-        </div>
-      </motion.div>
-    );
-  }
-
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4 w-full" noValidate>
-      {/* Header */}
-      <div className="flex flex-col gap-1 select-none">
-        <h2 className="text-xl font-bold text-white tracking-tight">Request Account</h2>
-        <p className="text-xs text-zinc-500 font-medium">
-          Create your MPAC portal account to get started
-        </p>
-      </div>
+    <div className="relative flex h-screen w-screen items-center justify-center bg-[#071310] px-4 overflow-hidden select-none">
+      <HolographicBackground theme="dark" intensity={1.3} />
 
-      {/* Full Name */}
-      <Input
-        id="signup-name"
-        label="Full Name"
-        type="text"
-        placeholder="e.g. Farid Sayyed"
-        prefixIcon={<UserIcon className="w-4 h-4 text-zinc-500" />}
-        error={errors.name?.message}
-        disabled={isSubmitting}
-        autoComplete="name"
-        {...register('name')}
+      <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.06)_0%,transparent_70%)] z-0" />
+      <div 
+        className="absolute inset-0 pointer-events-none z-0"
+        style={{
+          backgroundImage: 'linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%)',
+          backgroundSize: '100% 4px'
+        }}
       />
 
-      {/* Email — changed to type="text" to prevent browser's own email tooltip interfering */}
-      <Input
-        id="signup-email"
-        label="Email Address"
-        type="text"
-        inputMode="email"
-        placeholder="e.g. faridsayyed1010@gmail.com"
-        prefixIcon={<Mail className="w-4 h-4 text-zinc-500" />}
-        error={errors.email?.message}
-        disabled={isSubmitting}
-        autoComplete="email"
-        {...register('email')}
-      />
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9, rotateX: 15 }}
+        animate={{ opacity: 1, scale: 1, rotateX: 0 }}
+        transition={{ duration: 0.8, type: 'spring', stiffness: 70 }}
+        style={{ perspective: 1000 }}
+        className="relative w-full max-w-md border border-blue-500/30 bg-[#0A1A15]/85 backdrop-blur-[24px] shadow-[0_0_50px_rgba(59,130,246,0.15)] rounded-2xl p-8 z-10 overflow-hidden"
+      >
+        <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-blue-500/60" />
+        <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-blue-500/60" />
+        <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-blue-500/60" />
+        <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-blue-500/60" />
 
-      {/* Password */}
-      <Input
-        id="signup-password"
-        label="Password"
-        type="password"
-        placeholder="Minimum 4 characters"
-        prefixIcon={<Lock className="w-4 h-4 text-zinc-500" />}
-        error={errors.password?.message}
-        disabled={isSubmitting}
-        autoComplete="new-password"
-        {...register('password')}
-      />
-
-      {/* Role Selector */}
-      <div className="flex flex-col gap-1.5">
-        <label className="text-xs font-semibold text-zinc-400 select-none">
-          Desired Role
-        </label>
-        <Controller
-          name="role"
-          control={control}
-          render={({ field }) => (
-            <Select
-              onValueChange={field.onChange}
-              defaultValue={field.value}
-              disabled={isSubmitting}
-            >
-              <SelectTrigger id="signup-role">
-                <SelectValue placeholder="Select your role" />
-              </SelectTrigger>
-              <SelectContent>
-                {ROLE_OPTIONS.map((opt) => (
-                  <SelectItem key={opt.value} value={opt.value}>
-                    <div className="flex flex-col">
-                      <span className="font-semibold">{opt.label}</span>
-                      <span className="text-[10px] text-zinc-500">{opt.desc}</span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-        />
-        {errors.role && (
-          <p className="text-xs font-medium text-red-400">{errors.role.message}</p>
-        )}
-      </div>
-
-      {/* Role Info Banner */}
-      <div className="flex items-start gap-2 p-2.5 bg-blue-950/30 border border-blue-800/30 rounded-lg select-none">
-        <Shield className="w-3.5 h-3.5 text-blue-400 flex-shrink-0 mt-0.5" />
-        <p className="text-[10px] text-zinc-500 leading-relaxed">
-          Role assignment is subject to Admin approval. Your account will be active immediately after submission.
-        </p>
-      </div>
-
-      {/* Server Error */}
-      <AnimatePresence>
-        {serverError && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="flex items-center gap-2 p-3 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl text-xs font-medium select-none overflow-hidden"
+        <div className="flex flex-col items-center gap-2 mb-6 text-center">
+          <motion.div 
+            whileHover={{ scale: 1.1 }}
+            transition={{ type: 'spring', stiffness: 200 }}
+            className="flex items-center justify-center h-14 w-14 rounded-full bg-white/5 border border-blue-500/30 mb-2 cursor-pointer shadow-[0_0_15px_rgba(59,130,246,0.2)] overflow-hidden p-2"
           >
-            <AlertCircle className="w-3.5 h-3.5 flex-shrink-0" />
-            <span>{serverError}</span>
+            <img src="/alliance-india-logo.png" alt="Alliance India Logo" className="h-10 w-10 object-contain" />
+          </motion.div>
+          <h1 className="font-display text-2xl font-bold tracking-wide text-blue-200">
+            Register Account
+          </h1>
+          <p className="font-sans text-xs text-blue-400">
+            Request portal access matching your organizational role
+          </p>
+        </div>
+
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="flex items-start gap-3 rounded-lg border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-400 mb-5"
+          >
+            <ShieldAlert className="h-4 w-4 shrink-0 mt-0.5" />
+            <p className="font-sans font-medium">{error}</p>
           </motion.div>
         )}
-      </AnimatePresence>
 
-      {/* Submit */}
-      <Button
-        id="signup-submit"
-        variant="primary"
-        type="submit"
-        className="w-full"
-        isLoading={isSubmitting}
-      >
-        {!isSubmitting && <Send className="w-4 h-4 mr-2" />}
-        {isSubmitting ? 'Creating account...' : 'Create Account'}
-      </Button>
+        {successMsg && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="flex items-start gap-3 rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-xs text-emerald-400 mb-5"
+          >
+            <CheckCircle className="h-4 w-4 shrink-0 mt-0.5" />
+            <p className="font-sans font-medium">{successMsg}</p>
+          </motion.div>
+        )}
 
-      {/* Switch to login */}
-      <div className="text-center text-xs select-none">
-        <span className="text-zinc-500">Already have an account? </span>
-        <button
-          type="button"
-          onClick={onSwitchToLogin}
-          disabled={isSubmitting}
-          className="text-blue-400 font-semibold hover:text-blue-300 transition-colors inline-flex items-center gap-0.5 bg-transparent border-none p-0 cursor-pointer disabled:opacity-50"
-        >
-          <ChevronLeft className="w-3 h-3" />
-          Sign in
-        </button>
-      </div>
-    </form>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          <Input
+            label="Full Name"
+            placeholder="Dr. Farid Sayyed"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            disabled={loading}
+            className="font-mono text-xs bg-black/40 border-blue-500/20 text-blue-100 focus:border-blue-500/80"
+          />
+
+          <Input
+            label="Email Address"
+            type="email"
+            placeholder="worker@allianceindia.org"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            disabled={loading}
+            className="font-mono text-xs bg-black/40 border-blue-500/20 text-blue-100 focus:border-blue-500/80"
+          />
+
+          <Input
+            label="Password"
+            type="password"
+            placeholder="••••••••"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            disabled={loading}
+            className="font-mono text-xs bg-black/40 border-blue-500/20 text-blue-100 focus:border-blue-500/80"
+          />
+
+          <Select
+            label="Access Role Request"
+            value={role}
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setRole(e.target.value)}
+            disabled={loading}
+            className="font-mono text-xs bg-black/40 border-blue-500/20 text-blue-100 focus:border-blue-500/80"
+            options={[
+              { value: 'Viewer', label: 'Viewer (Read Only access)' },
+              { value: 'Editor', label: 'Editor (Add and update child data)' },
+              { value: 'Admin', label: 'Administrator (Full database controls)' }
+            ]}
+          />
+
+          <Button
+            type="submit"
+            className="w-full mt-3 font-display text-sm py-2.5 bg-blue-500 border border-blue-500/40 hover:bg-blue-600 hover:shadow-[0_0_20px_rgba(59,130,246,0.4)] text-white font-bold transition-all duration-300"
+            disabled={loading}
+          >
+            {loading ? 'Submitting registration request...' : 'Register Workspace User'}
+          </Button>
+
+          <button
+            type="button"
+            onClick={onBackToLogin || onSwitchToLogin}
+            className="inline-flex items-center justify-center gap-2 mt-2 font-display text-xs text-blue-400 hover:text-blue-300 transition-colors duration-200"
+            disabled={loading}
+          >
+            <ChevronLeft className="h-3.5 w-3.5" />
+            Back to login portal
+          </button>
+        </form>
+      </motion.div>
+    </div>
   );
-};
-
-SignupForm.displayName = 'SignupForm';
+}
+export default SignupForm;

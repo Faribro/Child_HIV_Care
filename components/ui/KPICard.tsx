@@ -32,7 +32,7 @@ export const KPICard: React.FC<KPICardProps> = ({
     >
       <div className="flex flex-col gap-2">
         <span className="text-xs font-semibold text-zinc-400 select-none uppercase tracking-wider">{title}</span>
-        <span className="text-2xl font-bold font-mono tracking-tight text-white">{value}</span>
+        <span className="text-2xl font-bold font-mono tracking-tight text-zinc-100">{value}</span>
         
         {delta && (
           <div className="flex items-center gap-1 mt-0.5">

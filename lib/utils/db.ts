@@ -1,7 +1,7 @@
 // lib/utils/db.ts
 import { SyncQueueItem, Patient, DashboardStats } from '@/types';
 
-const DB_NAME = 'MPAC_Offline_DB';
+const DB_NAME = 'Childcare_Offline_DB';
 const DB_VERSION = 1;
 
 /**

@@ -36,7 +36,7 @@ export const Duplicates: React.FC = () => {
   React.useEffect(() => {
     if (typeof window !== 'undefined') {
       try {
-        const stored = localStorage.getItem('mpac-dismissed-duplicates');
+        const stored = localStorage.getItem('childcare-dismissed-duplicates');
         if (stored) setDismissedPairs(JSON.parse(stored));
       } catch (e) {
         console.error('Failed to read dismissed duplicates cache:', e);
@@ -128,7 +128,7 @@ export const Duplicates: React.FC = () => {
     setDismissedPairs(updated);
     
     if (typeof window !== 'undefined') {
-      localStorage.setItem('mpac-dismissed-duplicates', JSON.stringify(updated));
+      localStorage.setItem('childcare-dismissed-duplicates', JSON.stringify(updated));
     }
     
     toast({

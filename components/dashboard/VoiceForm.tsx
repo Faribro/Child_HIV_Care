@@ -101,7 +101,7 @@ export const VoiceForm: React.FC = () => {
   const addRecord = useStore((s) => s.addRecord);
   const { toast } = useToast();
 
-  const [language, setLanguage] = React.useState<'en' | 'hi'>('en');
+  const [language, setLanguage] = React.useState<'en' | 'hi' | 'bn'>('en');
   const [step, setStep] = React.useState<number>(1);
   const [isSpeaking, setIsSpeaking] = React.useState<boolean>(false);
   const [isMuted, setIsMuted] = React.useState<boolean>(false);
@@ -194,8 +194,16 @@ export const VoiceForm: React.FC = () => {
       else hbcat = 'High — Review Advised';
     }
 
+    const feePeriod = formData.school_fee_period || 'annual';
+    let annualizedSchoolFees = Number(formData.eduschoolfees || 0);
+    if (feePeriod === 'quarterly') {
+      annualizedSchoolFees *= 4;
+    } else if (feePeriod === 'monthly') {
+      annualizedSchoolFees *= 12;
+    }
+
     const eduTotal = 
-      Number(formData.eduschoolfees || 0) +
+      annualizedSchoolFees +
       Number(formData.private_tution_fee || 0) +
       Number(formData.edubooks || 0) +
       Number(formData.edustationery || 0) +
@@ -224,6 +232,7 @@ export const VoiceForm: React.FC = () => {
     formData.current_height, 
     formData.hemoglobin,
     formData.eduschoolfees,
+    formData.school_fee_period,
     formData.private_tution_fee,
     formData.edubooks,
     formData.edustationery,
@@ -244,7 +253,7 @@ export const VoiceForm: React.FC = () => {
 
     window.speechSynthesis.cancel(); // Terminate active speeches
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = language === 'hi' ? 'hi-IN' : 'en-US';
+    utterance.lang = language === 'hi' ? 'hi-IN' : language === 'bn' ? 'bn-IN' : 'en-US';
     utterance.rate = 0.95; // Slightly slower, more natural human pace
 
     utterance.onstart = () => setIsSpeaking(true);
@@ -253,7 +262,7 @@ export const VoiceForm: React.FC = () => {
 
     // Pick appropriate voice
     const voices = window.speechSynthesis.getVoices();
-    const targetVoice = voices.find(v => v.lang.startsWith(language === 'hi' ? 'hi' : 'en'));
+    const targetVoice = voices.find(v => v.lang.startsWith(language === 'hi' ? 'hi' : language === 'bn' ? 'bn' : 'en'));
     if (targetVoice) utterance.voice = targetVoice;
 
     window.speechSynthesis.speak(utterance);
@@ -283,7 +292,7 @@ export const VoiceForm: React.FC = () => {
           script = "Section 6. Final Review. Please confirm that all details are correct. Enter your organization name and email before submitting.";
           break;
       }
-    } else {
+    } else if (language === 'hi') {
       switch (step) {
         case 1:
           script = "खंड 1. सहमति विवरण। कृपया स्वागत नोट की समीक्षा करें। क्या आप इस सर्वेक्षण में भाग लेने के लिए सहमत हैं? यदि हाँ, तो आगे बढ़ने के लिए स्क्रीन पर अपना हस्ताक्षर करें।";
@@ -298,10 +307,31 @@ export const VoiceForm: React.FC = () => {
           script = "खंड 4. स्वास्थ्य और पोषण। किलोग्राम में बच्चे का वजन और सेंटीमीटर में लंबाई दर्ज करें। हमें उनकी भूख और प्रति दिन भोजन के बारे में बताएं।";
           break;
         case 5:
-          script = "खंड 5. शिक्षा की स्थिति और खर्च। बच्चे के वर्तमान नामांकन की स्थिति का चयन करें, और यदि कोई सक्रिय शिक्षा लागत है तो रसीदें अपलोड करें।";
+          script = "खंड 5. शिक्षा की स्थिति और खर्च। बच्चे के वर्तमान नामांकन की स्थिति का चयन करें, और यदि कोई सक्रिय शिक्षा लागत है तो रसीদें अपलोड करें।";
           break;
         case 6:
           script = "खंड 6. अंतिम समीक्षा। कृपया पुष्टि करें कि सभी विवरण सही हैं। जमा करने से पहले अपने संगठन का नाम और ईमेल दर्ज करें।";
+          break;
+      }
+    } else {
+      switch (step) {
+        case 1:
+          script = "বিভাগ ১. সম্মতি বিবরণ। অনুগ্রহ করে স্বাগত বার্তাটি পড়ুন। আপনি কি এই সমীক্ষায় অংশগ্রহণ করতে সম্মত আছেন? যদি হ্যাঁ হয়, তবে অনুগ্রহ করে এগিয়ে যেতে স্ক্রিনে আপনার স্বাক্ষর করুন।";
+          break;
+        case 2:
+          script = "বিভাগ ২. শিশু এবং অভিভাবকের ব্যক্তিগত বিবরণ। অনুগ্রহ করে শিশুর পুরো নাম, জন্মতারিখ, লিঙ্গ এবং অভিভাবকের সাথে সম্পর্ক এবং যোগাযোগের তথ্য পূরণ করুন।";
+          break;
+        case 3:
+          script = "বিভাগ ৩. পারিবারিক এবং আর্থিক অবস্থা। পরিবারের মোট সদস্য সংখ্যা, ১৮ বছরের কম বয়সী শিশুর সংখ্যা এবং মূল মাসিক আয়ের বিবরণ লিখুন।";
+          break;
+        case 4:
+          script = "বিভাগ ৪. স্বাস্থ্য এবং পুষ্টি। শিশুর বর্তমান ওজন কিলোগ্রামে এবং উচ্চতা সেন্টিমিটারে লিখুন। আমাদের তাদের ক্ষুধা এবং প্রতিদিনের খাবারের সংখ্যা জানান।";
+          break;
+        case 5:
+          script = "বিভাগ ৫. শিক্ষার অবস্থা এবং খরচ। শিশুর বর্তমান স্কুলে ভর্তির অবস্থা নির্বাচন করুন এবং যদি কোনো শিক্ষার খরচ থাকে তবে রসিদ আপলোড করুন।";
+          break;
+        case 6:
+          script = "বিভাগ ৬. চূড়ান্ত পর্যালোচনা। অনুগ্রহ করে নিশ্চিত করুন যে সমস্ত বিবরণ সঠিক আছে। জমা দেওয়ার আগে আপনার সংস্থার নাম এবং ইমেল ঠিকানা লিখুন।";
           break;
       }
     }
@@ -403,7 +433,37 @@ export const VoiceForm: React.FC = () => {
   };
 
   const handleInputChange = (field: string, val: any) => {
-    setFormData((prev: any) => ({ ...prev, [field]: val }));
+    setFormData((prev: any) => {
+      const updated = { ...prev, [field]: val };
+      
+      // If education status is changed to something else than school_going, clear all school-related fields
+      if (field === 'educationstatus' && val !== 'school_going') {
+        updated.schoolname = '';
+        updated.schooltype = '';
+        updated.currentclass = '';
+        updated.attendancestatus = '';
+        updated.eduschoolfees = 0;
+        updated.school_fee_period = 'annual';
+        updated.private_tution_fee = 0;
+        updated.edubooks = 0;
+        updated.edustationery = 0;
+        updated.eduuniform = 0;
+        updated.edutransport = 0;
+        updated.eduother = 0;
+        updated.edutotalannual = 0;
+        updated.school_fee_receipt = '';
+        updated.marksheet_prev_year = '';
+        updated.reqschoolfees = 0;
+        updated.reqbooks = 0;
+        updated.reqstationery = 0;
+        updated.requniform = 0;
+        updated.reqtransport = 0;
+        updated.reqother = 0;
+        updated.reqtotalsupport = 0;
+      }
+      
+      return updated;
+    });
   };
 
   const validateStep = () => {
@@ -543,6 +603,14 @@ export const VoiceForm: React.FC = () => {
               }`}
             >
               हिन्दी
+            </button>
+            <button
+              onClick={() => setLanguage('bn')}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                language === 'bn' ? 'bg-white shadow text-blue-600' : 'text-zinc-500 hover:text-zinc-950'
+              }`}
+            >
+              বাংলা
             </button>
           </div>
 
@@ -1030,11 +1098,29 @@ export const VoiceForm: React.FC = () => {
 
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 border-t border-zinc-100 pt-3">
                       <Input
-                        label={language === 'hi' ? 'वार्षिक स्कूल शुल्क' : 'Annual School Fees'}
+                        label={language === 'hi' ? 'स्कूल शुल्क' : language === 'bn' ? 'স্কুল ফি' : 'School Fees'}
                         type="number"
                         value={formData.eduschoolfees || ''}
                         onChange={(e) => handleInputChange('eduschoolfees', Number(e.target.value))}
                       />
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-xs font-bold text-zinc-700">
+                          {language === 'hi' ? 'भुगतान अवधि' : language === 'bn' ? 'ফি প্রদানের সময়কাল' : 'Billing Period'}
+                        </label>
+                        <Select 
+                          value={formData.school_fee_period || 'annual'} 
+                          onValueChange={(val) => handleInputChange('school_fee_period', val)}
+                        >
+                          <SelectTrigger className="h-10 rounded-xl">
+                            <SelectValue placeholder="Period" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="annual">{language === 'hi' ? 'वार्षिक (Annual)' : language === 'bn' ? 'বার্ষিক' : 'Annual'}</SelectItem>
+                            <SelectItem value="quarterly">{language === 'hi' ? 'तिमाही (Quarter)' : language === 'bn' ? 'ত্রৈমাসিক' : 'Quarterly'}</SelectItem>
+                            <SelectItem value="monthly">{language === 'hi' ? 'মাसिक (Month)' : language === 'bn' ? 'মাসিক' : 'Monthly'}</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                       <Input
                         label={language === 'hi' ? 'निजी ट्यूशन शुल्क' : 'Private Tuition Fee'}
                         type="number"
