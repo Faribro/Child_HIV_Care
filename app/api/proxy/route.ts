@@ -9,6 +9,8 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { functionName, arguments: args = [], rememberMe } = body;
 
+    console.log(`[API Proxy] routing ${functionName} -> ${GAS_URL}`);
+
     if (!functionName) {
       return NextResponse.json({ success: false, error: 'Missing functionName action.' }, { status: 400 });
     }

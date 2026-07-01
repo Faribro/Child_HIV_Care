@@ -25,75 +25,83 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 // Choice Lists mapping from Kobo Survey
 const GENDER_OPTIONS = [
-  { name: 'male', labelEn: 'Male', labelHi: 'पुरुष' },
-  { name: 'female', labelEn: 'Female', labelHi: 'महिला' },
-  { name: 'other', labelEn: 'Other', labelHi: 'अन्य' }
+  { name: 'male', labelEn: 'Male', labelHi: 'पुरुष', labelBn: 'পুরুষ' },
+  { name: 'female', labelEn: 'Female', labelHi: 'महिला', labelBn: 'মহিলা' },
+  { name: 'other', labelEn: 'Other', labelHi: 'अन्य', labelBn: 'অন্যান্য' }
 ];
 
 const ORPHAN_OPTIONS = [
-  { name: 'both_alive', labelEn: 'Both parents alive', labelHi: 'दोनों माता-पिता जीवित' },
-  { name: 'single_orphan', labelEn: 'Single orphan (one parent deceased)', labelHi: 'एकल अनाथ (एक माता-पिता का निधन)' },
-  { name: 'double_orphan', labelEn: 'Double orphan (both parents deceased)', labelHi: 'दोहरा अनाथ (दोनों माता-पिता का निधन)' }
+  { name: 'both_alive', labelEn: 'Both parents alive', labelHi: 'दोनों माता-पिता जीवित', labelBn: 'উভয় পিতা-মাতা জীবিত' },
+  { name: 'single_orphan', labelEn: 'Single orphan (one parent deceased)', labelHi: 'एकल अनाथ (एक माता-पिता का निधन)', labelBn: 'একক অनाथ (একজন পিতা-মাতা মৃত)' },
+  { name: 'double_orphan', labelEn: 'Double orphan (both parents deceased)', labelHi: 'दोहरा अनाथ (दोनों माता-पिता का निधन)', labelBn: 'দ্বিগুণ অনাথ (উভয় পিতা-মাতা মৃত)' }
 ];
 
 const RELATION_OPTIONS = [
-  { name: 'mother', labelEn: 'Mother', labelHi: 'माँ' },
-  { name: 'father', labelEn: 'Father', labelHi: 'पिता' },
-  { name: 'grandparent', labelEn: 'Grandparent', labelHi: 'दादा-दादी / नाना-नानी' },
-  { name: 'legal_guardian', labelEn: 'Legal Guardian', labelHi: 'कानूनी संरक्षक' },
-  { name: 'other', labelEn: 'Other', labelHi: 'अन्य' }
+  { name: 'mother', labelEn: 'Mother', labelHi: 'माँ', labelBn: 'মা' },
+  { name: 'father', labelEn: 'Father', labelHi: 'पिता', labelBn: 'বাবা' },
+  { name: 'grandparent', labelEn: 'Grandparent', labelHi: 'दादा-दादी / नाना-नानी', labelBn: 'দাদু-দিদিমা / ঠাকুরদা-ঠাকুরমা' },
+  { name: 'legal_guardian', labelEn: 'Legal Guardian', labelHi: 'कानूनी संरक्षक', labelBn: 'আইনগত অভিভাবক' },
+  { name: 'other', labelEn: 'Other', labelHi: 'अन्य', labelBn: 'অন্যান্য' }
 ];
 
 const EDUCATION_STATUS_OPTIONS = [
-  { name: 'school_going', labelEn: 'School Going', labelHi: 'स्कूल जाने वाले' },
-  { name: 'dropout', labelEn: 'Dropout', labelHi: 'स्कूल छोड़ चुके (ड्रॉपआउट)' },
-  { name: 'never_enrolled', labelEn: 'Never Enrolled', labelHi: 'कभी नामांकित नहीं हुए' },
-  { name: 'other', labelEn: 'Other', labelHi: 'अन्य' }
+  { name: 'school_going', labelEn: 'School Going', labelHi: 'स्कूल जाने वाले', labelBn: 'বিদ্যালয়ে যায়' },
+  { name: 'dropout', labelEn: 'Dropout', labelHi: 'स्कूल छोड़ चुके (ड्रॉपआउट)', labelBn: 'বিদ্যালয়ছুট' },
+  { name: 'never_enrolled', labelEn: 'Never Enrolled', labelHi: 'कभी नामांकित नहीं हुए', labelBn: 'কখনও ভর্তি হয়নি' },
+  { name: 'other', labelEn: 'Other', labelHi: 'अन्य', labelBn: 'অন্যান্য' }
 ];
 
 const APPETITE_OPTIONS = [
-  { name: 'good', labelEn: 'Good', labelHi: 'अच्छी' },
-  { name: 'fair', labelEn: 'Fair', labelHi: 'सामान्य' },
-  { name: 'poor', labelEn: 'Poor', labelHi: 'कम / खराब' }
+  { name: 'good', labelEn: 'Good', labelHi: 'अच्छी', labelBn: 'ভালো' },
+  { name: 'fair', labelEn: 'Fair', labelHi: 'सामान्य', labelBn: 'মোটামুটি' },
+  { name: 'poor', labelEn: 'Poor', labelHi: 'कम / खराब', labelBn: 'খারাপ' }
 ];
 
 const SCHOOL_TYPE_OPTIONS = [
-  { name: 'government', labelEn: 'Government School', labelHi: 'सरकारी स्कूल' },
-  { name: 'private', labelEn: 'Private School', labelHi: 'निजी स्कूल' },
-  { name: 'aided', labelEn: 'Government Aided', labelHi: 'सरकारी सहायता प्राप्त' }
+  { name: 'government', labelEn: 'Government School', labelHi: 'सरकारी स्कूल', labelBn: 'सरकारी বিদ্যালয়' },
+  { name: 'private', labelEn: 'Private School', labelHi: 'निजी स्कूल', labelBn: 'বেসরকারি বিদ্যালয়' },
+  { name: 'aided', labelEn: 'Government Aided', labelHi: 'सरकारी सहायता प्राप्त', labelBn: 'सरकारी সাহায্যপ্রাপ্ত' }
 ];
 
 const ATTENDANCE_OPTIONS = [
-  { name: 'regular', labelEn: 'Regular (>80%)', labelHi: 'नियमित (>80%)' },
-  { name: 'irregular', labelEn: 'Irregular (<80%)', labelHi: 'अनियमित (<80%)' }
+  { name: 'regular', labelEn: 'Regular (>80%)', labelHi: 'नियमित (>80%)', labelBn: 'নিয়মিত (>৮০%)' },
+  { name: 'irregular', labelEn: 'Irregular (<80%)', labelHi: 'अनियमित (<80%)', labelBn: 'অনিয়মিত (<৮০%)' }
 ];
 
 const STATE_OPTIONS = [
-  { name: 'madhya_pradesh', labelEn: 'Madhya Pradesh', labelHi: 'मध्य प्रदेश' },
-  { name: 'maharashtra', labelEn: 'Maharashtra', labelHi: 'महाराष्ट्र' },
-  { name: 'uttar_pradesh', labelEn: 'Uttar Pradesh', labelHi: 'उत्तर प्रदेश' },
-  { name: 'delhi', labelEn: 'Delhi', labelHi: 'दिल्ली' }
+  { name: 'west_bengal', labelEn: 'West Bengal', labelHi: 'पश्चिम बंगाल', labelBn: 'পশ্চিমবঙ্গ' },
+  { name: 'madhya_pradesh', labelEn: 'Madhya Pradesh', labelHi: 'मध्य प्रदेश', labelBn: 'মধ্যপ্রদেশ' },
+  { name: 'maharashtra', labelEn: 'Maharashtra', labelHi: 'महाराष्ट्र', labelBn: 'মহারাষ্ট্র' },
+  { name: 'uttar_pradesh', labelEn: 'Uttar Pradesh', labelHi: 'उत्तर प्रदेश', labelBn: 'উত্তরপ্রদেশ' },
+  { name: 'delhi', labelEn: 'Delhi', labelHi: 'दिल्ली', labelBn: 'দিল্লি' }
 ];
 
-const DISTRICT_MAPPING: Record<string, { name: string; labelEn: string; labelHi: string }[]> = {
+const DISTRICT_MAPPING: Record<string, { name: string; labelEn: string; labelHi: string; labelBn: string }[]> = {
+  west_bengal: [
+    { name: 'kolkata', labelEn: 'Kolkata', labelHi: 'कोलकाता', labelBn: 'কলকাতা' },
+    { name: 'howrah', labelEn: 'Howrah', labelHi: 'हावड़ा', labelBn: 'হাওড়া' },
+    { name: 'darjeeling', labelEn: 'Darjeeling', labelHi: 'दार्जিলिंग', labelBn: 'দার্জিলিং' },
+    { name: 'north_24_parganas', labelEn: 'North 24 Parganas', labelHi: 'उत्तर 24 परगना', labelBn: 'উত্তর ২৪ পরগনা' },
+    { name: 'south_24_parganas', labelEn: 'South 24 Parganas', labelHi: 'दक्षिण 24 परगना', labelBn: 'দক্ষিণ ২৪ পরগনা' }
+  ],
   madhya_pradesh: [
-    { name: 'indore', labelEn: 'Indore', labelHi: 'इंदौर' },
-    { name: 'bhopal', labelEn: 'Bhopal', labelHi: 'भोपाल' },
-    { name: 'jabalpur', labelEn: 'Jabalpur', labelHi: 'जबलपुर' },
-    { name: 'ujjain', labelEn: 'Ujjain', labelHi: 'उज्जयिनी' }
+    { name: 'indore', labelEn: 'Indore', labelHi: 'इंदौर', labelBn: 'ইন্দোর' },
+    { name: 'bhopal', labelEn: 'Bhopal', labelHi: 'भोपाल', labelBn: 'ভোপাল' },
+    { name: 'jabalpur', labelEn: 'Jabalpur', labelHi: 'जबलपुर', labelBn: 'জবলপুর' },
+    { name: 'ujjain', labelEn: 'Ujjain', labelHi: 'उज्जयिनी', labelBn: 'উজ্জয়িনী' }
   ],
   maharashtra: [
-    { name: 'mumbai_city', labelEn: 'Mumbai City', labelHi: 'मुंबई शहर' },
-    { name: 'pune', labelEn: 'Pune', labelHi: 'पुणे' },
-    { name: 'nagpur', labelEn: 'Nagpur', labelHi: 'नागपुर' }
+    { name: 'mumbai_city', labelEn: 'Mumbai City', labelHi: 'मुंबई शहर', labelBn: 'মুম্বাই শহর' },
+    { name: 'pune', labelEn: 'Pune', labelHi: 'पुणे', labelBn: 'পুনে' },
+    { name: 'nagpur', labelEn: 'Nagpur', labelHi: 'নাগপুর', labelBn: 'নাগপুর' }
   ],
   uttar_pradesh: [
-    { name: 'lucknow', labelEn: 'Lucknow', labelHi: 'लखनऊ' },
-    { name: 'kanpur', labelEn: 'Kanpur', labelHi: 'कानपुर' },
-    { name: 'varanasi', labelEn: 'Varanasi', labelHi: 'वाराणसी' }
+    { name: 'lucknow', labelEn: 'Lucknow', labelHi: 'लखनऊ', labelBn: 'লখনউ' },
+    { name: 'kanpur', labelEn: 'Kanpur', labelHi: 'कानपुर', labelBn: 'কানপুর' },
+    { name: 'varanasi', labelEn: 'Varanasi', labelHi: 'वाराणसी', labelBn: 'বারাণসী' }
   ],
   delhi: [
-    { name: 'new_delhi', labelEn: 'New Delhi', labelHi: 'नई दिल्ली' }
+    { name: 'new_delhi', labelEn: 'New Delhi', labelHi: 'नई दिल्ली', labelBn: 'নয়াদিল্লি' }
   ]
 };
 
@@ -577,10 +585,10 @@ export const VoiceForm: React.FC = () => {
         <div>
           <h2 className="text-xl font-extrabold text-zinc-900 tracking-tight flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-blue-500 animate-pulse" />
-            {language === 'hi' ? 'बाल पोषण डेटा संग्रह' : 'Child Nutrition Registry Portal'}
+            {t('Child Nutrition Registry Portal', 'बाल पोषण डेटा संग्रह', 'শিশু পুষ্টি নিবন্ধীকরণ পোর্টাল')}
           </h2>
           <p className="text-xs text-zinc-500">
-            {language === 'hi' ? 'सक्रिय आवाज मार्गदर्शन और द्विभाषी इंटरैक्टिव मोड' : 'Voice-guided data mapping & record collection console'}
+            {t('Voice-guided data mapping & record collection console', 'सक्रिय आवाज मार्गदर्शन और द्विभाषी इंटरैक्टिव मोड', 'ভয়েস-নির্দেশিত ডেটা ম্যাপিং এবং রেকর্ড সংগ্রহের কনসোল')}
           </p>
         </div>
 
@@ -637,7 +645,7 @@ export const VoiceForm: React.FC = () => {
               onClick={speakStepQuestion}
               className="text-[10px] font-bold text-blue-700 ml-1 hover:underline outline-none cursor-pointer"
             >
-              {language === 'hi' ? 'पुनः सुनें' : 'Replay'}
+              {t('Replay', 'पुनः सुनें', 'পুনরায় শুনুন')}
             </button>
           </div>
         </div>
@@ -649,7 +657,7 @@ export const VoiceForm: React.FC = () => {
         {/* Step Progress bar */}
         <div className="flex justify-between items-center border-b border-zinc-100 pb-4">
           <span className="text-xs font-bold text-blue-600 uppercase tracking-widest">
-            {language === 'hi' ? `चरण ${step} / 6` : `Step ${step} of 6`}
+            {t(`Step ${step} of 6`, `चरण ${step} / 6`, `ধাপ ${step} / ৬`)}
           </span>
           <div className="flex gap-1.5">
             {[1, 2, 3, 4, 5, 6].map((s) => (
@@ -678,27 +686,29 @@ export const VoiceForm: React.FC = () => {
               <div className="flex flex-col gap-5 text-left">
                 <div className="bg-blue-50/50 border border-blue-100 p-4 rounded-xl text-zinc-700 text-xs leading-relaxed">
                   <h4 className="font-bold text-blue-900 mb-1">
-                    {language === 'hi' ? 'महत्वपूर्ण सूचना' : 'Important Welcome Note'}
+                    {t('Important Welcome Note', 'महत्वपूर्ण सूचना', 'গুরুত্বপূর্ণ ঘোষণা')}
                   </h4>
-                  {language === 'hi' 
-                    ? 'यह फॉर्म बच्चे के स्वास्थ्य, पोषण और शिक्षा से संबंधित गोपनीय जानकारी एकत्र करता है। सभी जानकारी पूर्णतः गोपनीय रखी जाएगी।' 
-                    : 'This form collects confidential information about the child\'s health, nutrition, and education. All information is kept strictly confidential.'}
+                  {t(
+                    "This form collects confidential information about the child's health, nutrition, and education. All information is kept strictly confidential.",
+                    "यह फॉर्म बच्चे के स्वास्थ्य, पोषण और शिक्षा से संबंधित गोपनीय जानकारी एकत्र करता है। सभी जानकारी पूर्णतः गोपनीय रखी जाएगी।",
+                    "এই ফর্মটি শিশুর স্বাস্থ্য, পুষ্টি এবং শিক্ষা সম্পর্কিত গোপনীয় তথ্য সংগ্রহ করে। সমস্ত তথ্য কঠোরভাবে গোপন রাখা হবে।"
+                  )}
                 </div>
 
                 <div className="flex flex-col gap-2">
                   <label className="text-xs font-bold text-zinc-700">
-                    {language === 'hi' ? 'क्या आप भाग लेने के लिए सहमत हैं? *' : 'Do you agree to participate? *'}
+                    {t('Do you agree to participate? *', 'क्या आप भाग लेने के लिए सहमत हैं? *', 'আপনি কি সমীক্ষায় অংশগ্রহণ করতে সম্মত? *')}
                   </label>
                   <Select
                     value={formData.consent_obtained}
                     onValueChange={(val) => handleInputChange('consent_obtained', val)}
                   >
                     <SelectTrigger className="bg-white border border-zinc-200 text-zinc-900 h-10 rounded-xl">
-                      <SelectValue placeholder={language === 'hi' ? 'चुनें' : 'Select consent'} />
+                      <SelectValue placeholder={t('Select consent', 'चुनें', 'সম্মতি নির্বাচন করুন')} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="yes">{language === 'hi' ? 'हाँ (Yes)' : 'Yes'}</SelectItem>
-                      <SelectItem value="no">{language === 'hi' ? 'नहीं (No)' : 'No'}</SelectItem>
+                      <SelectItem value="yes">{t('Yes', 'हाँ (Yes)', 'হ্যাঁ (Yes)')}</SelectItem>
+                      <SelectItem value="no">{t('No', 'नहीं (No)', 'না (No)')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -707,7 +717,7 @@ export const VoiceForm: React.FC = () => {
                   <div className="flex flex-col gap-3">
                     <label className="text-xs font-bold text-zinc-700 flex items-center gap-1.5">
                       <PenTool className="w-4 h-4 text-blue-500" />
-                      {language === 'hi' ? 'देखभालकर्ता के हस्ताक्षर / अंगूठे का निशान *' : 'Caregiver Signature / Thumb Impression *'}
+                      {t('Caregiver Signature / Thumb Impression *', 'देखभालकर्ता के हस्ताक्षर / अंगूठे का निशान *', 'অভিভাবকের স্বাক্ষর / বুড়ো আঙুলের ছাপ *')}
                     </label>
                     <div className="border border-zinc-200 rounded-xl overflow-hidden bg-zinc-50 relative flex flex-col items-center">
                       <canvas
@@ -724,14 +734,14 @@ export const VoiceForm: React.FC = () => {
                         className="bg-white cursor-crosshair max-w-full"
                       />
                       <div className="w-full flex justify-between p-2 bg-zinc-100 border-t border-zinc-200 text-[10px] text-zinc-500">
-                        <span>{language === 'hi' ? 'हस्ताक्षर करने के लिए माउस/फिंगर का उपयोग करें' : 'Draw inside the canvas block'}</span>
+                        <span>{t('Draw inside the canvas block', 'हस्ताक्षर करने के लिए माउस/फिंगर का उपयोग करें', 'স্বাক্ষর করতে মাউস বা আঙুল ব্যবহার করুন')}</span>
                         <button
                           type="button"
                           onClick={clearSignature}
                           className="font-bold text-red-500 hover:underline outline-none cursor-pointer flex items-center gap-1"
                         >
                           <RotateCcw className="w-3.5 h-3.5" />
-                          {language === 'hi' ? 'साफ़ करें' : 'Clear Canvas'}
+                          {t('Clear Canvas', 'साफ़ करें', 'ক্যানভাস পরিষ্কার করুন')}
                         </button>
                       </div>
                     </div>
@@ -744,19 +754,19 @@ export const VoiceForm: React.FC = () => {
             {step === 2 && (
               <div className="flex flex-col gap-4 text-left">
                 <h3 className="text-sm font-bold text-zinc-700 border-b border-zinc-100 pb-2">
-                  {language === 'hi' ? 'बच्चे और देखभालकर्ता का व्यक्तिगत विवरण' : 'Child & Caregiver Personal Details'}
+                  {t('Child & Caregiver Personal Details', 'बच्चे और देखभालकर्ता का व्यक्तिगत विवरण', 'শিশু এবং অভিভাবকের ব্যক্তিগত বিবরণ')}
                 </h3>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Input
-                    label={language === 'hi' ? 'भेंट की तारीख *' : 'Visit Date *'}
+                    label={t('Visit Date *', 'भेंट की तारीख *', 'পরিদর্শনের তারিখ *')}
                     type="date"
                     value={formData.visitdate}
                     onChange={(e) => handleInputChange('visitdate', e.target.value)}
                   />
                   <Input
-                    label={language === 'hi' ? 'बच्चे का पूरा नाम *' : "Child's Full Name *"}
-                    placeholder={language === 'hi' ? 'दस्तावेज़ों के अनुसार' : 'Official record name'}
+                    label={t("Child's Full Name *", 'बच्चे का पूरा नाम *', 'শিশুর পুরো নাম *')}
+                    placeholder={t('Official record name', 'दस्तावेज़ों के अनुसार', 'নথিপত্র অনুযায়ী নাম')}
                     value={formData.childname}
                     onChange={(e) => handleInputChange('childname', e.target.value)}
                   />
@@ -764,14 +774,14 @@ export const VoiceForm: React.FC = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <Input
-                    label={language === 'hi' ? 'जन्म तिथि *' : 'Date of Birth *'}
+                    label={t('Date of Birth *', 'जन्म तिथि *', 'জন্ম তারিখ *')}
                     type="date"
                     value={formData.dateofbirth}
                     onChange={(e) => handleInputChange('dateofbirth', e.target.value)}
                   />
 
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-xs font-bold text-zinc-700">{language === 'hi' ? 'लिंग *' : 'Gender *'}</label>
+                    <label className="text-xs font-bold text-zinc-700">{t('Gender *', 'लिंग *', 'লিঙ্গ *')}</label>
                     <Select value={formData.gender} onValueChange={(val) => handleInputChange('gender', val)}>
                       <SelectTrigger className="h-10 rounded-xl">
                         <SelectValue placeholder="Select" />
@@ -779,7 +789,7 @@ export const VoiceForm: React.FC = () => {
                       <SelectContent>
                         {GENDER_OPTIONS.map(opt => (
                           <SelectItem key={opt.name} value={opt.name}>
-                            {language === 'hi' ? opt.labelHi : opt.labelEn}
+                            {opt[language === 'hi' ? 'labelHi' : language === 'bn' ? 'labelBn' : 'labelEn']}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -787,7 +797,7 @@ export const VoiceForm: React.FC = () => {
                   </div>
 
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-xs font-bold text-zinc-700">{language === 'hi' ? 'अनाथ स्थिति *' : 'Orphan Status *'}</label>
+                    <label className="text-xs font-bold text-zinc-700">{t('Orphan Status *', 'अनाथ स्थिति *', 'অনাথ অবস্থা *')}</label>
                     <Select value={formData.orphanstatus} onValueChange={(val) => handleInputChange('orphanstatus', val)}>
                       <SelectTrigger className="h-10 rounded-xl">
                         <SelectValue placeholder="Select" />
@@ -795,7 +805,7 @@ export const VoiceForm: React.FC = () => {
                       <SelectContent>
                         {ORPHAN_OPTIONS.map(opt => (
                           <SelectItem key={opt.name} value={opt.name}>
-                            {language === 'hi' ? opt.labelHi : opt.labelEn}
+                            {opt[language === 'hi' ? 'labelHi' : language === 'bn' ? 'labelBn' : 'labelEn']}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -805,14 +815,14 @@ export const VoiceForm: React.FC = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-zinc-100 pt-4">
                   <Input
-                    label={language === 'hi' ? 'देखभालकर्ता का पूरा नाम *' : "Caregiver's Full Name *"}
+                    label={t("Caregiver's Full Name *", 'देखभालकर्ता का पूरा नाम *', 'অভিভাবকের পুরো নাম *')}
                     value={formData.caregivername}
                     onChange={(e) => handleInputChange('caregivername', e.target.value)}
                   />
 
                   <div className="flex flex-col gap-1.5">
                     <label className="text-xs font-bold text-zinc-700">
-                      {language === 'hi' ? 'देखभालकर्ता से संबंध *' : "Caregiver's Relationship *"}
+                      {t("Caregiver's Relationship *", 'देखभालकर्ता से संबंध *', 'অভিভাবকের সাথে সম্পর্ক *')}
                     </label>
                     <Select value={formData.caregiverrelation} onValueChange={(val) => handleInputChange('caregiverrelation', val)}>
                       <SelectTrigger className="h-10 rounded-xl">
@@ -821,7 +831,7 @@ export const VoiceForm: React.FC = () => {
                       <SelectContent>
                         {RELATION_OPTIONS.map(opt => (
                           <SelectItem key={opt.name} value={opt.name}>
-                            {language === 'hi' ? opt.labelHi : opt.labelEn}
+                            {opt[language === 'hi' ? 'labelHi' : language === 'bn' ? 'labelBn' : 'labelEn']}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -829,7 +839,7 @@ export const VoiceForm: React.FC = () => {
                   </div>
 
                   <Input
-                    label={language === 'hi' ? 'संपर्क नंबर' : 'Contact Number'}
+                    label={t('Contact Number', 'संपर्क नंबर', 'যোগাযোগের নম্বর')}
                     placeholder="10-digit mobile"
                     value={formData.caregivercontact}
                     onChange={(e) => handleInputChange('caregivercontact', e.target.value)}
@@ -838,7 +848,7 @@ export const VoiceForm: React.FC = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
                   <div className="md:col-span-1 flex flex-col gap-1.5">
-                    <label className="text-xs font-bold text-zinc-700">{language === 'hi' ? 'राज्य *' : 'State *'}</label>
+                    <label className="text-xs font-bold text-zinc-700">{t('State *', 'राज्य *', 'রাজ্য *')}</label>
                     <Select 
                       value={formData.addressstate} 
                       onValueChange={(val) => {
@@ -852,7 +862,7 @@ export const VoiceForm: React.FC = () => {
                       <SelectContent>
                         {STATE_OPTIONS.map(opt => (
                           <SelectItem key={opt.name} value={opt.name}>
-                            {language === 'hi' ? opt.labelHi : opt.labelEn}
+                            {opt[language === 'hi' ? 'labelHi' : language === 'bn' ? 'labelBn' : 'labelEn']}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -860,7 +870,7 @@ export const VoiceForm: React.FC = () => {
                   </div>
 
                   <div className="md:col-span-1 flex flex-col gap-1.5">
-                    <label className="text-xs font-bold text-zinc-700">{language === 'hi' ? 'जिला *' : 'District *'}</label>
+                    <label className="text-xs font-bold text-zinc-700">{t('District *', 'जिला *', 'জেলা *')}</label>
                     <Select 
                       value={formData.addressdistrict} 
                       onValueChange={(val) => handleInputChange('addressdistrict', val)}
@@ -872,7 +882,7 @@ export const VoiceForm: React.FC = () => {
                       <SelectContent>
                         {formData.addressstate && DISTRICT_MAPPING[formData.addressstate]?.map(opt => (
                           <SelectItem key={opt.name} value={opt.name}>
-                            {language === 'hi' ? opt.labelHi : opt.labelEn}
+                            {opt[language === 'hi' ? 'labelHi' : language === 'bn' ? 'labelBn' : 'labelEn']}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -881,7 +891,7 @@ export const VoiceForm: React.FC = () => {
 
                   <div className="md:col-span-1">
                     <Input
-                      label={language === 'hi' ? 'पूरा पता *' : 'Full Address *'}
+                      label={t('Full Address *', 'पूरा पता *', 'সম্পূর্ণ ঠিকানা *')}
                       placeholder="Village/Ward details"
                       value={formData.address}
                       onChange={(e) => handleInputChange('address', e.target.value)}
@@ -895,18 +905,18 @@ export const VoiceForm: React.FC = () => {
             {step === 3 && (
               <div className="flex flex-col gap-4 text-left">
                 <h3 className="text-sm font-bold text-zinc-700 border-b border-zinc-100 pb-2">
-                  {language === 'hi' ? 'परिवार और वित्तीय विवरण' : 'Household & Financial Details'}
+                  {t('Household & Financial Details', 'परिवार और वित्तीय विवरण', 'পারিবারিক এবং আর্থিক বিবরণ')}
                 </h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Input
-                    label={language === 'hi' ? 'कुल परिवार के सदस्य' : 'Total Family Members'}
+                    label={t('Total Family Members', 'कुल परिवार के सदस्य', 'পরিবারের মোট সদস্য সংখ্যা')}
                     type="number"
                     value={formData.householdmembers || ''}
                     onChange={(e) => handleInputChange('householdmembers', Number(e.target.value))}
                   />
                   <Input
-                    label={language === 'hi' ? 'बच्चों की संख्या (≤18 वर्ष)' : 'Number of Children (≤18 yrs)'}
+                    label={t('Number of Children (≤18 yrs)', 'बच्चों की संख्या (≤18 वर्ष)', '১৮ বছর বা তার কম বয়সী শিশুর সংখ্যা')}
                     type="number"
                     value={formData.noofchildren || ''}
                     onChange={(e) => handleInputChange('noofchildren', Number(e.target.value))}
@@ -915,13 +925,13 @@ export const VoiceForm: React.FC = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Input
-                    label={language === 'hi' ? 'मासिक आय (रु.)' : 'Monthly Income (Rs.)'}
+                    label={t('Monthly Income (Rs.)', 'मासिक आय (रु.)', 'মাসিক আয় (টাকা)')}
                     type="number"
                     value={formData.householdincomemonthly || ''}
                     onChange={(e) => handleInputChange('householdincomemonthly', Number(e.target.value))}
                   />
                   <Input
-                    label={language === 'hi' ? 'आय का मुख्य स्रोत' : 'Main Source of Income'}
+                    label={t('Main Source of Income', 'आय का मुख्य स्रोत', 'আয়ের প্রধান উৎস')}
                     placeholder="e.g. Agriculture, Labour"
                     value={formData.incomesource}
                     onChange={(e) => handleInputChange('incomesource', e.target.value)}
@@ -934,19 +944,19 @@ export const VoiceForm: React.FC = () => {
             {step === 4 && (
               <div className="flex flex-col gap-4 text-left">
                 <h3 className="text-sm font-bold text-zinc-700 border-b border-zinc-100 pb-2">
-                  {language === 'hi' ? 'स्वास्थ्य और पोषण की स्थिति' : 'Health & Nutrition Status'}
+                  {t('Health & Nutrition Status', 'स्वास्थ्य और पोषण की स्थिति', 'স্বাস্থ্য এবং পুষ্টির অবস্থা')}
                 </h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <Input
-                    label={language === 'hi' ? 'वज़न (कि.ग्रा.) *' : 'Current Weight (kg) *'}
+                    label={t('Current Weight (kg) *', 'वज़न (कि.ग्रा.) *', 'বর্তমান ওজন (কেজি) *')}
                     type="number"
                     step="0.1"
                     value={formData.current_weight || ''}
                     onChange={(e) => handleInputChange('current_weight', Number(e.target.value))}
                   />
                   <Input
-                    label={language === 'hi' ? 'ऊँचाई (से.मी.) *' : 'Current Height (cm) *'}
+                    label={t('Current Height (cm) *', 'ऊँचाई (से.मी.) *', 'বর্তমান উচ্চতা (সেমি) *')}
                     type="number"
                     value={formData.current_height || ''}
                     onChange={(e) => handleInputChange('current_height', Number(e.target.value))}
@@ -968,7 +978,7 @@ export const VoiceForm: React.FC = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
                   <Input
-                    label={language === 'hi' ? 'हीमोग्लोबिन (g/dL)' : 'Haemoglobin (g/dL)'}
+                    label={t('Haemoglobin (g/dL)', 'हीमोग्लोबिन (g/dL)', 'হিমোগ্লোবিন (g/dL)')}
                     type="number"
                     step="0.1"
                     value={formData.hemoglobin || ''}
@@ -987,16 +997,16 @@ export const VoiceForm: React.FC = () => {
 
                   <div className="flex flex-col gap-1.5">
                     <label className="text-xs font-bold text-zinc-700">
-                      {language === 'hi' ? 'बच्चे की भूख' : "Child's Appetite"}
+                      {t("Child's Appetite", 'बच्चे की भूख', 'শিশুর ক্ষুধা')}
                     </label>
                     <Select value={formData.appetite} onValueChange={(val) => handleInputChange('appetite', val)}>
                       <SelectTrigger className="h-10 rounded-xl">
-                        <SelectValue placeholder="Select Appetite" />
+                        <SelectValue placeholder={t('Select Appetite', 'भूख का चयन करें', 'ক্ষুধা নির্বাচন করুন')} />
                       </SelectTrigger>
                       <SelectContent>
                         {APPETITE_OPTIONS.map(opt => (
                           <SelectItem key={opt.name} value={opt.name}>
-                            {language === 'hi' ? opt.labelHi : opt.labelEn}
+                            {opt[language === 'hi' ? 'labelHi' : language === 'bn' ? 'labelBn' : 'labelEn']}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -1006,13 +1016,13 @@ export const VoiceForm: React.FC = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
                   <Input
-                    label={language === 'hi' ? 'प्रतिदिन भोजन संख्या' : 'Meals Per Day'}
+                    label={t('Meals Per Day', 'प्रतिदिन भोजन संख्या', 'প্রতিদিনের খাবারের সংখ্যা')}
                     type="number"
                     value={formData.mealsperday || ''}
                     onChange={(e) => handleInputChange('mealsperday', Number(e.target.value))}
                   />
                   <Input
-                    label={language === 'hi' ? 'अन्य स्वास्थ्य जटिलताएं' : 'Other Health Conditions'}
+                    label={t('Other Health Conditions', 'अन्य स्वास्थ्य जटिलताएं', 'অন্যান্য স্বাস্থ্য জটিলতা')}
                     placeholder="e.g. Asthma, Tuberculosis"
                     value={formData.comorbidities}
                     onChange={(e) => handleInputChange('comorbidities', e.target.value)}
@@ -1025,20 +1035,20 @@ export const VoiceForm: React.FC = () => {
             {step === 5 && (
               <div className="flex flex-col gap-4 text-left">
                 <h3 className="text-sm font-bold text-zinc-700 border-b border-zinc-100 pb-2">
-                  {language === 'hi' ? 'शिक्षा और संबद्ध व्यय' : 'Education Status & Current Expenses'}
+                  {t('Education Status & Current Expenses', 'शिक्षा और संबद्ध व्यय', 'শিক্ষাগত অবস্থা এবং বর্তমান খরচ')}
                 </h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-xs font-bold text-zinc-700">{language === 'hi' ? 'शिक्षा की स्थिति *' : 'Education Status *'}</label>
+                    <label className="text-xs font-bold text-zinc-700">{t('Education Status *', 'शिक्षा की स्थिति *', 'শিক্ষার অবস্থা *')}</label>
                     <Select value={formData.educationstatus} onValueChange={(val) => handleInputChange('educationstatus', val)}>
                       <SelectTrigger className="h-10 rounded-xl">
-                        <SelectValue placeholder="Select status" />
+                        <SelectValue placeholder={t('Select status', 'स्थिति चुनें', 'অবস্থা নির্বাচন করুন')} />
                       </SelectTrigger>
                       <SelectContent>
                         {EDUCATION_STATUS_OPTIONS.map(opt => (
                           <SelectItem key={opt.name} value={opt.name}>
-                            {language === 'hi' ? opt.labelHi : opt.labelEn}
+                            {opt[language === 'hi' ? 'labelHi' : language === 'bn' ? 'labelBn' : 'labelEn']}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -1047,7 +1057,7 @@ export const VoiceForm: React.FC = () => {
 
                   {formData.educationstatus === 'school_going' && (
                     <Input
-                      label={language === 'hi' ? 'स्कूल का नाम' : 'School Name'}
+                      label={t('School Name', 'स्कूल का नाम', 'বিদ্যালয়ের নাম')}
                       value={formData.schoolname}
                       onChange={(e) => handleInputChange('schoolname', e.target.value)}
                     />
@@ -1058,15 +1068,15 @@ export const VoiceForm: React.FC = () => {
                   <div className="flex flex-col gap-4 border-t border-zinc-100 pt-4 animate-fade-in">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="flex flex-col gap-1.5">
-                        <label className="text-xs font-bold text-zinc-700">{language === 'hi' ? 'स्कूल का प्रकार' : 'School Type'}</label>
+                        <label className="text-xs font-bold text-zinc-700">{t('School Type', 'स्कूल का प्रकार', 'বিদ্যালয়ের প্রকার')}</label>
                         <Select value={formData.schooltype} onValueChange={(val) => handleInputChange('schooltype', val)}>
                           <SelectTrigger className="h-10 rounded-xl">
-                            <SelectValue placeholder="Select Type" />
+                            <SelectValue placeholder={t('Select Type', 'प्रकार चुनें', 'ধরণ নির্বাচন করুন')} />
                           </SelectTrigger>
                           <SelectContent>
                             {SCHOOL_TYPE_OPTIONS.map(opt => (
                               <SelectItem key={opt.name} value={opt.name}>
-                                {language === 'hi' ? opt.labelHi : opt.labelEn}
+                                {opt[language === 'hi' ? 'labelHi' : language === 'bn' ? 'labelBn' : 'labelEn']}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -1074,21 +1084,21 @@ export const VoiceForm: React.FC = () => {
                       </div>
 
                       <Input
-                        label={language === 'hi' ? 'वर्तमान कक्षा / ग्रेड' : 'Current Class / Grade'}
+                        label={t('Current Class / Grade', 'वर्तमान कक्षा / ग्रेड', 'বর্তমান শ্রেণী / গ্রেড')}
                         value={formData.currentclass}
                         onChange={(e) => handleInputChange('currentclass', e.target.value)}
                       />
 
                       <div className="flex flex-col gap-1.5">
-                        <label className="text-xs font-bold text-zinc-700">{language === 'hi' ? 'उपस्थिति स्थिति' : 'Attendance Status'}</label>
+                        <label className="text-xs font-bold text-zinc-700">{t('Attendance Status', 'उपस्थिति स्थिति', 'উপস্থিতির অবস্থা')}</label>
                         <Select value={formData.attendancestatus} onValueChange={(val) => handleInputChange('attendancestatus', val)}>
                           <SelectTrigger className="h-10 rounded-xl">
-                            <SelectValue placeholder="Select Attendance" />
+                            <SelectValue placeholder={t('Select Attendance', 'उपस्थिति चुनें', 'উপস্থিতি নির্বাচন করুন')} />
                           </SelectTrigger>
                           <SelectContent>
                             {ATTENDANCE_OPTIONS.map(opt => (
                               <SelectItem key={opt.name} value={opt.name}>
-                                {language === 'hi' ? opt.labelHi : opt.labelEn}
+                                {opt[language === 'hi' ? 'labelHi' : language === 'bn' ? 'labelBn' : 'labelEn']}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -1098,14 +1108,14 @@ export const VoiceForm: React.FC = () => {
 
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 border-t border-zinc-100 pt-3">
                       <Input
-                        label={language === 'hi' ? 'स्कूल शुल्क' : language === 'bn' ? 'স্কুল ফি' : 'School Fees'}
+                        label={t('School Fees', 'स्कूल शुल्क', 'স্কুল ফি')}
                         type="number"
                         value={formData.eduschoolfees || ''}
                         onChange={(e) => handleInputChange('eduschoolfees', Number(e.target.value))}
                       />
                       <div className="flex flex-col gap-1.5">
                         <label className="text-xs font-bold text-zinc-700">
-                          {language === 'hi' ? 'भुगतान अवधि' : language === 'bn' ? 'ফি প্রদানের সময়কাল' : 'Billing Period'}
+                          t('Billing Period', 'भुगतान अवधि', 'ফি প্রদানের সময়কাল')
                         </label>
                         <Select 
                           value={formData.school_fee_period || 'annual'} 
@@ -1115,26 +1125,26 @@ export const VoiceForm: React.FC = () => {
                             <SelectValue placeholder="Period" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="annual">{language === 'hi' ? 'वार्षिक (Annual)' : language === 'bn' ? 'বার্ষিক' : 'Annual'}</SelectItem>
-                            <SelectItem value="quarterly">{language === 'hi' ? 'तिमाही (Quarter)' : language === 'bn' ? 'ত্রৈমাসিক' : 'Quarterly'}</SelectItem>
-                            <SelectItem value="monthly">{language === 'hi' ? 'মাसिक (Month)' : language === 'bn' ? 'মাসিক' : 'Monthly'}</SelectItem>
+                            <SelectItem value="annual">{t('Annual', 'वार्षिक (Annual)', 'বার্ষিক')}</SelectItem>
+                            <SelectItem value="quarterly">{t('Quarterly', 'तिमाही (Quarter)', 'ত্রৈমাসিক')}</SelectItem>
+                            <SelectItem value="monthly">{t('Monthly', 'मासिक (Month)', 'মাসিক')}</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
                       <Input
-                        label={language === 'hi' ? 'निजी ट्यूशन शुल्क' : 'Private Tuition Fee'}
+                        label={t('Private Tuition Fee', 'निजी ट्यूशन शुल्क', 'গৃহশিক্ষকের ফি')}
                         type="number"
                         value={formData.private_tution_fee || ''}
                         onChange={(e) => handleInputChange('private_tution_fee', Number(e.target.value))}
                       />
                       <Input
-                        label={language === 'hi' ? 'किताबें / स्टेशनरी खर्च' : 'Books & Stationery'}
+                        label={t('Books & Stationery', 'किताबें / स्टेशनरी खर्च', 'বই এবং খাতা খরচ')}
                         type="number"
                         value={formData.edubooks || ''}
                         onChange={(e) => handleInputChange('edubooks', Number(e.target.value))}
                       />
                       <Input
-                        label={language === 'hi' ? 'यातायात / परिवहन खर्च' : 'Transport Expenses'}
+                        label={t('Transport Expenses', 'यातायात / परिवहन खर्च', 'যাতায়াত খরচ')}
                         type="number"
                         value={formData.edutransport || ''}
                         onChange={(e) => handleInputChange('edutransport', Number(e.target.value))}
@@ -1145,7 +1155,7 @@ export const VoiceForm: React.FC = () => {
                       <div className="flex flex-col gap-1.5 text-left">
                         <label className="text-xs font-bold text-zinc-700 flex items-center gap-1">
                           <Camera className="w-4 h-4 text-blue-500" />
-                          {language === 'hi' ? 'स्कूल फीस रसीद (फोटो अपलोड करें)' : 'School Fee Receipt (Upload photo)'}
+                          {t('School Fee Receipt (Upload photo)', 'स्कूल फीस रसीद (फोटो अपलोड करें)', 'স্কুল ফির রসিদ (ছবি আপলোড করুন)')}
                         </label>
                         <input
                           type="file"
@@ -1161,7 +1171,7 @@ export const VoiceForm: React.FC = () => {
                       <div className="flex flex-col gap-1.5 text-left">
                         <label className="text-xs font-bold text-zinc-700 flex items-center gap-1">
                           <Camera className="w-4 h-4 text-blue-500" />
-                          {language === 'hi' ? 'पिछले वर्ष की मार्कशीट (फोटो अपलोड करें)' : 'Previous Marksheet (Upload photo)'}
+                          {t('Previous Marksheet (Upload photo)', 'पिछले वर्ष की मार्कशीट (फोटो अपलोड करें)', 'গত বছরের মার্কশিট (ছবি আপলোড করুন)')}
                         </label>
                         <input
                           type="file"
@@ -1181,30 +1191,30 @@ export const VoiceForm: React.FC = () => {
                   <div className="flex flex-col gap-4 border-t border-zinc-100 pt-4 animate-fade-in">
                     <h4 className="text-xs font-bold text-amber-600 flex items-center gap-1">
                       <AlertTriangle className="w-4 h-4" />
-                      {language === 'hi' ? 'पुनः नामांकन के लिए आवश्यक वित्तीय सहायता' : 'Support Required for Re-enrollment'}
+                      {t('Support Required for Re-enrollment', 'पुनः नामांकन के लिए आवश्यक वित्तीय सहायता', 'পুনরায় ভর্তির জন্য প্রয়োজনীয় সহায়তা')}
                     </h4>
 
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                       <Input
-                        label={language === 'hi' ? 'आवश्यक: स्कूल फीस' : 'Required: School Fees'}
+                        label={t('Required: School Fees', 'आवश्यक: स्कूल फीस', 'প্রয়োজনীয়: বিদ্যালয় ফি')}
                         type="number"
                         value={formData.reqschoolfees || ''}
                         onChange={(e) => handleInputChange('reqschoolfees', Number(e.target.value))}
                       />
                       <Input
-                        label={language === 'hi' ? 'आवश्यक: किताबें/स्टेशनरी' : 'Required: Books & Stationery'}
+                        label={t('Required: Books & Stationery', 'आवश्यक: किताबें/स्टेशनरी', 'প্রয়োজনীয়: বই এবং খাতা')}
                         type="number"
                         value={formData.reqbooks || ''}
                         onChange={(e) => handleInputChange('reqbooks', Number(e.target.value))}
                       />
                       <Input
-                        label={language === 'hi' ? 'आवश्यक: वर्दी (Uniform)' : 'Required: Uniform'}
+                        label={t('Required: Uniform', 'आवश्यक: वर्दी (Uniform)', 'প্রয়োজনীয়: ইউনিফর্ম')}
                         type="number"
                         value={formData.requniform || ''}
                         onChange={(e) => handleInputChange('requniform', Number(e.target.value))}
                       />
                       <Input
-                        label={language === 'hi' ? 'आवश्यक: यातायात खर्च' : 'Required: Transport'}
+                        label={t('Required: Transport', 'आवश्यक: यातायात खर्च', 'প্রয়োজনীয়: যাতায়াত')}
                         type="number"
                         value={formData.reqtransport || ''}
                         onChange={(e) => handleInputChange('reqtransport', Number(e.target.value))}
@@ -1219,37 +1229,37 @@ export const VoiceForm: React.FC = () => {
             {step === 6 && (
               <div className="flex flex-col gap-4 text-left">
                 <h3 className="text-sm font-bold text-zinc-700 border-b border-zinc-100 pb-2">
-                  {language === 'hi' ? 'अंतिम समीक्षा और पुष्टि' : 'Section 6 — Final Review & Submission'}
+                  {t('Section 6 — Final Review & Submission', 'अंतिम समीक्षा और पुष्टि', 'বিভাগ ৬ — চূড়ান্ত পর্যালোচনা এবং জমাদান')}
                 </h3>
 
                 {/* Summarized Details */}
                 <div className="bg-zinc-50 border p-4 rounded-2xl text-xs flex flex-col gap-2.5">
                   <div className="grid grid-cols-2 border-b pb-2">
-                    <span className="font-bold text-zinc-500">{language === 'hi' ? 'बच्चे का नाम:' : "Child's Name:"}</span>
+                    <span className="font-bold text-zinc-500">{t("Child's Name:", 'बच्चे का नाम:', 'শিশুর নাম:')}</span>
                     <span className="font-extrabold text-zinc-800">{formData.childname}</span>
                   </div>
                   <div className="grid grid-cols-2 border-b pb-2">
-                    <span className="font-bold text-zinc-500">{language === 'hi' ? 'जन्मतिथि / लिंग:' : 'DOB / Gender:'}</span>
+                    <span className="font-bold text-zinc-500">{t('DOB / Gender:', 'जन्मतिथि / लिंग:', 'জন্মতারিখ / লিঙ্গ:')}</span>
                     <span className="text-zinc-800">{formData.dateofbirth} / {formData.gender}</span>
                   </div>
                   <div className="grid grid-cols-2 border-b pb-2">
-                    <span className="font-bold text-zinc-500">{language === 'hi' ? 'देखभालकर्ता:' : 'Caregiver:'}</span>
+                    <span className="font-bold text-zinc-500">{t('Caregiver:', 'देखभालकर्ता:', 'অভিভাবক:')}</span>
                     <span className="text-zinc-800">{formData.caregivername} ({formData.caregiverrelation})</span>
                   </div>
                   <div className="grid grid-cols-2 border-b pb-2">
-                    <span className="font-bold text-zinc-500">{language === 'hi' ? 'स्वास्थ्य विवरण:' : 'Clinical Assessment:'}</span>
+                    <span className="font-bold text-zinc-500">{t('Clinical Assessment:', 'स्वास्थ्य विवरण:', 'ক্লিনিকাল মূল্যায়ন:')}</span>
                     <span className="font-bold text-zinc-800">
                       BMI: {formData.bmicalc} ({formData.bmicategory}) | Hb: {formData.hemoglobin || 'N/A'}
                     </span>
                   </div>
                   {formData.educationstatus === 'school_going' ? (
                     <div className="grid grid-cols-2">
-                      <span className="font-bold text-zinc-500">{language === 'hi' ? 'कुल वार्षिक शिक्षा खर्च:' : 'Total Annual Education Cost:'}</span>
+                      <span className="font-bold text-zinc-500">{t('Total Annual Education Cost:', 'कुल वार्षिक शिक्षा खर्च:', 'মোট বার্ষিক শিক্ষার খরচ:')}</span>
                       <span className="font-bold text-blue-600">Rs. {formData.edutotalannual}</span>
                     </div>
                   ) : (
                     <div className="grid grid-cols-2">
-                      <span className="font-bold text-zinc-500">{language === 'hi' ? 'कुल आवश्यक वित्तीय सहायता:' : 'Total Required Support:'}</span>
+                      <span className="font-bold text-zinc-500">{t('Total Required Support:', 'कुल आवश्यक वित्तीय सहायता:', 'মোট প্রয়োজনীয় সহায়তা:')}</span>
                       <span className="font-bold text-amber-600">Rs. {formData.reqtotalsupport}</span>
                     </div>
                   )}
@@ -1257,12 +1267,12 @@ export const VoiceForm: React.FC = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-zinc-100 pt-4">
                   <Input
-                    label={language === 'hi' ? 'संगठन का नाम *' : 'Organization Name *'}
+                    label={t('Organization Name *', 'संगठन का नाम *', 'সংস্থার নাম *')}
                     value={formData.organization_name}
                     onChange={(e) => handleInputChange('organization_name', e.target.value)}
                   />
                   <Input
-                    label={language === 'hi' ? 'संगठन की ईमेल आईडी *' : 'Organization Email ID *'}
+                    label={t('Organization Email ID *', 'संगठन की ईमेल आईडी *', 'সংস্থার ইমেল আইডি *')}
                     type="email"
                     value={formData.organization_email}
                     onChange={(e) => handleInputChange('organization_email', e.target.value)}
@@ -1271,7 +1281,7 @@ export const VoiceForm: React.FC = () => {
 
                 <div className="flex flex-col gap-1.5 mt-2">
                   <label className="text-xs font-bold text-zinc-700">
-                    {language === 'hi' ? 'क्या सभी जानकारी सही और पूर्ण है? *' : 'Is all information correct and complete? *'}
+                    {t('Is all information correct and complete? *', 'क्या सभी जानकारी सही और पूर्ण है? *', 'সব তথ্য কি সঠিক এবং সম্পূর্ণ? *')}
                   </label>
                   <Select value={formData.reviewconfirmed} onValueChange={(val) => handleInputChange('reviewconfirmed', val)}>
                     <SelectTrigger className="h-10 rounded-xl">
@@ -1279,10 +1289,10 @@ export const VoiceForm: React.FC = () => {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="yes_all_correct">
-                        {language === 'hi' ? 'हाँ, सभी जानकारी सही है' : 'Yes, all information is correct'}
+                        {t('Yes, all information is correct', 'हाँ, सभी जानकारी सही है', 'হ্যাঁ, সব তথ্য সঠিক')}
                       </SelectItem>
                       <SelectItem value="no_need_fix">
-                        {language === 'hi' ? 'नहीं, सुधार की आवश्यकता है' : 'No, need to correct details'}
+                        {t('No, need to correct details', 'नहीं, सुधार की आवश्यकता है', 'না, তথ্য সংশোধন করা প্রয়োজন')}
                       </SelectItem>
                     </SelectContent>
                   </Select>
@@ -1302,7 +1312,7 @@ export const VoiceForm: React.FC = () => {
             className="cursor-pointer rounded-xl h-10 px-5 flex items-center gap-1"
           >
             <ChevronLeft className="w-4 h-4" />
-            {language === 'hi' ? 'पीछे' : 'Back'}
+            {t('Back', 'पीछे', 'পিছনে')}
           </Button>
 
           {step < 6 ? (
@@ -1312,7 +1322,7 @@ export const VoiceForm: React.FC = () => {
               onClick={handleNext}
               className="cursor-pointer rounded-xl h-10 px-5 flex items-center gap-1"
             >
-              {language === 'hi' ? 'आगे बढ़ें' : 'Next'}
+              {t('Next', 'आगे बढ़ें', 'পরবর্তী')}
               <ChevronRight className="w-4 h-4" />
             </Button>
           ) : (
@@ -1323,7 +1333,7 @@ export const VoiceForm: React.FC = () => {
               className="cursor-pointer rounded-xl h-10 px-6 flex items-center gap-1.5 bg-blue-600 text-white font-bold hover:bg-blue-700"
             >
               <Check className="w-4 h-4" />
-              {language === 'hi' ? 'सबमिट करें' : 'Submit Entry'}
+              {t('Submit Entry', 'सबमिट करें', 'দাখিল করুন')}
             </Button>
           )}
         </div>

@@ -36,6 +36,11 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
   const url = new URL(e.request.url);
 
+  // Bypass service worker in development environment (localhost / 127.0.0.1)
+  if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') {
+    return;
+  }
+
   // Cache API requests for offline reads (stale-while-revalidate pattern)
   if (url.pathname === '/api/proxy' && e.request.method === 'POST') {
     // We clone the request because POST request bodies can only be read once.

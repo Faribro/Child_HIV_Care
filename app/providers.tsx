@@ -13,14 +13,24 @@ export const Providers: React.FC<{ children: React.ReactNode }> = ({ children })
     // Hydrate current active session on mount
     checkSession();
 
-    // Register PWA service worker
+    // Register/Unregister PWA service worker depending on env
     if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js').then(
-          (reg) => console.log('PWA Service Worker registered with scope:', reg.scope),
-          (err) => console.error('PWA Service Worker registration failed:', err)
-        );
-      });
+      if (process.env.NODE_ENV === 'development') {
+        navigator.serviceWorker.getRegistrations().then((registrations) => {
+          for (const registration of registrations) {
+            registration.unregister().then((success) => {
+              if (success) console.log('[Dev] Unregistered active service worker to prevent developer caching.');
+            });
+          }
+        });
+      } else {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').then(
+            (reg) => console.log('PWA Service Worker registered with scope:', reg.scope),
+            (err) => console.error('PWA Service Worker registration failed:', err)
+          );
+        });
+      }
     }
   }, []);
 
