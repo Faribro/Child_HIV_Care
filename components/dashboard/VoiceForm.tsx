@@ -110,6 +110,11 @@ export const VoiceForm: React.FC = () => {
   const { toast } = useToast();
 
   const [language, setLanguage] = React.useState<'en' | 'hi' | 'bn'>('en');
+  const t = React.useCallback((en: string, hi: string, bn: string) => {
+    if (language === 'hi') return hi;
+    if (language === 'bn') return bn;
+    return en;
+  }, [language]);
   const [step, setStep] = React.useState<number>(1);
   const [isSpeaking, setIsSpeaking] = React.useState<boolean>(false);
   const [isMuted, setIsMuted] = React.useState<boolean>(false);
