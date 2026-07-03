@@ -141,7 +141,7 @@ export function LoginForm({ onSwitchToSignup }: LoginFormProps = {}) {
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           <div className="relative">
-            <Mail className="absolute left-3 top-9.5 h-4.5 w-4.5 text-blue-500/40" />
+            <Mail className="absolute left-3 top-9.5 h-4.5 w-4.5 text-gray-400" />
             <Input
               label="CASEWORKER IDENTIFIER"
               type="text"
@@ -149,21 +149,21 @@ export function LoginForm({ onSwitchToSignup }: LoginFormProps = {}) {
               placeholder="johnsmith@allianceindia.org"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="pl-10 font-mono text-xs uppercase tracking-wide bg-[#0a1a28] border-blue-500/20 text-blue-100 caret-blue-300 placeholder:text-blue-500/40 focus:border-blue-500/80 [&:-webkit-autofill]:bg-[#0a1a28] [&:-webkit-autofill]:shadow-[inset_0_0_0px_1000px_#0a1a28] [&:-webkit-autofill]:text-blue-100 [&:-webkit-autofill]:[color:theme(colors.blue.100)]"
+              className="pl-10 font-mono text-xs uppercase tracking-wide bg-white border-blue-500/30 text-gray-900 caret-gray-900 placeholder:text-gray-400 focus:border-blue-500"
               disabled={authLoading}
               onMouseEnter={() => playSound(800, 'sine', 0.02)}
             />
           </div>
 
           <div className="relative">
-            <Lock className="absolute left-3 top-9.5 h-4.5 w-4.5 text-blue-500/40" />
+            <Lock className="absolute left-3 top-9.5 h-4.5 w-4.5 text-gray-400" />
             <Input
               label="QUANTUM ACCESS PASS"
               type={showPassword ? 'text' : 'password'}
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="pl-10 pr-10 font-mono text-xs bg-[#0a1a28] border-blue-500/20 text-blue-100 caret-blue-300 placeholder:text-blue-500/40 focus:border-blue-500/80 [&:-webkit-autofill]:bg-[#0a1a28] [&:-webkit-autofill]:shadow-[inset_0_0_0px_1000px_#0a1a28] [&:-webkit-autofill]:text-blue-100"
+              className="pl-10 pr-10 font-mono text-xs bg-white border-blue-500/30 text-gray-900 caret-gray-900 placeholder:text-gray-400 focus:border-blue-500"
               disabled={authLoading}
               onMouseEnter={() => playSound(800, 'sine', 0.02)}
             />

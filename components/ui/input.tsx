@@ -17,7 +17,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     return (
       <div className="w-full flex flex-col gap-1.5">
         {label && (
-          <label htmlFor={inputId} className="text-xs font-semibold text-zinc-400 select-none">
+          <label htmlFor={inputId} className="text-xs font-semibold text-gray-600 select-none tracking-wide">
             {label}
           </label>
         )}
@@ -31,12 +31,12 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             id={inputId}
             ref={ref}
             type={type}
-            className={`w-full bg-zinc-900 border text-white text-sm rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 placeholder-zinc-500
-              [&:-webkit-autofill]:shadow-[inset_0_0_0_1000px_#18181b] [&:-webkit-autofill]:[color:white] [&:-webkit-autofill]:caret-white
+            className={`w-full bg-white border text-gray-900 text-sm rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 placeholder:text-gray-400 caret-gray-900
+              [-webkit-autofill]:shadow-[inset_0_0_0_1000px_white] [-webkit-autofill]:[color:#111827] [-webkit-autofill]:caret-gray-900
               ${prefixIcon ? 'pl-10' : 'pl-3.5'} 
               ${suffixIcon ? 'pr-10' : 'pr-3.5'} 
               py-2.5 
-              ${error ? 'border-red-500 focus:ring-red-500/50' : 'border-zinc-800 hover:border-zinc-700'} 
+              ${error ? 'border-red-400 focus:ring-red-500/50' : 'border-gray-300 hover:border-gray-400'} 
               disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
             {...props}
           />
@@ -78,13 +78,13 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
         <select
           ref={ref}
           id={selectId}
-          className={`w-full bg-zinc-900 border text-white text-sm rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 placeholder-zinc-500 px-3.5 py-2.5 
-            ${error ? 'border-red-500 focus:ring-red-500/50' : 'border-zinc-800 hover:border-zinc-700'} 
+          className={`w-full bg-white border text-gray-900 text-sm rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 px-3.5 py-2.5 
+            ${error ? 'border-red-400 focus:ring-red-500/50' : 'border-gray-300 hover:border-gray-400'} 
             disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
           {...props}
         >
           {options.map((opt) => (
-            <option key={opt.value} value={opt.value} className="bg-zinc-905 text-white">
+            <option key={opt.value} value={opt.value} className="bg-white text-gray-900">
               {opt.label}
             </option>
           ))}
@@ -121,8 +121,8 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
           ref={ref}
           id={textId}
           rows={3}
-          className={`w-full bg-zinc-900 border text-white text-sm rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 placeholder-zinc-500 px-3.5 py-2.5 
-            ${error ? 'border-red-500 focus:ring-red-500/50' : 'border-zinc-800 hover:border-zinc-700'} 
+          className={`w-full bg-white border text-gray-900 text-sm rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 placeholder:text-gray-400 caret-gray-900 px-3.5 py-2.5 
+            ${error ? 'border-red-400 focus:ring-red-500/50' : 'border-gray-300 hover:border-gray-400'} 
             disabled:opacity-50 disabled:cursor-not-allowed ${className}`}
           {...props}
         />
