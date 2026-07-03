@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { validateSession, signSession } from '@/lib/utils/crypto';
 
-const GAS_URL = process.env.GAS_URL || 'https://script.google.com/macros/s/AKfycbzrlHfVsPiTF2lVyqRgNmP26609dgN3fDsTJxDUE8Kqcnbg4UsWBtxFPqVnxlXgJNls/exec';
+const GAS_URL = process.env.GAS_URL || 'https://script.google.com/macros/s/AKfycbzIyNAxLklYx02U9GoUHMHKL1sFMPc1MZAbZvB9WwErzqK0GQYHjh3NcpcVdiEPuHRbpg/exec';
 
 export async function POST(req: NextRequest) {
   try {
