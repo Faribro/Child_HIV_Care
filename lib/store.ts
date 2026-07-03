@@ -261,7 +261,7 @@ export const useStore = create<AuthSlice & DataSlice & ThemeSlice>()(
         // 3. Online: Write directly
         set({ syncStatus: 'syncing' });
         try {
-          const res = await fetchFromProxy('editRecord', [uuid, recordWithUuid]);
+          const res = await fetchFromProxy('addRecord', [uuid, recordWithUuid]);
           if (res.success) {
             set({ syncStatus: 'idle' });
             get().loadDashboardData(); // Refresh clean state
@@ -391,7 +391,9 @@ export const useStore = create<AuthSlice & DataSlice & ThemeSlice>()(
         set({ syncStatus: 'syncing' });
         try {
           for (const item of queue) {
-            if (item.action === 'ADD_RECORD' || item.action === 'UPDATE_RECORD') {
+            if (item.action === 'ADD_RECORD') {
+              await fetchFromProxy('addRecord', [item.id, item.payload]);
+            } else if (item.action === 'UPDATE_RECORD') {
               await fetchFromProxy('editRecord', [item.id, item.payload]);
             } else if (item.action === 'DELETE_RECORD') {
               await fetchFromProxy('deleteRecord', [item.id]);

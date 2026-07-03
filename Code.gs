@@ -354,9 +354,16 @@ function doPost(e) {
         'getDashboardData',
         'getRecords',
         'editRecord',
+        'addRecord',
         'deleteRecord',
         'loginUser',
-        'signupUser'
+        'signupUser',
+        'getRecipientsList',
+        'addEmailRecipient',
+        'toggleEmailRecipient',
+        'deleteEmailRecipient',
+        'getScheduledReportConfig',
+        'setScheduledReportConfig'
       ];
       
       if (!whitelisted.includes(funcName)) {
@@ -505,4 +512,110 @@ function hashPassword_(password) {
 
 function doGet() {
   return HtmlService.createHtmlOutput('<h3>Google Web App Active. Connect via Next.js proxy API client.</h3>');
+}
+
+// ── Add new record (from VoiceForm) ─────────────────────────────
+function addRecord(uuid, recordData) {
+  try {
+    const sheet = safeGetSheet_();
+    const existing = findRowByUuid(sheet, uuid);
+    if (existing !== -1) return editRecord(uuid, recordData);
+
+    const rowValues = CONFIG.COLUMN_MAP.map(([key]) => {
+      const val = recordData[key];
+      return (val === undefined || val === null) ? '' : val;
+    });
+    const newRow = Math.max(sheet.getLastRow() + 1, 4);
+    sheet.getRange(newRow, 1, 1, rowValues.length).setValues([rowValues]);
+    formatDataRow(sheet, newRow);
+    writeAuditLog_('ADD_RECORD', recordData._submitted_by || 'system', `New child record: ${recordData.childname || uuid}`);
+    return { success: true, row: newRow };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+// ── Recipients Sheet ─────────────────────────────────────────────
+function getRecipientsList() {
+  try {
+    const ss = getSpreadsheet_();
+    let sheet = ss.getSheetByName('Email_Recipients');
+    if (!sheet) {
+      sheet = ss.insertSheet('Email_Recipients');
+      sheet.appendRow(['Email', 'Name', 'Status', 'DateAdded']);
+      sheet.getRange(1,1,1,4).setFontWeight('bold').setBackground('#1E3A8A').setFontColor('#FFFFFF');
+      sheet.hideSheet();
+      return { success: true, recipients: [] };
+    }
+    const data = sheet.getDataRange().getValues();
+    const recipients = data.slice(1).filter(r => r[0]).map(r => ({
+      email: r[0], name: r[1], status: r[2] || 'Active', dateAdded: r[3] ? r[3].toString() : ''
+    }));
+    return { success: true, recipients };
+  } catch (e) { return { success: false, error: e.message }; }
+}
+
+function addEmailRecipient(email, name) {
+  try {
+    const ss = getSpreadsheet_();
+    let sheet = ss.getSheetByName('Email_Recipients');
+    if (!sheet) { getRecipientsList(); sheet = ss.getSheetByName('Email_Recipients'); }
+    sheet.appendRow([email.toLowerCase().trim(), name.trim(), 'Active', new Date().toISOString()]);
+    return { success: true };
+  } catch (e) { return { success: false, error: e.message }; }
+}
+
+function toggleEmailRecipient(email, status) {
+  try {
+    const ss = getSpreadsheet_();
+    const sheet = ss.getSheetByName('Email_Recipients');
+    if (!sheet) return { success: false, error: 'Recipients sheet not found.' };
+    const data = sheet.getDataRange().getValues();
+    for (let i = 1; i < data.length; i++) {
+      if (data[i][0] && data[i][0].toString().toLowerCase() === email.toLowerCase()) {
+        sheet.getRange(i + 1, 3).setValue(status);
+        return { success: true };
+      }
+    }
+    return { success: false, error: 'Recipient not found.' };
+  } catch (e) { return { success: false, error: e.message }; }
+}
+
+function deleteEmailRecipient(email) {
+  try {
+    const ss = getSpreadsheet_();
+    const sheet = ss.getSheetByName('Email_Recipients');
+    if (!sheet) return { success: false, error: 'Recipients sheet not found.' };
+    const data = sheet.getDataRange().getValues();
+    for (let i = 1; i < data.length; i++) {
+      if (data[i][0] && data[i][0].toString().toLowerCase() === email.toLowerCase()) {
+        sheet.deleteRow(i + 1);
+        return { success: true };
+      }
+    }
+    return { success: false, error: 'Recipient not found.' };
+  } catch (e) { return { success: false, error: e.message }; }
+}
+
+// ── Report Config ────────────────────────────────────────────────
+function getScheduledReportConfig() {
+  try {
+    const props = PropertiesService.getScriptProperties();
+    return {
+      success: true,
+      enabled: props.getProperty('report_enabled') === 'true',
+      emailList: props.getProperty('report_email_list') || '',
+      frequency: props.getProperty('report_frequency') || 'weekly'
+    };
+  } catch (e) { return { success: false, error: e.message }; }
+}
+
+function setScheduledReportConfig(config) {
+  try {
+    const props = PropertiesService.getScriptProperties();
+    props.setProperty('report_enabled', config.enabled ? 'true' : 'false');
+    props.setProperty('report_email_list', config.emailList || '');
+    props.setProperty('report_frequency', config.frequency || 'weekly');
+    return { success: true };
+  } catch (e) { return { success: false, error: e.message }; }
 }
