@@ -38,20 +38,67 @@ function getDriveThumbnail(url: string): string {
   return url;
 }
 
-// ─── Document Link Component ─────────────────────────────────────────────────
+// ─── Document Preview Component ─────────────────────────────────────────────
+// Handles both base64 data URIs (renders inline) and Google Drive links
 
-function DocLink({ label, url }: { label: string; url?: string }) {
-  if (!url) return <span className="text-gray-400 text-xs">—</span>;
+function DocPreview({ label, url }: { label: string; url?: string }) {
+  const [expanded, setExpanded] = React.useState(false);
+  if (!url) return <span className="text-gray-400 text-xs italic">—</span>;
+
+  const isBase64 = url.startsWith('data:');
+  const driveUrl = isBase64 ? null : getDriveViewUrl(url);
+  const thumbUrl = isBase64 ? url : getDriveThumbnail(url);
+
+  if (isBase64) {
+    return (
+      <div className="flex flex-col gap-1.5">
+        <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">{label}</span>
+        {expanded ? (
+          <div className="relative">
+            <img
+              src={url}
+              alt={label}
+              className="rounded-xl border border-gray-200 max-w-full max-h-64 object-contain bg-gray-50"
+            />
+            <button
+              onClick={() => setExpanded(false)}
+              className="absolute top-1 right-1 bg-white/80 rounded-full p-0.5 text-gray-600 hover:text-red-500 border border-gray-200"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => setExpanded(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold rounded-lg hover:bg-blue-100 transition-colors w-fit"
+          >
+            <Eye className="w-3 h-3" /> View {label}
+          </button>
+        )}
+      </div>
+    );
+  }
+
   return (
-    <a
-      href={getDriveViewUrl(url)}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold rounded-lg hover:bg-blue-100 transition-colors"
-    >
-      <ExternalLink className="w-3 h-3" />
-      {label}
-    </a>
+    <div className="flex flex-col gap-1.5">
+      <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">{label}</span>
+      <a
+        href={driveUrl!}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold rounded-lg hover:bg-blue-100 transition-colors w-fit"
+      >
+        <ExternalLink className="w-3 h-3" /> {label}
+      </a>
+      {thumbUrl && (
+        <img
+          src={thumbUrl}
+          alt={label}
+          className="rounded-lg border border-gray-200 w-20 h-16 object-cover bg-gray-50"
+          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+        />
+      )}
+    </div>
   );
 }
 
@@ -154,11 +201,14 @@ function ViewModal({ record, onClose }: { record: Patient; onClose: () => void }
             <FileText className="w-4 h-4 text-blue-500" />
             <span className="text-xs font-bold text-gray-700 uppercase tracking-wider">Documents & Attachments</span>
           </div>
-          <div className="p-4 flex flex-wrap gap-3">
-            <DocLink label="Caregiver Signature" url={record.thumb_impression} />
-            <DocLink label="School Fee Receipt" url={record.school_fee_receipt} />
-            <DocLink label="Previous Marksheet" url={record.marksheet_prev_year} />
-            {!record.thumb_impression && !record.school_fee_receipt && !record.marksheet_prev_year && (
+          <div className="p-4 flex flex-col gap-4">
+            {record.thumb_impression || record.school_fee_receipt || record.marksheet_prev_year ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {record.thumb_impression && <DocPreview label="Caregiver Signature" url={record.thumb_impression} />}
+                {record.school_fee_receipt && <DocPreview label="School Fee Receipt" url={record.school_fee_receipt} />}
+                {record.marksheet_prev_year && <DocPreview label="Previous Marksheet" url={record.marksheet_prev_year} />}
+              </div>
+            ) : (
               <span className="text-xs text-gray-400 italic">No documents attached.</span>
             )}
           </div>
@@ -366,26 +416,44 @@ export const Records: React.FC = () => {
                       <StatusBadge cat={rec.hb_category} type="hb" />
                     </td>
 
-                    {/* Documents — Drive links */}
+                    {/* Documents — smart badges */}
                     <td className="px-4 py-3">
                       <div className="flex gap-1.5 flex-wrap">
                         {rec.thumb_impression && (
-                          <a href={getDriveViewUrl(rec.thumb_impression)} target="_blank" rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 px-2 py-0.5 bg-violet-50 border border-violet-200 text-violet-700 text-[10px] font-semibold rounded-md hover:bg-violet-100 transition-colors">
-                            <ExternalLink className="w-2.5 h-2.5" /> Sign
-                          </a>
+                          rec.thumb_impression.startsWith('data:') ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-violet-50 border border-violet-200 text-violet-700 text-[10px] font-semibold rounded-md cursor-default" title="Click View to see document">
+                              <Eye className="w-2.5 h-2.5" /> Sign ✓
+                            </span>
+                          ) : (
+                            <a href={getDriveViewUrl(rec.thumb_impression)} target="_blank" rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 px-2 py-0.5 bg-violet-50 border border-violet-200 text-violet-700 text-[10px] font-semibold rounded-md hover:bg-violet-100 transition-colors">
+                              <ExternalLink className="w-2.5 h-2.5" /> Sign
+                            </a>
+                          )
                         )}
                         {rec.school_fee_receipt && (
-                          <a href={getDriveViewUrl(rec.school_fee_receipt)} target="_blank" rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 border border-blue-200 text-blue-700 text-[10px] font-semibold rounded-md hover:bg-blue-100 transition-colors">
-                            <ExternalLink className="w-2.5 h-2.5" /> Fees
-                          </a>
+                          rec.school_fee_receipt.startsWith('data:') ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 border border-blue-200 text-blue-700 text-[10px] font-semibold rounded-md cursor-default" title="Click View to see document">
+                              <Eye className="w-2.5 h-2.5" /> Fees ✓
+                            </span>
+                          ) : (
+                            <a href={getDriveViewUrl(rec.school_fee_receipt)} target="_blank" rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 border border-blue-200 text-blue-700 text-[10px] font-semibold rounded-md hover:bg-blue-100 transition-colors">
+                              <ExternalLink className="w-2.5 h-2.5" /> Fees
+                            </a>
+                          )
                         )}
                         {rec.marksheet_prev_year && (
-                          <a href={getDriveViewUrl(rec.marksheet_prev_year)} target="_blank" rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-semibold rounded-md hover:bg-emerald-100 transition-colors">
-                            <ExternalLink className="w-2.5 h-2.5" /> Mark
-                          </a>
+                          rec.marksheet_prev_year.startsWith('data:') ? (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-semibold rounded-md cursor-default" title="Click View to see document">
+                              <Eye className="w-2.5 h-2.5" /> Mark ✓
+                            </span>
+                          ) : (
+                            <a href={getDriveViewUrl(rec.marksheet_prev_year)} target="_blank" rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-semibold rounded-md hover:bg-emerald-100 transition-colors">
+                              <ExternalLink className="w-2.5 h-2.5" /> Mark
+                            </a>
+                          )
                         )}
                         {!rec.thumb_impression && !rec.school_fee_receipt && !rec.marksheet_prev_year && (
                           <span className="text-gray-400 text-[10px]">None</span>
