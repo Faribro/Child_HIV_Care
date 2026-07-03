@@ -105,7 +105,56 @@ const DISTRICT_MAPPING: Record<string, { name: string; labelEn: string; labelHi:
   ]
 };
 
-export const VoiceForm: React.FC = () => {
+const VALUE_MAPPING: Record<string, string> = {
+  male: 'Male',
+  female: 'Female',
+  other: 'Other',
+  both_alive: 'Both parents alive',
+  single_orphan: 'Single orphan (one parent deceased)',
+  double_orphan: 'Double orphan (both parents deceased)',
+  mother: 'Mother',
+  father: 'Father',
+  grandparent: 'Grandparent',
+  legal_guardian: 'Legal Guardian',
+  good: 'Good',
+  fair: 'Fair',
+  poor: 'Poor',
+  government: 'Government School',
+  private: 'Private School',
+  aided: 'Government Aided',
+  regular: 'Regular (>80%)',
+  irregular: 'Irregular (<80%)',
+  west_bengal: 'West Bengal',
+  madhya_pradesh: 'Madhya Pradesh',
+  maharashtra: 'Maharashtra',
+  uttar_pradesh: 'Uttar Pradesh',
+  delhi: 'Delhi',
+  kolkata: 'Kolkata',
+  howrah: 'Howrah',
+  darjeeling: 'Darjeeling',
+  north_24_parganas: 'North 24 Parganas',
+  south_24_parganas: 'South 24 Parganas',
+  indore: 'Indore',
+  bhopal: 'Bhopal',
+  jabalpur: 'Jabalpur',
+  ujjain: 'Ujjain',
+  mumbai_city: 'Mumbai City',
+  pune: 'Pune',
+  nagpur: 'Nagpur',
+  lucknow: 'Lucknow',
+  kanpur: 'Kanpur',
+  varanasi: 'Varanasi',
+  new_delhi: 'New Delhi',
+  school_going: 'School Going',
+  dropout: 'Dropout',
+  never_enrolled: 'Never Enrolled'
+};
+
+interface VoiceFormProps {
+  onBackToLogin?: () => void;
+}
+
+export const VoiceForm: React.FC<VoiceFormProps> = ({ onBackToLogin }) => {
   const addRecord = useStore((s) => s.addRecord);
   const { toast } = useToast();
 

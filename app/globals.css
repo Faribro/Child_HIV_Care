@@ -30,12 +30,12 @@
     --zinc-850: #ffffff; /* Active Component Overlays */
     --zinc-800: #e2e8f0; /* Borders */
     --zinc-700: #cbd5e1; /* Hover Borders */
-    --zinc-600: #94a3b8; /* Muted Borders / Active Slate */
-    --zinc-500: #64748b; /* Secondary Muted Text */
-    --zinc-400: #475569; /* Regular Text */
-    --zinc-300: #334155; /* Bold Accent Text */
-    --zinc-200: #1e293b; /* Titles */
-    --zinc-100: #0f172a; /* Main Text */
+    --zinc-600: #1e293b; /* Dark slate */
+    --zinc-500: #0f172a; /* Near black */
+    --zinc-400: #000000; /* Pure black */
+    --zinc-300: #000000; /* Pure black */
+    --zinc-200: #000000; /* Pure black */
+    --zinc-100: #000000; /* Pure black */
 
     /* Accent color palettes - Deep Sapphire & Rose Gold */
     --blue-600: #2563eb;
@@ -56,12 +56,12 @@
     --zinc-850: #ffffff;
     --zinc-800: #e2e8f0;
     --zinc-700: #cbd5e1;
-    --zinc-600: #94a3b8;
-    --zinc-500: #64748b;
-    --zinc-400: #475569;
-    --zinc-300: #334155;
-    --zinc-200: #1e293b;
-    --zinc-100: #0f172a;
+    --zinc-600: #1e293b;
+    --zinc-500: #0f172a;
+    --zinc-400: #000000;
+    --zinc-300: #000000;
+    --zinc-200: #000000;
+    --zinc-100: #000000;
   }
 
   body {

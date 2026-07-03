@@ -363,7 +363,8 @@ function doPost(e) {
         'toggleEmailRecipient',
         'deleteEmailRecipient',
         'getScheduledReportConfig',
-        'setScheduledReportConfig'
+        'setScheduledReportConfig',
+        'deleteUser'
       ];
       
       if (!whitelisted.includes(funcName)) {
@@ -404,12 +405,6 @@ function loginUser(email, password) {
           return { success: false, error: 'Invalid password.' };
         }
       }
-    }
-
-    // Default admin fallback
-    if (lowerEmail === 'admin@cloudlogs.com' && password === 'admin') {
-      sheet.appendRow(['admin@cloudlogs.com', hashPassword_('admin'), 'System Administrator', 'Admin', new Date().toISOString()]);
-      return { success: true, email: 'admin@cloudlogs.com', name: 'System Administrator', role: 'Admin' };
     }
 
     return { success: false, error: 'User email not found.' };
@@ -470,7 +465,6 @@ function initProfilesSheet_() {
     sheet = ss.insertSheet('User_Profiles');
     sheet.appendRow(['Email', 'PasswordHash', 'Name', 'Role', 'CreatedAt']);
     sheet.getRange(1, 1, 1, 5).setFontWeight('bold').setBackground('#1E3A8A').setFontColor('#FFFFFF');
-    sheet.appendRow(['admin@cloudlogs.com', hashPassword_('admin'), 'System Administrator', 'Admin', new Date().toISOString()]);
     sheet.hideSheet();
   }
   return sheet;
@@ -618,4 +612,23 @@ function setScheduledReportConfig(config) {
     props.setProperty('report_frequency', config.frequency || 'weekly');
     return { success: true };
   } catch (e) { return { success: false, error: e.message }; }
+}
+
+function deleteUser(email) {
+  try {
+    const ss = getSpreadsheet_();
+    const sheet = ss.getSheetByName('User_Profiles');
+    if (!sheet) return { success: false, error: 'Profiles sheet not found.' };
+    const data = sheet.getDataRange().getValues();
+    const lowerEmail = email.toLowerCase().trim();
+    for (let i = 1; i < data.length; i++) {
+      if (data[i][0] && data[i][0].toString().toLowerCase().trim() === lowerEmail) {
+        sheet.deleteRow(i + 1);
+        return { success: true, message: 'User deleted successfully.' };
+      }
+    }
+    return { success: false, error: 'User not found.' };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
 }

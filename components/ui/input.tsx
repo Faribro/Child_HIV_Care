@@ -71,7 +71,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
     return (
       <div className="flex flex-col gap-1.5 w-full">
         {label && (
-          <label htmlFor={selectId} className="text-xs font-semibold text-zinc-400 select-none">
+          <label htmlFor={selectId} className="text-xs font-semibold text-gray-600 select-none">
             {label}
           </label>
         )}
@@ -113,7 +113,7 @@ export const TextArea = React.forwardRef<HTMLTextAreaElement, TextAreaProps>(
     return (
       <div className="flex flex-col gap-1.5 w-full">
         {label && (
-          <label htmlFor={textId} className="text-xs font-semibold text-zinc-400 select-none">
+          <label htmlFor={textId} className="text-xs font-semibold text-gray-600 select-none">
             {label}
           </label>
         )}

@@ -87,6 +87,24 @@ export async function POST(req: NextRequest) {
       return response;
     }
 
+    if (functionName === 'addRecord') {
+      const upstream = await fetch(GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          functionName: 'addRecord',
+          arguments: args
+        }),
+      });
+
+      if (!upstream.ok) {
+        return NextResponse.json({ success: false, error: `Upstream gateway error: ${upstream.statusText}` }, { status: upstream.status });
+      }
+
+      const resData = await upstream.json();
+      return NextResponse.json(resData);
+    }
+
     // 2. Protect All Other Routes
     const token = req.cookies.get('session')?.value;
     const session = token ? await validateSession(token) : null;

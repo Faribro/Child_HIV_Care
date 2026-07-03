@@ -13,6 +13,8 @@ export default function Home() {
   const checkSession = useStore((s) => s.checkSession);
   const setTheme = useStore((s) => s.setTheme);
 
+  const [voiceOnly, setVoiceOnly] = React.useState(false);
+
   React.useEffect(() => {
     // Check and resume cookie session on load
     checkSession();
@@ -52,10 +54,24 @@ export default function Home() {
     );
   }
 
+  // Render VoiceForm directly for field users who clicked the bypass button
+  if (voiceOnly && !user) {
+    const VoiceForm = require('@/components/dashboard/VoiceForm').VoiceForm;
+    return (
+      <div className="min-h-screen w-full flex items-center justify-center bg-[#071310] p-6 relative overflow-y-auto">
+        <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.03)_0%,transparent_70%)]" />
+        <div className="w-full max-w-4xl z-10 my-8">
+          <VoiceForm onBackToLogin={() => setVoiceOnly(false)} />
+        </div>
+      </div>
+    );
+  }
+
   // Session Guard: Switch between Auth and main Dashboard shell
   if (!user) {
-    return <LoginForm />;
+    return <LoginForm onSwitchToVoiceForm={() => setVoiceOnly(true)} />;
   }
 
   return <DashboardShell />;
 }
+

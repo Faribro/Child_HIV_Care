@@ -33,9 +33,10 @@ const playSound = (freq: number, type: OscillatorType = 'sine', duration = 0.06)
 
 interface LoginFormProps {
   onSwitchToSignup?: () => void;
+  onSwitchToVoiceForm?: () => void;
 }
 
-export function LoginForm({ onSwitchToSignup }: LoginFormProps = {}) {
+export function LoginForm({ onSwitchToSignup, onSwitchToVoiceForm }: LoginFormProps = {}) {
   const login = useStore((state) => state.login);
   const authLoading = useStore((state) => state.authLoading);
   
@@ -215,7 +216,7 @@ export function LoginForm({ onSwitchToSignup }: LoginFormProps = {}) {
             ))}
           </div>
 
-          <div className="text-center mt-2">
+          <div className="text-center mt-2 flex flex-col gap-2">
             <span className="font-mono text-[10px] tracking-wider text-blue-500/45">
               NEW IDENTIFIER?{' '}
               <button
@@ -231,9 +232,27 @@ export function LoginForm({ onSwitchToSignup }: LoginFormProps = {}) {
                 REQUEST REGISTRATION
               </button>
             </span>
+
+            {onSwitchToVoiceForm && (
+              <span className="font-mono text-[10px] tracking-wider text-emerald-500/50">
+                FIELD USER?{' '}
+                <button
+                  type="button"
+                  onClick={() => {
+                    onSwitchToVoiceForm();
+                    playSound(900, 'sine', 0.06);
+                  }}
+                  className="font-bold text-emerald-400 hover:text-emerald-300 transition-colors duration-200 uppercase hover:underline"
+                  disabled={authLoading}
+                >
+                  OPEN VOICE DATA ENTRY FORM
+                </button>
+              </span>
+            )}
           </div>
         </form>
       </motion.div>
+
     </div>
   );
 }
