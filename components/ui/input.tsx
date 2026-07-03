@@ -32,6 +32,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             type={type}
             className={`w-full bg-zinc-900 border text-white text-sm rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 placeholder-zinc-500
+              [&:-webkit-autofill]:shadow-[inset_0_0_0_1000px_#18181b] [&:-webkit-autofill]:[color:white] [&:-webkit-autofill]:caret-white
               ${prefixIcon ? 'pl-10' : 'pl-3.5'} 
               ${suffixIcon ? 'pr-10' : 'pr-3.5'} 
               py-2.5 

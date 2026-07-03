@@ -149,7 +149,7 @@ export function LoginForm({ onSwitchToSignup }: LoginFormProps = {}) {
               placeholder="johnsmith@allianceindia.org"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="pl-10 font-mono text-xs uppercase tracking-wide bg-black/40 border-blue-500/20 text-blue-100 focus:border-blue-500/80"
+              className="pl-10 font-mono text-xs uppercase tracking-wide bg-[#0a1a28] border-blue-500/20 text-blue-100 caret-blue-300 placeholder:text-blue-500/40 focus:border-blue-500/80 [&:-webkit-autofill]:bg-[#0a1a28] [&:-webkit-autofill]:shadow-[inset_0_0_0px_1000px_#0a1a28] [&:-webkit-autofill]:text-blue-100 [&:-webkit-autofill]:[color:theme(colors.blue.100)]"
               disabled={authLoading}
               onMouseEnter={() => playSound(800, 'sine', 0.02)}
             />
@@ -163,7 +163,7 @@ export function LoginForm({ onSwitchToSignup }: LoginFormProps = {}) {
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="pl-10 pr-10 font-mono text-xs bg-black/40 border-blue-500/20 text-blue-100 focus:border-blue-500/80"
+              className="pl-10 pr-10 font-mono text-xs bg-[#0a1a28] border-blue-500/20 text-blue-100 caret-blue-300 placeholder:text-blue-500/40 focus:border-blue-500/80 [&:-webkit-autofill]:bg-[#0a1a28] [&:-webkit-autofill]:shadow-[inset_0_0_0px_1000px_#0a1a28] [&:-webkit-autofill]:text-blue-100"
               disabled={authLoading}
               onMouseEnter={() => playSound(800, 'sine', 0.02)}
             />
