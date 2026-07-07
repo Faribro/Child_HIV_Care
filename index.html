@@ -6626,12 +6626,9 @@ function populateChildForm(childData) {
   // Populate documents section
   var documentsSection = document.getElementById('documentsSection');
   var documentFields = [
-    { key: 'doc_photo_link', label: 'Child Photo', icon: 'photo_camera' },
-    { key: 'doc_aadhaar_link', label: 'Aadhaar Card', icon: 'badge' },
-    { key: 'doc_passbook_link', label: 'Bank Passbook', icon: 'account_balance' },
-    { key: '__marksheet_link', label: 'Marksheet', icon: 'school' },
-    { key: '__receipt_link', label: 'Fee Receipt', icon: 'receipt' },
-    { key: '__thumb_link', label: 'Signature', icon: 'draw' }
+    { key: 'marksheet_prev_year', label: 'Marksheet', icon: 'school' },
+    { key: 'school_fee_receipt', label: 'Fee Receipt', icon: 'receipt' },
+    { key: 'thumb_impression', label: 'Signature / Thumb', icon: 'draw' }
   ];
   
   var documentsHtml = '<div class="documents-section-title"><span class="material-icons-outlined">image</span><h3>Uploaded Documents</h3></div><div class="documents-grid" id="documentsGrid">';

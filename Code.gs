@@ -108,6 +108,7 @@ function onOpen() {
     .addItem('One-Click Setup', 'oneClickSetupAll')
     .addItem('🚀 Sync Kobo Data', 'pullAllKoboData')
     .addItem('🧹 Migrate Attachment Links', 'migrateExistingAttachmentFilenamesToDriveLinks')
+    .addItem('🧹 Clean Choice Labels', 'cleanAllHistoricalSheetChoices')
     .addToUi();
 }
 
@@ -1302,5 +1303,63 @@ function deleteUser(email) {
     return { success: false, error: 'User not found.' };
   } catch (e) {
     return { success: false, error: e.message };
+  }
+}
+
+function cleanChoiceValue(key, val) {
+  if (!val || typeof val !== 'string') return val;
+  
+  const choiceKeys = [
+    'consent_obtained', 'gender', 'orphanstatus', 'caregiverrelation', 
+    'incomesource', 'appetite', 'mealsperday', 'educationstatus', 'schooltype', 
+    'attendancestatus', 'reviewconfirmed', 'bmicategory', 'vlstatus', 'vl_category'
+  ];
+  
+  if (choiceKeys.indexOf(key) !== -1) {
+    if (/^[a-z0-9_]+$/.test(val)) {
+      return val.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+    }
+  }
+  return val;
+}
+
+function cleanAllHistoricalSheetChoices() {
+  try {
+    var sheet = safeGetSheet_();
+    var lastRow = sheet.getLastRow();
+    var lastCol = sheet.getLastColumn();
+    if (lastRow < 4) return "No data to clean";
+    
+    var headers = sheet.getRange(3, 1, 1, lastCol).getValues()[0];
+    var dataRange = sheet.getRange(4, 1, lastRow - 3, lastCol);
+    var values = dataRange.getValues();
+    var updatedCount = 0;
+    
+    for (var r = 0; r < values.length; r++) {
+      var row = values[r];
+      var rowUpdated = false;
+      for (var c = 0; c < headers.length; c++) {
+        var headerLabel = headers[c];
+        var colPair = CONFIG.COLUMN_MAP.find(pair => pair[1] === headerLabel);
+        if (colPair) {
+          var key = colPair[0];
+          var val = row[c];
+          var cleaned = cleanChoiceValue(key, val);
+          if (cleaned !== val) {
+            row[c] = cleaned;
+            rowUpdated = true;
+          }
+        }
+      }
+      if (rowUpdated) updatedCount++;
+    }
+    
+    if (updatedCount > 0) {
+      dataRange.setValues(values);
+    }
+    return "Cleaned choice values in " + updatedCount + " rows successfully.";
+  } catch (err) {
+    Logger.log("cleanAllHistoricalSheetChoices ERROR: " + err.message);
+    return "Error: " + err.message;
   }
 }

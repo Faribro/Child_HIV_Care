@@ -122,7 +122,7 @@ function buildRowFromWebhook_(raw) {
       val = new Date().toISOString();
     }
     
-    row.push(val);
+    row.push(cleanChoiceValue(key, val));
   });
   
   return row;
