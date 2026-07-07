@@ -138,6 +138,64 @@ function oneClickSetupAll() {
 }
 
 /**
+ * Migration function to insert missing columns in-place for active sheet with data
+ */
+function migrateSheetSchema() {
+  const ss = getSpreadsheet_();
+  const sheet = ss.getSheetByName(CONFIG.SHEET_NAME);
+  if (!sheet) return { success: false, error: "Sheet not found" };
+  
+  const lastRow = sheet.getLastRow();
+  const lastCol = sheet.getLastColumn();
+  
+  // Read current headers from row 3
+  const currentHeaders = sheet.getRange(3, 1, 1, Math.max(lastCol, 1)).getValues()[0];
+  
+  // We want the headers to match CONFIG.COLUMN_MAP exactly
+  const targetMap = CONFIG.COLUMN_MAP; // Array of [key, label]
+  
+  Logger.log("Current headers: " + JSON.stringify(currentHeaders));
+  
+  // Loop through target columns and compare
+  for (let i = 0; i < targetMap.length; i++) {
+    const [key, label] = targetMap[i];
+    const colIndex = i + 1; // 1-based index in target sheet
+    
+    // Check if the current column at colIndex matches the target label
+    const currentLabel = currentHeaders[colIndex - 1];
+    if (currentLabel !== label) {
+      Logger.log("Mismatch at column " + colIndex + ". Expected: " + label + ", Found: " + currentLabel);
+      sheet.insertColumnBefore(colIndex);
+      // Update our local currentHeaders array to reflect the insertion
+      currentHeaders.splice(colIndex - 1, 0, label);
+      // Set the header in the sheet
+      sheet.getRange(3, colIndex).setValue(label);
+      sheet.setColumnWidth(colIndex, 100); // Set default width
+    }
+  }
+  
+  // Re-write all headers on row 3 to be safe
+  const allHeaders = targetMap.map(c => c[1]);
+  sheet.getRange(3, 1, 1, allHeaders.length).setValues([allHeaders]);
+  
+  // Format row 3
+  const numCols = targetMap.length;
+  const headerRange = sheet.getRange(3, 1, 1, numCols);
+  headerRange.setFontWeight('bold')
+             .setFontColor('#0F172A')
+             .setBackground('#F1F5F9')
+             .setHorizontalAlignment('center')
+             .setVerticalAlignment('middle')
+             .setTextRotation(90);
+  sheet.setRowHeight(3, 180);
+  
+  // Merge row 1 title block across all columns
+  sheet.getRange(1, 1, 1, numCols).merge().setValue(CONFIG.TITLE_TEXT);
+  
+  return { success: true, message: "Migration completed successfully!" };
+}
+
+/**
  * Ensure sheet headers match the column mapping and rotate headers vertically
  */
 function ensureSheetSchema(sheet) {
@@ -375,7 +433,8 @@ function doPost(e) {
         'getScheduledReportConfig',
         'setScheduledReportConfig',
         'deleteUser',
-        'oneClickSetupAll'
+        'oneClickSetupAll',
+        'migrateSheetSchema'
       ];
       
       if (!whitelisted.includes(funcName)) {
