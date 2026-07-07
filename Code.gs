@@ -81,6 +81,7 @@ const CONFIG = {
     ["reqother", "Required Other Support"],
     ["reqtotalsupport", "Required Total Support"],
     
+    ["approved_alliance_india", "Approved Alliance India"],
     ["reviewconfirmed", "Review Confirmed"],
     ["organization_name", "Organization Name"],
     ["Form_Submitted_by", "Form Submitted By"],
@@ -642,10 +643,19 @@ function getNationalDashboardData() {
   if (lastRow < 4 || lastCol < 1) return emptyDashboardPayload_();
 
   var data = sheet.getRange(4, 1, lastRow - 3, lastCol).getValues();
+  var formulas = sheet.getRange(4, 1, lastRow - 3, lastCol).getFormulas();
 
+  var currentRIdx = 0;
   function v(row, key) {
     var idx = safeColIndex_(key);
-    return idx > 0 ? row[idx - 1] : '';
+    if (idx <= 0) return '';
+    var cellVal = row[idx - 1];
+    var formula = formulas[currentRIdx][idx - 1];
+    if (formula && formula.toUpperCase().indexOf('=HYPERLINK(') === 0) {
+      var match = formula.match(/=HYPERLINK\(\s*["']([^"']+)["']/i);
+      if (match && match[1]) return match[1];
+    }
+    return cellVal;
   }
 
   var rows = [];
@@ -660,7 +670,8 @@ function getNationalDashboardData() {
   var stateAgg = {};
   var scatter = [];
 
-  data.forEach(function(row) {
+  data.forEach(function(row, i) {
+    currentRIdx = i;
     var childName = String(v(row, 'childname') || '').trim();
     var uuid      = String(v(row, '_uuid')     || '').trim();
     if (!childName && !uuid) return;
@@ -775,13 +786,23 @@ function getChildByUuid(uuid) {
     if (lastRow < 4 || lastCol < 1) return null;
 
     var data = sheet.getRange(4, 1, lastRow - 3, lastCol).getValues();
+    var formulas = sheet.getRange(4, 1, lastRow - 3, lastCol).getFormulas();
     
+    var currentRIdx = 0;
     function v(row, key) {
       var idx = safeColIndex_(key);
-      return idx > 0 ? String(row[idx - 1] || '').trim() : '';
+      if (idx <= 0) return '';
+      var cellVal = String(row[idx - 1] || '').trim();
+      var formula = formulas[currentRIdx][idx - 1];
+      if (formula && formula.toUpperCase().indexOf('=HYPERLINK(') === 0) {
+        var match = formula.match(/=HYPERLINK\(\s*["']([^"']+)["']/i);
+        if (match && match[1]) return match[1];
+      }
+      return cellVal;
     }
 
     for (var i = 0; i < data.length; i++) {
+      currentRIdx = i;
       var row = data[i];
       var rowUuid = String(v(row, '_uuid') || '').trim();
       if (rowUuid === String(uuid).trim() && rowUuid !== '') {
@@ -823,7 +844,13 @@ function saveChildData(uuid, updatedData) {
         for (var key in updatedData) {
           var colIndex = headers.indexOf(key);
           if (colIndex !== -1) {
-            sheet.getRange(rowNumber, colIndex + 1).setValue(updatedData[key]);
+            var val = updatedData[key];
+            if ((key === 'marksheet_prev_year' || key === 'school_fee_receipt' || key === 'thumb_impression') && val && String(val).startsWith('http')) {
+              var formula = makeSheetImageFormula_(val);
+              sheet.getRange(rowNumber, colIndex + 1).setFormula(formula);
+            } else {
+              sheet.getRange(rowNumber, colIndex + 1).setValue(val);
+            }
           }
         }
         return true;
@@ -917,6 +944,24 @@ var ATTACHMENT_CONFIG = {
 };
 var ATTACHMENT_ROLES = ["thumb", "receipt", "marksheet"];
 
+function makeSheetImageFormula_(driveUrl) {
+  if (!driveUrl || typeof driveUrl !== 'string' || !driveUrl.startsWith('http')) return driveUrl;
+  
+  var fileId = "";
+  if (driveUrl.indexOf('id=') !== -1) {
+    fileId = driveUrl.split('id=')[1].split('&')[0];
+  } else if (driveUrl.indexOf('file/d/') !== -1) {
+    fileId = driveUrl.split('file/d/')[1].split('/')[0];
+  }
+  
+  if (fileId) {
+    var thumbUrl = 'https://drive.google.com/thumbnail?id=' + fileId + '&sz=w150';
+    return '=HYPERLINK("' + driveUrl + '", IMAGE("' + thumbUrl + '"))';
+  }
+  
+  return driveUrl;
+}
+
 function writeAttachmentLinks_(sheet, rowNum, raw) {
   var links = extractAttachmentLinks_(raw);
   var c = {
@@ -931,9 +976,21 @@ function writeAttachmentLinks_(sheet, rowNum, raw) {
     marksheet: downloadAndSaveToDrive_(links.marksheet, "marksheet", rowNum)
   };
   
-  if (c.thumb     > 0 && driveUrls.thumb)     sheet.getRange(rowNum, c.thumb).setValue(driveUrls.thumb);
-  if (c.receipt   > 0 && driveUrls.receipt)   sheet.getRange(rowNum, c.receipt).setValue(driveUrls.receipt);
-  if (c.marksheet > 0 && driveUrls.marksheet) sheet.getRange(rowNum, c.marksheet).setValue(driveUrls.marksheet);
+  if (c.thumb > 0 && driveUrls.thumb) {
+    var formula = makeSheetImageFormula_(driveUrls.thumb);
+    if (formula.startsWith('=')) sheet.getRange(rowNum, c.thumb).setFormula(formula);
+    else sheet.getRange(rowNum, c.thumb).setValue(formula);
+  }
+  if (c.receipt > 0 && driveUrls.receipt) {
+    var formula = makeSheetImageFormula_(driveUrls.receipt);
+    if (formula.startsWith('=')) sheet.getRange(rowNum, c.receipt).setFormula(formula);
+    else sheet.getRange(rowNum, c.receipt).setValue(formula);
+  }
+  if (c.marksheet > 0 && driveUrls.marksheet) {
+    var formula = makeSheetImageFormula_(driveUrls.marksheet);
+    if (formula.startsWith('=')) sheet.getRange(rowNum, c.marksheet).setFormula(formula);
+    else sheet.getRange(rowNum, c.marksheet).setValue(formula);
+  }
 }
 
 function downloadAndSaveToDrive_(koboUrl, fileType, rowNum) {
@@ -997,6 +1054,25 @@ function extractAttachmentLinks_(raw) {
   return out;
 }
 
+function _fetchAllKoboSubmissions() {
+  try {
+    var url = CONFIG.KOBO_BASE_URL + "/api/v2/assets/" + CONFIG.KOBO_ASSET_UID + "/data/?format=json&limit=1000";
+    var options = {
+      method: "get",
+      headers: { "Authorization": "Token " + CONFIG.KOBO_API_TOKEN },
+      muteHttpExceptions: true
+    };
+    var response = UrlFetchApp.fetch(url, options);
+    if (response.getResponseCode() === 200) {
+      var json = JSON.parse(response.getContentText());
+      return json.results || [];
+    }
+  } catch (e) {
+    Logger.log("Failed to fetch Kobo submissions in batch: " + e.message);
+  }
+  return [];
+}
+
 function migrateExistingAttachmentFilenamesToDriveLinks() {
   var sheet = safeGetSheet_();
   var lastRow = sheet.getLastRow();
@@ -1011,7 +1087,18 @@ function migrateExistingAttachmentFilenamesToDriveLinks() {
   
   if (uuidColIdx === -1) return "UUID column not found";
   
-  var data = sheet.getRange(4, 1, lastRow - 3, lastCol).getValues();
+  // 1. Fetch Kobo submissions in a single batch call
+  var submissions = _fetchAllKoboSubmissions();
+  var subMap = {};
+  submissions.forEach(function(s) {
+    if (s && s._uuid) {
+      subMap[s._uuid] = s;
+    }
+  });
+  
+  var dataRange = sheet.getRange(4, 1, lastRow - 3, lastCol);
+  var data = dataRange.getValues();
+  var formulas = dataRange.getFormulas();
   var updatedCount = 0;
   
   for (var i = 0; i < data.length; i++) {
@@ -1019,51 +1106,52 @@ function migrateExistingAttachmentFilenamesToDriveLinks() {
     var uuid = String(row[uuidColIdx] || '').trim();
     if (!uuid) continue;
     
+    var cleanUuid = uuid.replace(/^uuid:/, "");
     var rowNum = i + 4;
     var rowUpdated = false;
     
-    // Signature / Thumb
+    // Check if raw or not a formula
     var thumbVal = thumbColIdx !== -1 ? String(row[thumbColIdx] || '').trim() : '';
-    var isThumbRaw = thumbVal && !thumbVal.startsWith('http');
+    var thumbFormula = thumbColIdx !== -1 ? String(formulas[i][thumbColIdx] || '').trim() : '';
+    var isThumbRaw = thumbVal && !thumbVal.startsWith('http') && !thumbFormula.startsWith('=');
     
-    // Receipt
     var receiptVal = receiptColIdx !== -1 ? String(row[receiptColIdx] || '').trim() : '';
-    var isReceiptRaw = receiptVal && !receiptVal.startsWith('http');
+    var receiptFormula = receiptColIdx !== -1 ? String(formulas[i][receiptColIdx] || '').trim() : '';
+    var isReceiptRaw = receiptVal && !receiptVal.startsWith('http') && !receiptFormula.startsWith('=');
     
-    // Marksheet
     var marksheetVal = marksheetColIdx !== -1 ? String(row[marksheetColIdx] || '').trim() : '';
-    var isMarksheetRaw = marksheetVal && !marksheetVal.startsWith('http');
+    var marksheetFormula = marksheetColIdx !== -1 ? String(formulas[i][marksheetColIdx] || '').trim() : '';
+    var isMarksheetRaw = marksheetVal && !marksheetVal.startsWith('http') && !marksheetFormula.startsWith('=');
     
     if (isThumbRaw || isReceiptRaw || isMarksheetRaw) {
-      try {
-        var sub = _fetchKoboSubmissionByUuid(uuid);
-        if (sub) {
-          var links = extractAttachmentLinks_(sub);
-          
-          if (isThumbRaw && links.thumb && thumbColIdx !== -1) {
-            var driveUrl = downloadAndSaveToDrive_(links.thumb, "signature", rowNum);
-            if (driveUrl) {
-              sheet.getRange(rowNum, thumbColIdx + 1).setValue(driveUrl);
-              rowUpdated = true;
-            }
-          }
-          if (isReceiptRaw && links.receipt && receiptColIdx !== -1) {
-            var driveUrl = downloadAndSaveToDrive_(links.receipt, "receipt", rowNum);
-            if (driveUrl) {
-              sheet.getRange(rowNum, receiptColIdx + 1).setValue(driveUrl);
-              rowUpdated = true;
-            }
-          }
-          if (isMarksheetRaw && links.marksheet && marksheetColIdx !== -1) {
-            var driveUrl = downloadAndSaveToDrive_(links.marksheet, "marksheet", rowNum);
-            if (driveUrl) {
-              sheet.getRange(rowNum, marksheetColIdx + 1).setValue(driveUrl);
-              rowUpdated = true;
-            }
+      var sub = subMap[cleanUuid];
+      if (sub) {
+        var links = extractAttachmentLinks_(sub);
+        
+        if (isThumbRaw && links.thumb && thumbColIdx !== -1) {
+          var driveUrl = downloadAndSaveToDrive_(links.thumb, "signature", rowNum);
+          if (driveUrl) {
+            var formula = makeSheetImageFormula_(driveUrl);
+            sheet.getRange(rowNum, thumbColIdx + 1).setFormula(formula);
+            rowUpdated = true;
           }
         }
-      } catch (err) {
-        Logger.log("Failed row " + rowNum + ": " + err.message);
+        if (isReceiptRaw && links.receipt && receiptColIdx !== -1) {
+          var driveUrl = downloadAndSaveToDrive_(links.receipt, "receipt", rowNum);
+          if (driveUrl) {
+            var formula = makeSheetImageFormula_(driveUrl);
+            sheet.getRange(rowNum, receiptColIdx + 1).setFormula(formula);
+            rowUpdated = true;
+          }
+        }
+        if (isMarksheetRaw && links.marksheet && marksheetColIdx !== -1) {
+          var driveUrl = downloadAndSaveToDrive_(links.marksheet, "marksheet", rowNum);
+          if (driveUrl) {
+            var formula = makeSheetImageFormula_(driveUrl);
+            sheet.getRange(rowNum, marksheetColIdx + 1).setFormula(formula);
+            rowUpdated = true;
+          }
+        }
       }
       if (rowUpdated) updatedCount++;
     }
