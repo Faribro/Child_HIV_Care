@@ -59,9 +59,12 @@ function buildRowFromWebhook_(raw) {
       `grp_main/grp_clinical/${key}`,
       `grp_main/grp_nutrition/${key}`,
       `grp_main/grp_education/${key}`,
+      `grp_main/grp_education/grp_edu_current/${key}`,
+      `grp_main/grp_education/grp_edu_req/${key}`,
       `grp_main/grp_edu_current/${key}`,
       `grp_main/grp_edu_req/${key}`,
       `grp_main/grp_review/${key}`,
+      `grp_main/grp_review/grp_final_review/${key}`,
       `grp_main/grp_final_review/${key}`,
       `grp_review/${key}`,
       `grp_final_review/${key}`

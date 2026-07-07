@@ -24,6 +24,7 @@ const CONFIG = {
     ["visitdate", "Visit Date"],
     ["childname", "Child Name"],
     ["dateofbirth", "Date of Birth"],
+    ["age_calc", "Calculated Age"],
     ["gender", "Gender"],
     ["orphanstatus", "Orphan Status"],
     ["caregivername", "Caregiver Full Name"],
@@ -53,6 +54,7 @@ const CONFIG = {
     ["educationstatus", "Education Status"],
     ["educationstatus_other", "Education Status Other"],
     ["schoolname", "School Name"],
+    ["School_Session_Start_Date", "School Session Start Date"],
     ["schooltype", "School Type"],
     ["currentclass", "Current Class"],
     ["attendancestatus", "Attendance Status"],
@@ -68,6 +70,7 @@ const CONFIG = {
     ["edutotalannual", "Total Annual Education Cost"],
     ["school_fee_receipt", "School Fee Receipt Link"],
     ["marksheet_prev_year", "Marksheet Photo Link"],
+    ["Remarks_If_Any", "Remarks (If Any)"],
     
     // Required support
     ["reqschoolfees", "Required School Fees"],
@@ -80,6 +83,7 @@ const CONFIG = {
     
     ["reviewconfirmed", "Review Confirmed"],
     ["organization_name", "Organization Name"],
+    ["Form_Submitted_by", "Form Submitted By"],
     ["organization_email", "Organization Email"],
     
     ["__sync_needed", "Sync Needed"],
@@ -124,7 +128,13 @@ function oneClickSetupAll() {
   // 3. Setup audit logs
   initAuditSheet_();
   
-  SpreadsheetApp.getUi().alert('✅ Setup Complete', 'All spreadsheet structures initialized successfully!', SpreadsheetApp.getUi().ButtonSet.OK);
+  try {
+    SpreadsheetApp.getUi().alert('✅ Setup Complete', 'All spreadsheet structures initialized successfully!', SpreadsheetApp.getUi().ButtonSet.OK);
+  } catch (e) {
+    Logger.log('oneClickSetupAll completed (non-UI context)');
+  }
+  
+  return { success: true, message: 'All spreadsheet structures initialized successfully!' };
 }
 
 /**
@@ -364,7 +374,8 @@ function doPost(e) {
         'deleteEmailRecipient',
         'getScheduledReportConfig',
         'setScheduledReportConfig',
-        'deleteUser'
+        'deleteUser',
+        'oneClickSetupAll'
       ];
       
       if (!whitelisted.includes(funcName)) {
