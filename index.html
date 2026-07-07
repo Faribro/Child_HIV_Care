@@ -2014,10 +2014,10 @@ tbody tr:hover td{background:var(--amber-pale)}
 @keyframes tilt{0%,100%{transform:rotate(-6deg)}25%{transform:rotate(-3deg)}75%{transform:rotate(-9deg)}}
 @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
-/* Child Form Modal Styles - Neon Glow Edition (copied from Flowchart) */
+/* Child Form Modal Styles - Calming Teal & Mint Glow Edition */
 .child-modal-overlay{
   position:fixed;inset:0;
-  background:rgba(15,23,42,0.95);
+  background:rgba(11,20,38,0.92); /* Calming slate-navy backdrop */
   backdrop-filter:blur(16px) saturate(180%);
   -webkit-backdrop-filter:blur(16px) saturate(180%);
   z-index:100000;
@@ -2030,14 +2030,14 @@ tbody tr:hover td{background:var(--amber-pale)}
 }
 .child-modal{
   width:95%;max-width:1200px;max-height:90vh;
-  background:linear-gradient(145deg, rgba(30,41,59,0.98) 0%, rgba(15,23,42,0.98) 100%);
+  background:linear-gradient(145deg, rgba(17,34,64,0.98) 0%, rgba(10,25,47,0.98) 100%);
   border-radius:24px;
   overflow:hidden;
   transform:scale(0.95) translateY(20px);
   transition:transform 0.5s cubic-bezier(0.34,1.56,0.64,1);
   position:relative;
-  box-shadow:0 24px 48px rgba(0,0,0,0.4), 0 0 0 1px rgba(148,163,184,0.1);
-  border:1px solid rgba(148,163,184,0.1);
+  box-shadow:0 24px 48px rgba(0,0,0,0.4), 0 0 0 1px rgba(100,200,255,0.1);
+  border:1px solid rgba(100,200,255,0.1);
   display: flex;
   flex-direction: column;
 }
@@ -2046,7 +2046,7 @@ tbody tr:hover td{background:var(--amber-pale)}
   position:absolute;
   top:-2px;left:-2px;right:-2px;bottom:-2px;
   z-index:-1;
-  background:linear-gradient(120deg,#00ffff,#ff00ff,#00ffff);
+  background:linear-gradient(120deg,#0ea5e9,#10b981,#0ea5e9);
   background-size:400% 400%;
   animation:glowBorder 12s ease infinite;
   border-radius:22px;
@@ -2054,7 +2054,7 @@ tbody tr:hover td{background:var(--amber-pale)}
   transition:opacity 0.4s ease;
 }
 .child-modal:hover{
-  box-shadow:0 0 30px rgba(255,0,255,0.6);
+  box-shadow:0 0 30px rgba(16,185,129,0.25);
 }
 .child-modal:hover::before{
   opacity:1;
@@ -2070,8 +2070,8 @@ tbody tr:hover td{background:var(--amber-pale)}
 .child-modal-header{
   display:flex;align-items:center;justify-content:space-between;
   padding:28px 32px;
-  background:linear-gradient(180deg, rgba(37,99,235,0.08) 0%, rgba(37,99,235,0.02) 100%);
-  border-bottom:1px solid rgba(148,163,184,0.1);
+  background:linear-gradient(180deg, rgba(13,148,136,0.08) 0%, rgba(13,148,136,0.02) 100%);
+  border-bottom:1px solid rgba(100,200,255,0.1);
   flex-shrink: 0;
 }
 .child-modal-title{
@@ -2079,26 +2079,26 @@ tbody tr:hover td{background:var(--amber-pale)}
 }
 .child-modal-icon{
   width:56px;height:56px;border-radius:16px;
-  background:linear-gradient(135deg,#00ffff 0%,#ff00ff 100%);
+  background:linear-gradient(135deg,#0ea5e9 0%,#10b981 100%);
   display:flex;align-items:center;justify-content:center;
-  box-shadow:0 0 30px rgba(0,255,255,0.5);
+  box-shadow:0 0 20px rgba(16,185,129,0.3);
   animation:iconGlow 2s ease-in-out infinite;
 }
 @keyframes iconGlow {
-  0%, 100% { box-shadow: 0 0 20px rgba(0, 255, 255, 0.4); }
-  50% { box-shadow: 0 0 30px rgba(255, 0, 255, 0.6); }
+  0%, 100% { box-shadow: 0 0 15px rgba(14, 165, 233, 0.3); }
+  50% { box-shadow: 0 0 25px rgba(16, 185, 129, 0.4); }
 }
 .child-modal-icon .material-icons-outlined{font-size:28px;color:#ffffff}
 .child-modal-title-text h2{
   font-family:'Orbitron',sans-serif;
   font-size:24px;font-weight:500;
-  color:#00ffff;
-  text-shadow:0 0 8px #00ffff, 0 0 16px #00ffff;
+  color:#38bdf8;
+  text-shadow:0 0 8px rgba(56,189,248,0.5);
   margin:0;
 }
 .child-modal-title-text p{
   font-size:13px;color:#ccc;margin-top:4px;font-weight:600;
-  text-shadow:0 0 4px #ff00ff;
+  text-shadow:0 0 4px rgba(16,185,129,0.5);
   margin:0;
 }
 .child-modal-actions{
@@ -2130,27 +2130,27 @@ tbody tr:hover td{background:var(--amber-pale)}
   box-shadow:0 0 30px rgba(16,185,129,0.6);
 }
 .child-modal-btn-email{
-  background:linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+  background:linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
   border:none;
-  box-shadow:0 0 20px rgba(99,102,241,0.4);
+  box-shadow:0 0 20px rgba(14,165,233,0.4);
 }
 .child-modal-btn-email:hover{
   filter:brightness(1.1);
-  box-shadow:0 0 30px rgba(99,102,241,0.6);
+  box-shadow:0 0 30px rgba(14,165,233,0.6);
 }
 .child-modal-close{
   width:44px;height:44px;border-radius:25px;
-  background:#ff00ff;
-  border:none;color:#0d0d0d;cursor:pointer;
+  background:#10b981;
+  border:none;color:#ffffff;cursor:pointer;
   display:flex;align-items:center;justify-content:center;
   transition:all 0.3s ease;
   font-weight:bold;text-transform:uppercase;
-  box-shadow:0 0 12px #ff00ff;
+  box-shadow:0 0 12px rgba(16,185,129,0.4);
 }
 .child-modal-close:hover{
-  background:#00ffff;
-  color:#000;
-  box-shadow:0 0 16px #00ffff, 0 0 24px #00ffff;
+  background:#0ea5e9;
+  color:#ffffff;
+  box-shadow:0 0 16px rgba(14,165,233,0.6);
   transform:scale(1.1);
 }
 .child-modal-body{
@@ -2418,7 +2418,7 @@ tbody tr:hover td{background:var(--amber-pale)}
 </div>
 
 <!-- ═══ TABS ═══ -->
-<div class="tabs" style="display: none !important;">
+<div class="tabs">
   <button class="tab-btn active" onclick="switchTab('overview',this)">
     <span class="material-icons-outlined" style="font-size:13px">grid_view</span>
     Overview
@@ -2443,7 +2443,7 @@ tbody tr:hover td{background:var(--amber-pale)}
   </div>
 
 <!-- ═══ OVERVIEW TAB ═══ -->
-<div id="tab-overview" class="tab-pane">
+<div id="tab-overview" class="tab-pane active">
   <div id="overview-spinner" class="spinner-wrap"><div class="spinner"></div>Loading dashboard…</div>
   <div id="overview-content" style="display:none">
     <div class="stat-grid" id="stat-grid"></div>
@@ -2479,7 +2479,7 @@ tbody tr:hover td{background:var(--amber-pale)}
 </div>
 
 <!-- ═══ CHILDREN TAB ═══ -->
-<div id="tab-children" class="tab-pane active">
+<div id="tab-children" class="tab-pane">
   <div class="filter-bar" style="display: none;">
     <div class="custom-multiselect" id="filter-state">
       <div class="multiselect-toggle">
@@ -2784,194 +2784,7 @@ tbody tr:hover td{background:var(--amber-pale)}
 </div><!-- /root -->
 <div id="toast-wrap"></div>
 
-<!-- FLOATING BOT MOVED INSIDE ROOT FOR GOOGLE APPS SCRIPT COMPATIBILITY -->
-<script>
-// Move floating bot inside root for absolute positioning
-document.addEventListener('DOMContentLoaded', function() {
-  var bot = document.getElementById('floating-bot');
-  var botWindow = document.getElementById('floating-bot-window');
-  var root = document.getElementById('root');
-  if (bot && root) {
-    root.appendChild(bot);
-  }
-  if (botWindow && root) {
-    root.appendChild(botWindow);
-  }
-});
-</script>
 
-<!-- ═══ FLOATING AI BOT (MISS MINUTES - PURE HTML/CSS) ═══ -->
-<div id="floating-bot" class="floating-bot" onclick="toggleFloatingBot()">
-  <div class="mm-clock">
-    <div class="mm-face">
-      <div class="mm-num mm-12">XII</div>
-      <div class="mm-num mm-3">III</div>
-      <div class="mm-num mm-6">VI</div>
-      <div class="mm-num mm-9">IX</div>
-      <div class="mm-hand mm-hour" id="mm-hour"></div>
-      <div class="mm-hand mm-min" id="mm-min"></div>
-      <div class="mm-dot"></div>
-    </div>
-    <div class="mm-ring mm-ring-1"></div>
-    <div class="mm-ring mm-ring-2"></div>
-  </div>
-  <div class="mm-glow"></div>
-  <div class="mm-status"></div>
-</div>
-
-<!-- ═══ PROFESSIONAL AI AGENT CHAT WINDOW ═══ -->
-<div id="floating-bot-window" class="floating-bot-window">
-  <div class="bot-window-header">
-    <div class="bot-window-title">
-      <div class="mini-bot-avatar">
-        <div class="mini-clock-face">
-          <div class="mini-clock-center"></div>
-          <div class="mini-clock-hand mini-hour-hand"></div>
-          <div class="mini-clock-hand mini-minute-hand"></div>
-        </div>
-      </div>
-      <div>
-        <span>Miss Minutes</span>
-        <div class="bot-status-text">TVA AI Agent • Online</div>
-      </div>
-    </div>
-    <div class="bot-header-actions">
-      <button class="bot-action-btn" onclick="generateAIInsights()" title="Generate AI Insights">
-        <span class="material-icons-outlined">psychology</span>
-      </button>
-      <button class="bot-action-btn" onclick="exportChatHistory()" title="Export Chat">
-        <span class="material-icons-outlined">download</span>
-      </button>
-      <button class="bot-close-btn" onclick="toggleFloatingBot()">
-        <span class="material-icons-outlined">close</span>
-      </button>
-    </div>
-  </div>
-  
-  <div class="bot-window-messages" id="floating-bot-messages">
-    <div class="bot-welcome-message">
-      <div class="mini-bot-avatar">
-        <div class="mini-clock-face">
-          <div class="mini-clock-center"></div>
-          <div class="mini-clock-hand mini-hour-hand"></div>
-          <div class="mini-clock-hand mini-minute-hand"></div>
-        </div>
-      </div>
-      <div class="bot-message-content">
-        <div class="bot-greeting">
-          <h4>🕐 Welcome to the TVA</h4>
-          <p>I'm Miss Minutes, your sentient AI agent and time-keeper for the Monitoring & Evaluation timeline. I'm here to help you navigate the sacred timeline of your program data.</p>
-        </div>
-        
-        <div class="bot-capabilities">
-          <h5>📊 My Capabilities:</h5>
-          <div class="capability-grid">
-            <div class="capability-item">
-              <span class="material-icons-outlined">analytics</span>
-              <span>Data Analysis</span>
-            </div>
-            <div class="capability-item">
-              <span class="material-icons-outlined">trending_up</span>
-              <span>Trend Prediction</span>
-            </div>
-            <div class="capability-item">
-              <span class="material-icons-outlined">warning_amber</span>
-              <span>Risk Assessment</span>
-            </div>
-            <div class="capability-item">
-              <span class="material-icons-outlined">email</span>
-              <span>Report Generation</span>
-            </div>
-            <div class="capability-item">
-              <span class="material-icons-outlined">psychology</span>
-              <span>AI Insights</span>
-            </div>
-            <div class="capability-item">
-              <span class="material-icons-outlined">healing</span>
-              <span>Care Planning</span>
-            </div>
-          </div>
-        </div>
-        
-        <div class="bot-quick-actions">
-          <h5>⚡ Quick Actions:</h5>
-          <div class="quick-action-grid">
-            <button class="bot-quick-btn" onclick="sendFloatingBotMessage('Analyze current program performance and identify key trends')">
-              📈 Analyze Performance
-            </button>
-            <button class="bot-quick-btn" onclick="sendFloatingBotMessage('Generate comprehensive AI insights for all program data')">
-              🧠 Generate AI Insights
-            </button>
-            <button class="bot-quick-btn" onclick="sendFloatingBotMessage('Predict risks and identify high-priority interventions')">
-              ⚠️ Risk Assessment
-            </button>
-            <button class="bot-quick-btn" onclick="sendFloatingBotMessage('Create professional stakeholder report with recommendations')">
-              📄 Generate Report
-            </button>
-            <button class="bot-quick-btn" onclick="sendFloatingBotMessage('Optimize care plans for children needing intervention')">
-              🏥 Optimize Care Plans
-            </button>
-            <button class="bot-quick-btn" onclick="sendFloatingBotMessage('Show me real-time dashboard metrics and KPIs')">
-              📊 Dashboard Metrics
-            </button>
-          </div>
-        </div>
-        
-        <div class="bot-data-status">
-          <h5>📋 Current Data Status:</h5>
-          <div class="data-status-grid">
-            <div class="status-item">
-              <span class="status-label">Children Enrolled</span>
-              <span class="status-value" id="bot-children-count">Loading...</span>
-            </div>
-            <div class="status-item">
-              <span class="status-label">Data Quality</span>
-              <span class="status-value" id="bot-data-quality">Loading...</span>
-            </div>
-            <div class="status-item">
-              <span class="status-label">Risk Alerts</span>
-              <span class="status-value" id="bot-risk-alerts">Loading...</span>
-            </div>
-            <div class="status-item">
-              <span class="status-label">Last Updated</span>
-              <span class="status-value" id="bot-last-updated">Loading...</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  
-  <div class="bot-window-input">
-    <div class="bot-input-container">
-      <button class="bot-input-btn" onclick="attachDataFile()" title="Attach Data">
-        <span class="material-icons-outlined">attach_file</span>
-      </button>
-      <button class="bot-input-btn" onclick="insertVisualization()" title="Insert Chart">
-        <span class="material-icons-outlined">insert_chart</span>
-      </button>
-      <input 
-        type="text" 
-        id="floating-bot-input" 
-        placeholder="Ask me about your program data, request insights, or generate reports..."
-        onkeydown="handleFloatingBotKeydown(event)"
-        class="bot-text-input">
-      <button class="bot-input-btn voice-btn" onclick="toggleVoiceInput()" title="Voice Input">
-        <span class="material-icons-outlined">mic</span>
-      </button>
-      <button class="bot-send-btn" onclick="sendFloatingBotMessage()">
-        <span class="material-icons-outlined">send</span>
-      </button>
-    </div>
-    <div class="bot-suggestions">
-      <span class="suggestion-chip" onclick="insertSuggestion('Analyze trends')">Analyze trends</span>
-      <span class="suggestion-chip" onclick="insertSuggestion('Generate insights')">Generate insights</span>
-      <span class="suggestion-chip" onclick="insertSuggestion('Risk assessment')">Risk assessment</span>
-      <span class="suggestion-chip" onclick="insertSuggestion('Create report')">Create report</span>
-      <span class="suggestion-chip" onclick="insertSuggestion('Optimize plans')">Optimize plans</span>
-    </div>
-  </div>
-</div>
 
 <script>
 // DIAGNOSTIC CLICK LISTENER
@@ -3128,7 +2941,6 @@ function loadDashboard(){
       G.filtered=G.data;
       populateStateFilter(payload.stateSummary?payload.stateSummary.map(s=>s.state):[]);
       renderAll();
-      switchTab('children');
     })
     .withFailureHandler(function(err){
       document.getElementById('overview-spinner').innerHTML='<span class="material-icons-outlined" style="font-size:32px;color:var(--danger)">error</span><p style="color:var(--danger)">Failed to load: '+esc(err.message||err)+'</p>';

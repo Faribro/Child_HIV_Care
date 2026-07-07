@@ -615,6 +615,14 @@ function openDashboard() {
   SpreadsheetApp.getUi().showModalDialog(html, 'ChildCare Dashboard');
 }
 
+function openFlowchartDashboard() {
+  var html = HtmlService.createHtmlOutputFromFile('FlowchartDashboard')
+    .setTitle('Data Pipeline & Sync Flowchart')
+    .setWidth(1350)
+    .setHeight(850);
+  SpreadsheetApp.getUi().showModalDialog(html, 'Data Pipeline & Sync Flowchart');
+}
+
 function getNationalDashboardData() {
   var sheet = safeGetSheet_();
   var lastRow = sheet.getLastRow();

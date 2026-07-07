@@ -1,0 +1,3481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Program Flowchart — Alliance India</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg: #000000;
+  --bg-secondary: #111827;
+  --bg-tertiary: #1F2937;
+  --accent-primary: #6366F1;
+  --accent-secondary: #8B5CF6;
+  --accent-tertiary: #EC4899;
+  --success: #10B981;
+  --warning: #F59E0B;
+  --danger: #EF4444;
+  --text-primary: #F9FAFB;
+  --text-secondary: #D1D5DB;
+  --text-tertiary: #9CA3AF;
+  --border-subtle: rgba(148, 163, 184, 0.1);
+  --shadow-soft: 0 10px 40px rgba(0,0,0,0.3);
+  --shadow-elevated: 0 20px 60px rgba(0,0,0,0.4);
+  --glow-primary: 0 0 30px rgba(99, 102, 241, 0.4);
+  --glow-success: 0 0 30px rgba(16, 185, 129, 0.4);
+  --glow-warning: 0 0 30px rgba(245, 158, 11, 0.4);
+  --glow-child: 0 0 30px rgba(236, 72, 153, 0.5);
+}
+html,body{
+  font-family:'Inter','Plus Jakarta Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  background: linear-gradient(-45deg, #0f172a, #1e293b, #0f172a, #1e1b4b, #0f172a, #1f2937);
+  background-size: 400% 400%;
+  animation: gradientShift 8s ease infinite;
+  color: #f1f5f9;
+  height:100%;
+  overflow:hidden;
+  font-size:16px;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  letter-spacing:-0.01em;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  25% { background-position: 50% 100%; }
+  50% { background-position: 100% 50%; }
+  75% { background-position: 50% 0%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Add strong floating particles animation */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  background-image: 
+    radial-gradient(3px 3px at 20% 30%, rgba(99,102,241,0.4), transparent),
+    radial-gradient(3px 3px at 80% 20%, rgba(139,92,246,0.4), transparent),
+    radial-gradient(2px 2px at 40% 70%, rgba(236,72,153,0.3), transparent),
+    radial-gradient(2px 2px at 70% 80%, rgba(16,185,129,0.3), transparent),
+    radial-gradient(3px 3px at 10% 80%, rgba(99,102,241,0.3), transparent),
+    radial-gradient(2px 2px at 60% 50%, rgba(236,72,153,0.3), transparent),
+    radial-gradient(3px 3px at 30% 10%, rgba(16,185,129,0.3), transparent);
+  background-size: 200% 200%;
+  animation: particlesFloat 12s ease-in-out infinite;
+}
+
+@keyframes particlesFloat {
+  0% { background-position: 0% 0%; transform: translateY(0px) scale(1); }
+  25% { background-position: 100% 50%; transform: translateY(-15px) scale(1.1); }
+  50% { background-position: 0% 100%; transform: translateY(-10px) scale(1.05); }
+  75% { background-position: 50% 0%; transform: translateY(-20px) scale(1.15); }
+  100% { background-position: 0% 0%; transform: translateY(0px) scale(1); }
+}
+#root{display:flex;flex-direction:column;height:100vh}
+.topbar{
+  display:flex;align-items:center;gap:20px;padding:0 32px;height:72px;
+  background:linear-gradient(180deg, rgba(30,41,59,0.95) 0%, rgba(30,41,59,0.8) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom:1px solid var(--border-subtle);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.2);
+  position:relative;
+  z-index:100;
+}
+.brand{display:flex;align-items:center;gap:16px}
+.brand-mark{
+  width:48px;height:48px;border-radius:14px;
+  background:linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow: var(--shadow-elevated), var(--glow-primary);
+}
+.brand-mark .material-icons-outlined{font-size:24px;color:#fff}
+.brand-text{display:flex;flex-direction:column}
+.brand-title{font-weight:800;font-size:18px;line-height:1;color:var(--text-primary)}
+.brand-sub{font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-tertiary);margin-top:2px}
+.search-container{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  flex:1;
+  max-width:500px;
+  margin:0 24px;
+  background:rgba(31,41,55,0.9);
+  border:1px solid rgba(148,163,184,0.2);
+  border-radius:12px;
+  padding:10px 16px;
+  transition:all 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+.search-container:focus-within{
+  border-color:rgba(99,102,241,0.6);
+  box-shadow:0 0 20px rgba(99,102,241,0.2);
+}
+.search-icon{
+  color:var(--text-tertiary);
+  font-size:20px;
+  transition:color 0.3s ease;
+}
+.search-container:focus-within .search-icon{
+  color:var(--accent-primary);
+}
+.search-input{
+  flex:1;
+  background:transparent;
+  border:none;
+  outline:none;
+  color:var(--text-primary);
+  font-size:14px;
+  font-weight:500;
+  font-family:'Inter','Plus Jakarta Sans',sans-serif;
+}
+.search-input::placeholder{
+  color:var(--text-tertiary);
+}
+.search-clear{
+  width:28px;
+  height:28px;
+  border-radius:50%;
+  background:rgba(148,163,184,0.1);
+  border:none;
+  color:var(--text-tertiary);
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:all 0.2s ease;
+}
+.search-clear:hover{
+  background:rgba(239,68,68,0.2);
+  color:#EF4444;
+}
+.topbar-right{display:flex;align-items:center;gap:12px;margin-left:auto}
+.btn{
+  display:flex;align-items:center;gap:10px;padding:12px 20px;border-radius:12px;
+  background:rgba(148,163,184,0.1);
+  border:1px solid rgba(148,163,184,0.15);
+  color:var(--text-primary);
+  font-size:13px;font-weight:700;cursor:pointer;
+  transition:all 0.3s cubic-bezier(0.4,0,0.2,1);
+  letter-spacing:0.02em;
+}
+.btn:hover{
+  background:rgba(148,163,184,0.2);
+  transform:translateY(-2px);
+  box-shadow:var(--shadow-soft);
+}
+.btn-primary{
+  background:linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%);
+  border:none;
+  box-shadow:var(--glow-primary);
+}
+.btn-primary:hover{
+  filter:brightness(1.1);
+  transform:translateY(-3px);
+}
+.btn-close{
+  width:48px;height:48px;border-radius:50%;
+  background:linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+  border:none;color:#fff;font-size:20px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all 0.3s cubic-bezier(0.4,0,0.2,1);
+  box-shadow:0 0 30px rgba(239,68,68,0.4);
+  animation:glowPulse 2s ease-in-out infinite;
+}
+.btn-close:hover{transform:scale(1.1);box-shadow:0 0 40px rgba(239,68,68,0.6)}
+@keyframes glowPulse{0%,100%{box-shadow:0 0 30px rgba(239,68,68,0.4)}50%{box-shadow:0 0 50px rgba(239,68,68,0.6)}}
+.main{flex:1;position:relative;overflow:hidden}
+.chart-container{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+#tree-svg{width:100%;height:100%}
+.loading{
+  position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:var(--bg);z-index:50;
+}
+.loader{
+  width:64px;height:64px;border:4px solid rgba(148,163,184,0.1);
+  border-top-color:var(--accent-primary);border-radius:50%;
+  animation:spin 1s linear infinite;margin-bottom:24px;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:16px;font-weight:600;color:var(--text-secondary)}
+.link{
+  fill:none;stroke:rgba(148,163,184,0.25);stroke-width:2;
+}
+.node circle{
+  cursor:pointer;stroke-width:3;
+  transition:all 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+.node circle:hover{
+  stroke-width:5;filter:brightness(1.2);
+}
+
+/* Grape node subtle breathing animation */
+.node.child-node circle {
+  animation: grapeBreath 3s ease-in-out infinite;
+}
+.node.child-node:nth-child(odd) circle {
+  animation-delay: 0.5s;
+}
+.node.child-node:nth-child(3n) circle {
+  animation-delay: 1s;
+}
+
+@keyframes grapeBreath {
+  0%, 100% {
+    transform: scale(1);
+    filter: brightness(1) url(#glow);
+  }
+  50% {
+    transform: scale(1.05);
+    filter: brightness(1.15) url(#glow);
+  }
+}
+.node text{
+  font-family:'Plus Jakarta Sans','Inter',sans-serif;
+  font-size:12px;font-weight:700;pointer-events:none;
+  fill:var(--text-primary);
+  letter-spacing:0.01em;
+}
+
+/* Child Form Modal Styles - Neon Glow Edition */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap');
+
+/* Image Preview Modal Styles */
+.image-preview-overlay{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,0.95);
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  z-index:2000;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;
+  transition:opacity 0.3s ease;
+}
+.image-preview-overlay.active{
+  opacity:1;pointer-events:auto;
+}
+.image-preview-modal{
+  width:95%;max-width:1400px;max-height:90vh;
+  background:rgba(10,10,20,0.98);
+  border-radius:24px;
+  overflow:hidden;
+  transform:scale(0.9) translateY(20px);
+  transition:transform 0.4s cubic-bezier(0.175,0.885,0.32,1.275);
+  position:relative;
+  box-shadow:0 0 40px rgba(0,255,255,0.2);
+  border:1px solid rgba(0,255,255,0.2);
+}
+.image-preview-overlay.active .image-preview-modal{
+  transform:scale(1) translateY(0);
+}
+.image-preview-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:20px 32px;
+  background:linear-gradient(180deg, rgba(0,255,255,0.1) 0%, rgba(0,0,0,0) 100%);
+  border-bottom:1px solid rgba(255,255,255,0.1);
+}
+.image-preview-header h3{
+  font-family:'Orbitron',sans-serif;
+  font-size:18px;font-weight:500;
+  color:#00ffff;
+  text-shadow:0 0 8px #00ffff;
+  margin:0;
+}
+.image-preview-close{
+  width:44px;height:44px;border-radius:50%;
+  background:#ff00ff;
+  border:none;color:#0d0d0d;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all 0.3s ease;
+  font-weight:bold;
+  box-shadow:0 0 12px #ff00ff;
+}
+.image-preview-close:hover{
+  background:#00ffff;
+  color:#000;
+  box-shadow:0 0 16px #00ffff, 0 0 24px #00ffff;
+  transform:scale(1.1);
+}
+.image-preview-body{
+  display:flex;align-items:center;justify-content:center;
+  padding:32px;
+  background:linear-gradient(180deg, rgba(10,10,20,0.5) 0%, rgba(10,10,20,0.8) 100%);
+}
+
+/* Documents Grid Styles - 3 column responsive */
+.documents-grid{
+  display:grid;
+  grid-template-columns:repeat(3, 1fr);
+  gap:24px;
+}
+@media (max-width: 1200px){
+  .documents-grid{
+    grid-template-columns:repeat(2, 1fr);
+  }
+}
+@media (max-width: 768px){
+  .documents-grid{
+    grid-template-columns:1fr;
+  }
+}
+.document-card{
+  background:rgba(30,41,59,0.6);
+  border:1px solid rgba(148,163,184,0.15);
+  border-radius:16px;
+  overflow:hidden;
+  transition:all 0.3s cubic-bezier(0.4,0,0.2,1);
+  height:300px;
+  display:flex;
+  flex-direction:column;
+}
+.document-card:hover{
+  transform:translateY(-4px);
+  box-shadow:0 12px 32px rgba(37,99,235,0.25);
+  border-color:rgba(37,99,235,0.4);
+}
+.document-card img{
+  width:100%;
+  flex:1;
+  object-fit:cover;
+}
+.document-label{
+  padding:14px 18px;
+  background:rgba(15,23,42,0.8);
+  font-size:12px;font-weight:600;
+  color:#cbd5e1;
+  text-transform:uppercase;
+  letter-spacing:0.05em;
+  border-top:1px solid rgba(148,163,184,0.1);
+}
+
+.child-modal-overlay{
+  position:fixed;inset:0;
+  background:rgba(15,23,42,0.95);
+  backdrop-filter:blur(16px) saturate(180%);
+  -webkit-backdrop-filter:blur(16px) saturate(180%);
+  z-index:1000;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;
+  transition:opacity 0.4s cubic-bezier(0.4,0,0.2,1);
+}
+.child-modal-overlay.active{
+  opacity:1;pointer-events:auto;
+}
+.child-modal{
+  width:95%;max-width:1200px;max-height:90vh;
+  background:linear-gradient(145deg, rgba(30,41,59,0.98) 0%, rgba(15,23,42,0.98) 100%);
+  border-radius:24px;
+  overflow:hidden;
+  transform:scale(0.95) translateY(20px);
+  transition:transform 0.5s cubic-bezier(0.34,1.56,0.64,1);
+  position:relative;
+  box-shadow:0 24px 48px rgba(0,0,0,0.4), 0 0 0 1px rgba(148,163,184,0.1);
+  border:1px solid rgba(148,163,184,0.1);
+}
+.child-modal::before{
+  content:'';
+  position:absolute;
+  top:-2px;left:-2px;right:-2px;bottom:-2px;
+  z-index:-1;
+  background:linear-gradient(120deg,#00ffff,#ff00ff,#00ffff);
+  background-size:400% 400%;
+  animation:glowBorder 12s ease infinite;
+  border-radius:22px;
+  opacity:0;
+  transition:opacity 0.4s ease;
+}
+.child-modal:hover{
+  box-shadow:0 0 30px rgba(255,0,255,0.6);
+}
+.child-modal:hover::before{
+  opacity:1;
+}
+@keyframes glowBorder{
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
+}
+.child-modal-overlay.active .child-modal{
+  transform:scale(1) translateY(0);
+}
+.child-modal-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:28px 32px;
+  background:linear-gradient(180deg, rgba(37,99,235,0.08) 0%, rgba(37,99,235,0.02) 100%);
+  border-bottom:1px solid rgba(148,163,184,0.1);
+}
+.child-modal-title{
+  display:flex;align-items:center;gap:16px;
+}
+.child-modal-icon{
+  width:56px;height:56px;border-radius:16px;
+  background:linear-gradient(135deg,#00ffff 0%,#ff00ff 100%);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 30px rgba(0,255,255,0.5);
+  animation:iconGlow 2s ease-in-out infinite;
+}
+.child-modal-icon .material-icons-outlined{font-size:28px;color:#ffffff}
+.child-modal-title-text h2{
+  font-family:'Orbitron',sans-serif;
+  font-size:24px;font-weight:500;
+  color:#00ffff;
+  text-shadow:0 0 8px #00ffff, 0 0 16px #00ffff;
+}
+.child-modal-title-text p{
+  font-size:13px;color:#ccc;margin-top:4px;font-weight:600;
+  text-shadow:0 0 4px #ff00ff;
+}
+.child-modal-actions{
+  display:flex;align-items:center;gap:12px;
+}
+.child-modal-btn{
+  display:flex;align-items:center;gap:8px;
+  padding:12px 24px;border-radius:12px;
+  background:rgba(148,163,184,0.1);
+  border:1px solid rgba(148,163,184,0.2);
+  color:#f1f5f9;
+  font-size:14px;font-weight:600;cursor:pointer;
+  transition:all 0.3s cubic-bezier(0.4,0,0.2,1);
+  font-family:'Inter',sans-serif;
+}
+.child-modal-btn:hover{
+  background:rgba(148,163,184,0.2);
+  transform:translateY(-2px);
+  box-shadow:0 8px 24px rgba(0,0,0,0.2);
+  border-color:rgba(148,163,184,0.3);
+}
+.child-modal-btn-approve{
+  background:linear-gradient(135deg, #10B981 0%, #059669 100%);
+  border:none;
+  box-shadow:0 0 20px rgba(16,185,129,0.4);
+}
+.child-modal-btn-approve:hover{
+  filter:brightness(1.1);
+  box-shadow:0 0 30px rgba(16,185,129,0.6);
+}
+.child-modal-btn-email{
+  background:linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+  border:none;
+  box-shadow:0 0 20px rgba(99,102,241,0.4);
+}
+.child-modal-btn-email:hover{
+  filter:brightness(1.1);
+  box-shadow:0 0 30px rgba(99,102,241,0.6);
+}
+.child-modal-close{
+  width:44px;height:44px;border-radius:25px;
+  background:#ff00ff;
+  border:none;color:#0d0d0d;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all 0.3s ease;
+  font-weight:bold;text-transform:uppercase;
+  box-shadow:0 0 12px #ff00ff;
+}
+.child-modal-close:hover{
+  background:#00ffff;
+  color:#000;
+  box-shadow:0 0 16px #00ffff, 0 0 24px #00ffff;
+  transform:scale(1.1);
+}
+.child-modal-body{
+  max-height:calc(90vh - 120px);
+  overflow-y:auto;
+  padding:32px;
+}
+.documents-section{
+  margin-bottom:32px;
+  padding:24px;
+  background:rgba(20,20,30,0.9);
+  border-radius:20px;
+  box-shadow:0 0 15px rgba(0,255,255,0.15);
+  border:1px solid #111;
+}
+.documents-section-title{
+  display:flex;align-items:center;gap:12px;
+  margin-bottom:20px;
+  padding-bottom:16px;
+  border-bottom:1px solid rgba(255,255,255,0.1);
+}
+.documents-section-title .material-icons-outlined{
+  color:#00ffff;font-size:20px;
+  text-shadow:0 0 8px #00ffff;
+}
+.documents-section-title h3{
+  font-family:'Orbitron',sans-serif;
+  font-size:14px;font-weight:500;
+  color:#00ffff;
+  text-shadow:0 0 8px #00ffff;
+  letter-spacing:0.02em;
+}
+.documents-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:16px;
+}
+@media (max-width: 768px) {
+  .documents-grid{
+    grid-template-columns:repeat(2,1fr);
+  }
+}
+@media (max-width: 480px) {
+  .documents-grid{
+    grid-template-columns:1fr;
+  }
+}
+.document-card{
+  background:rgba(15,15,25,0.8);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:12px;
+  overflow:hidden;
+  transition:transform 0.3s ease, box-shadow 0.3s ease;
+}
+.document-card:hover{
+  transform:translateY(-4px);
+  box-shadow:0 8px 24px rgba(0,255,255,0.3);
+}
+.document-card img{
+  width:100%;
+  height:250px;
+  object-fit:cover;
+}
+.document-card .document-label{
+  padding:12px;
+  font-size:12px;font-weight:700;
+  color:#ccc;
+  text-transform:uppercase;
+  letter-spacing:0.08em;
+  text-shadow:0 0 4px #ff00ff;
+}
+.child-form-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:24px;
+}
+.form-section{
+  background:rgba(30,41,59,0.5);
+  border-radius:16px;
+  padding:24px;
+  box-shadow:0 4px 16px rgba(0,0,0,0.1);
+  border:1px solid rgba(148,163,184,0.1);
+  position:relative;
+  overflow:hidden;
+  transition:all 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+.form-section::before{
+  content:'';
+  position:absolute;
+  top:-2px;left:-2px;right:-2px;bottom:-2px;
+  z-index:-1;
+  background:linear-gradient(120deg,#00ffff,#ff00ff,#00ffff);
+  background-size:400% 400%;
+  animation:glowBorder 12s ease infinite;
+  border-radius:22px;
+  opacity:0;
+  transition:opacity 0.4s ease;
+}
+.form-section:hover{
+  transform:scale(1.02);
+  border-color:rgba(37,99,235,0.3);
+  box-shadow:0 8px 24px rgba(37,99,235,0.15), 0 0 30px rgba(255,0,255,0.4);
+}
+.form-section:hover::before{
+  opacity:1;
+}
+.form-section-title{
+  display:flex;align-items:center;gap:12px;
+  margin-bottom:20px;
+  padding-bottom:16px;
+  border-bottom:1px solid rgba(255,255,255,0.1);
+}
+.form-section-title .material-icons-outlined{
+  color:#00ffff;font-size:20px;
+  text-shadow:0 0 8px #00ffff;
+}
+.form-section-title h3{
+  font-family:'Orbitron',sans-serif;
+  font-size:14px;font-weight:500;
+  color:#00ffff;
+  text-shadow:0 0 8px #00ffff;
+  letter-spacing:0.02em;
+}
+.form-field{
+  margin-bottom:18px;
+}
+.form-field:last-child{
+  margin-bottom:0;
+}
+.form-field label{
+  display:block;font-size:11px;font-weight:700;
+  color:#ccc;
+  margin-bottom:6px;
+  text-transform:uppercase;
+  letter-spacing:0.08em;
+  text-shadow:0 0 4px #ff00ff;
+}
+.form-field .field-value{
+  display:block;font-size:14px;font-weight:600;
+  color:#eee;
+  padding:12px 16px;
+  background:rgba(15,15,25,0.8);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:10px;
+  min-height:44px;
+  word-break:break-word;
+  text-shadow:0 0 4px rgba(0,255,255,0.3);
+}
+.form-field .field-input{
+  display:none;
+  width:100%;
+  font-size:14px;
+  font-weight:600;
+  color:#fff;
+  padding:12px 16px;
+  background:rgba(0,212,255,0.1);
+  border:2px solid #00d4ff;
+  border-radius:10px;
+  outline:none;
+  transition:all .3s ease;
+  font-family:'DM Sans',sans-serif;
+  box-sizing:border-box
+}
+.form-field .field-input:focus{
+  background:rgba(0,212,255,0.2);
+  box-shadow:0 0 20px rgba(0,212,255,0.3)
+}
+.form-field .field-value:empty::before{
+  content:'—';
+  color:#666;
+  text-shadow:none;
+}
+
+/* Custom Multi-Select Styles */
+.custom-multiselect {
+  width: 160px;
+  position: relative;
+  display: inline-block;
+}
+.multiselect-toggle {
+  width: 100%;
+  padding: 6px 10px;
+  background: rgba(148, 163, 184, 0.15);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 10px;
+  font-size: 11px;
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  color: var(--text-primary);
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all .2s;
+}
+.multiselect-toggle:hover {
+  background: rgba(148, 163, 184, 0.25);
+}
+.multiselect-toggle-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+.multiselect-toggle-icon {
+  font-size: 16px;
+  margin-left: 4px;
+}
+.custom-multiselect.open .multiselect-dropdown {
+  display: block;
+}
+.multiselect-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 4px;
+  background: rgba(31, 41, 55, 0.98);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 10px;
+  max-height: 250px;
+  overflow-y: auto;
+  z-index: 1000;
+  display: none;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+}
+.multiselect-option {
+  padding: 6px 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all .15s;
+  font-size: 11px;
+}
+.multiselect-option:hover {
+  background: rgba(99, 102, 241, 0.2);
+}
+.multiselect-option input[type="checkbox"] {
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+  accent-color: #6366F1;
+}
+.multiselect-option label {
+  cursor: pointer;
+  margin: 0;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+/* Filter Section */
+#filtersSection {
+  display: none;
+  padding: 16px 32px;
+  background: linear-gradient(180deg, rgba(17, 24, 39, 0.98) 0%, rgba(17, 24, 39, 0.8) 100%);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border-subtle);
+  z-index: 99;
+}
+.filter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 12px;
+}
+.filter-section-wrap {
+  background: rgba(31, 41, 55, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 12px;
+  padding: 16px;
+}
+.filter-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 8px;
+}
+.filter-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* Custom Multi-Select Styles (matching DataValidation) */
+.custom-multiselect {
+  width: 100%;
+  position: relative;
+}
+.multiselect-toggle {
+  width: 100%;
+  padding: 10px 14px;
+  background: rgba(148, 163, 184, 0.15);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 10px;
+  font-size: 13px;
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+  color: var(--text-primary);
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all 0.2s;
+}
+.multiselect-toggle:hover {
+  background: rgba(148, 163, 184, 0.25);
+  border-color: rgba(99, 102, 241);
+}
+.multiselect-toggle-text {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.multiselect-toggle-icon {
+  font-size: 18px;
+  color: var(--text-tertiary);
+}
+.multiselect-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 6px;
+  background: rgba(31, 41, 55, 0.98);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 10px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+  max-height: 220px;
+  overflow-y: auto;
+  z-index: 1000;
+  display: none;
+}
+.custom-multiselect.open .multiselect-dropdown {
+  display: block;
+}
+.multiselect-option {
+  padding: 8px 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-size: 12px;
+}
+.multiselect-option:hover {
+  background: rgba(99, 102, 241, 0.2);
+}
+.multiselect-option input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: #6366F1;
+}
+.multiselect-option label {
+  cursor: pointer;
+  margin: 0;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+/* Scrollbar styling */
+.child-modal-body::-webkit-scrollbar{width:8px}
+.child-modal-body::-webkit-scrollbar-track{background:transparent}
+.child-modal-body::-webkit-scrollbar-thumb{
+  background:linear-gradient(180deg,#00ffff,#ff00ff);
+  border-radius:4px
+}
+.child-modal-body::-webkit-scrollbar-thumb:hover{
+  background:linear-gradient(180deg,#ff00ff,#00ffff)
+}
+/* CSS Variables for animated border */
+:root {
+  --electric-border-color: #6366F1;
+  --gradient-color: linear-gradient(-45deg, rgba(99,102,241,0.5), transparent, rgba(139,92,246,0.5));
+  --color-neutral-900: #0f172a;
+}
+
+/* Main container */
+.main-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  width: 100%;
+  position: relative;
+  z-index: 1;
+}
+
+/* SVG positioning */
+.svg-container {
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  top:0;
+  left:50%;
+}
+
+/* Card container */
+.card-container {
+  padding: 4px;
+  border-radius: 24px;
+  position: relative;
+  width: 98vw;
+  height: 96vh;
+  background: linear-gradient(
+      -30deg,
+      var(--gradient-color),
+      transparent,
+      var(--gradient-color)
+    ),
+    linear-gradient(
+      to bottom,
+      var(--color-neutral-900),
+      var(--color-neutral-900)
+    );
+}
+
+.main-card {
+  width: 100%;
+  height: 100%;
+  border-radius: 22px;
+  border: 2px solid var(--electric-border-color);
+  background: rgba(15, 23, 42, 0.9);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  overflow: hidden;
+  position: relative;
+}
+
+/* Rain effect styles - visible layer above content */
+.scene {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  pointer-events: none;
+  opacity: 1;
+}
+
+.scene canvas {
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* Tentacle canvas removed */
+#tentacleCanvas {
+  display: none;
+}
+
+/* Background animation styles */
+#bgCanvas {
+  position: fixed;
+  inset: 0;
+  z-index: -2; /* Below rain */
+  pointer-events: none;
+  opacity: 0.1; /* Very slight opacity */
+  animation: identifier 1.5s ease-in-out infinite;
+}
+
+@keyframes identifier {
+  10% { transform: scale(1.03); }
+  20% { transform: scale(1); }
+  30% { transform: scale(1.03); }
+  40% { transform: scale(1); }
+}
+
+@keyframes identifierC {
+  10% { background-color: #100; }
+  20% { background-color: #000; }
+  30% { background-color: #100; }
+  40% { background-color: #000; }
+}
+
+</style>
+</head>
+<body>
+  <canvas id="bgCanvas"></canvas>
+  <div class="scene"></div>
+  <main class="main-container">
+    <svg class="svg-container">
+      <defs>
+        <filter id="turbulent-displace" colorInterpolationFilters="sRGB" x="-20%" y="-20%" width="140%" height="140%">
+          <feTurbulence type="turbulence" baseFrequency="0.02" numOctaves="10" result="noise1" seed="1" />
+          <feOffset in="noise1" dx="0" dy="0" result="offsetNoise1">
+            <animate attributeName="dy" values="700; 0" dur="6s" repeatCount="indefinite" calcMode="linear" />
+          </feOffset>
+
+          <feTurbulence type="turbulence" baseFrequency="0.02" numOctaves="10" result="noise2" seed="1" />
+          <feOffset in="noise2" dx="0" dy="0" result="offsetNoise2">
+            <animate attributeName="dy" values="0; -700" dur="6s" repeatCount="indefinite" calcMode="linear" />
+          </feOffset>
+
+          <feTurbulence type="turbulence" baseFrequency="0.02" numOctaves="10" result="noise1" seed="2" />
+          <feOffset in="noise1" dx="0" dy="0" result="offsetNoise3">
+            <animate attributeName="dx" values="490; 0" dur="6s" repeatCount="indefinite" calcMode="linear" />
+          </feOffset>
+
+          <feTurbulence type="turbulence" baseFrequency="0.02" numOctaves="10" result="noise2" seed="2" />
+          <feOffset in="noise2" dx="0" dy="0" result="offsetNoise4">
+            <animate attributeName="dx" values="0; -490" dur="6s" repeatCount="indefinite" calcMode="linear" />
+          </feOffset>
+
+          <feComposite in="offsetNoise1" in2="offsetNoise2" result="part1" />
+          <feComposite in="offsetNoise3" in2="offsetNoise4" result="part2" />
+          <feBlend in="part1" in2="part2" mode="color-dodge" result="combinedNoise" />
+
+          <feDisplacementMap in="SourceGraphic" in2="combinedNoise" scale="30" xChannelSelector="R" yChannelSelector="B" />
+        </filter>
+      </defs>
+    </svg>
+
+    <div class="card-container">
+      <div class="main-card" id="root">
+        <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark">
+        <span class="material-icons-outlined">hub</span>
+      </div>
+      <div class="brand-text">
+        <div class="brand-title">Program Flowchart</div>
+        <div class="brand-sub">CHILD NUTRITION & EDUCATION FLOWCHART</div>
+      </div>
+    </div>
+    <div class="search-container">
+      <span class="material-icons-outlined search-icon">search</span>
+      <input type="text" id="childSearchInput" class="search-input" placeholder="Search child name..." />
+      <button class="search-clear" id="searchClearBtn" style="display:none;">
+        <span class="material-icons-outlined">close</span>
+      </button>
+    </div>
+    <div class="topbar-right">
+      <button class="btn" id="filtersToggleBtn">
+        <span class="material-icons-outlined">filter_alt</span>
+        Filters
+      </button>
+      <button class="btn" onclick="openProgramDocumentsFolder()">
+        <span class="material-icons-outlined">folder_open</span>
+        View Documents
+      </button>
+      <button class="btn" onclick="runMigration()" title="Only for existing documents (new uploads are auto-organized)">
+        <span class="material-icons-outlined">auto_fix_normal</span>
+        Organize Old Files
+      </button>
+      <button class="btn" onclick="toggleFullscreen()">
+        <span class="material-icons-outlined" id="fullscreen-icon">fullscreen</span>
+        Fullscreen
+      </button>
+      <button class="btn btn-primary" onclick="downloadPDF()">
+        <span class="material-icons-outlined">picture_as_pdf</span>
+        Export PDF
+      </button>
+      <button class="btn-close" onclick="google.script.host.close()" title="Close">
+        <span class="material-icons-outlined">close</span>
+      </button>
+    </div>
+  </div>
+  
+  <div id="filtersSection" style="display:none;">
+    <div class="filter-section-wrap">
+      <div class="filter-grid">
+        <div>
+          <div class="filter-label">Consent</div>
+          <div class="custom-multiselect" id="filter-consent">
+            <div class="multiselect-toggle">
+              <span class="multiselect-toggle-text" data-default="All">All</span>
+              <span class="material-icons-outlined multiselect-toggle-icon">expand_more</span>
+            </div>
+            <div class="multiselect-dropdown">
+              <div class="multiselect-option">
+                <input type="checkbox" id="consent-yes" value="yes">
+                <label for="consent-yes">Yes</label>
+              </div>
+              <div class="multiselect-option">
+                <input type="checkbox" id="consent-no" value="no">
+                <label for="consent-no">No</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div>
+          <div class="filter-label">School Type</div>
+          <div class="custom-multiselect" id="filter-schooltype">
+            <div class="multiselect-toggle">
+              <span class="multiselect-toggle-text" data-default="All">All</span>
+              <span class="material-icons-outlined multiselect-toggle-icon">expand_more</span>
+            </div>
+            <div class="multiselect-dropdown" id="filter-schooltype-dropdown"></div>
+          </div>
+        </div>
+        
+        <div>
+          <div class="filter-label">Current Class</div>
+          <div class="custom-multiselect" id="filter-class">
+            <div class="multiselect-toggle">
+              <span class="multiselect-toggle-text" data-default="All">All</span>
+              <span class="material-icons-outlined multiselect-toggle-icon">expand_more</span>
+            </div>
+            <div class="multiselect-dropdown" id="filter-class-dropdown"></div>
+          </div>
+        </div>
+        
+        <div>
+          <div class="filter-label">Total Cost</div>
+          <div class="custom-multiselect" id="filter-totalcost">
+            <div class="multiselect-toggle">
+              <span class="multiselect-toggle-text" data-default="All">All</span>
+              <span class="material-icons-outlined multiselect-toggle-icon">expand_more</span>
+            </div>
+            <div class="multiselect-dropdown">
+              <div class="multiselect-option">
+                <input type="checkbox" id="totalcost-notzero" value="notzero">
+                <label for="totalcost-notzero">Not Zero/Blank</label>
+              </div>
+              <div class="multiselect-option">
+                <input type="checkbox" id="totalcost-zero" value="zero">
+                <label for="totalcost-zero">Zero/Blank</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div>
+          <div class="filter-label">Orphan Status</div>
+          <div class="custom-multiselect" id="filter-orphan">
+            <div class="multiselect-toggle">
+              <span class="multiselect-toggle-text" data-default="All">All</span>
+              <span class="material-icons-outlined multiselect-toggle-icon">expand_more</span>
+            </div>
+            <div class="multiselect-dropdown" id="filter-orphan-dropdown"></div>
+          </div>
+        </div>
+        
+        <div>
+          <div class="filter-label">Gender</div>
+          <div class="custom-multiselect" id="filter-gender">
+            <div class="multiselect-toggle">
+              <span class="multiselect-toggle-text" data-default="All">All</span>
+              <span class="material-icons-outlined multiselect-toggle-icon">expand_more</span>
+            </div>
+            <div class="multiselect-dropdown" id="filter-gender-dropdown"></div>
+          </div>
+        </div>
+        
+        <div>
+          <div class="filter-label">Age Group</div>
+          <div class="custom-multiselect" id="filter-age">
+            <div class="multiselect-toggle">
+              <span class="multiselect-toggle-text" data-default="All">All</span>
+              <span class="material-icons-outlined multiselect-toggle-icon">expand_more</span>
+            </div>
+            <div class="multiselect-dropdown">
+              <div class="multiselect-option">
+                <input type="checkbox" id="age-under8" value="under8">
+                <label for="age-under8">Under 8</label>
+              </div>
+              <div class="multiselect-option">
+                <input type="checkbox" id="age-8to10" value="8to10">
+                <label for="age-8to10">8-10</label>
+              </div>
+              <div class="multiselect-option">
+                <input type="checkbox" id="age-11to12" value="11to12">
+                <label for="age-11to12">11-12</label>
+              </div>
+              <div class="multiselect-option">
+                <input type="checkbox" id="age-over10" value="over10">
+                <label for="age-over10">Over 10</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div>
+          <div class="filter-label">BMI Category</div>
+          <div class="custom-multiselect" id="filter-bmi">
+            <div class="multiselect-toggle">
+              <span class="multiselect-toggle-text" data-default="All">All</span>
+              <span class="material-icons-outlined multiselect-toggle-icon">expand_more</span>
+            </div>
+            <div class="multiselect-dropdown" id="filter-bmi-dropdown"></div>
+          </div>
+        </div>
+        
+        <div>
+          <div class="filter-label">Hb Category</div>
+          <div class="custom-multiselect" id="filter-hb">
+            <div class="multiselect-toggle">
+              <span class="multiselect-toggle-text" data-default="All">All</span>
+              <span class="material-icons-outlined multiselect-toggle-icon">expand_more</span>
+            </div>
+            <div class="multiselect-dropdown" id="filter-hb-dropdown"></div>
+          </div>
+        </div>
+        
+        <div>
+          <div class="filter-label">VL Category</div>
+          <div class="custom-multiselect" id="filter-vl">
+            <div class="multiselect-toggle">
+              <span class="multiselect-toggle-text" data-default="All">All</span>
+              <span class="material-icons-outlined multiselect-toggle-icon">expand_more</span>
+            </div>
+            <div class="multiselect-dropdown" id="filter-vl-dropdown"></div>
+          </div>
+        </div>
+        
+        <div>
+          <div class="filter-label">Education Status</div>
+          <div class="custom-multiselect" id="filter-edu">
+            <div class="multiselect-toggle">
+              <span class="multiselect-toggle-text" data-default="All">All</span>
+              <span class="material-icons-outlined multiselect-toggle-icon">expand_more</span>
+            </div>
+            <div class="multiselect-dropdown" id="filter-edu-dropdown"></div>
+          </div>
+        </div>
+        
+        <div>
+          <div class="filter-label">Income Source</div>
+          <div class="custom-multiselect" id="filter-income">
+            <div class="multiselect-toggle">
+              <span class="multiselect-toggle-text" data-default="All">All</span>
+              <span class="material-icons-outlined multiselect-toggle-icon">expand_more</span>
+            </div>
+            <div class="multiselect-dropdown" id="filter-income-dropdown"></div>
+          </div>
+        </div>
+        
+        <div>
+          <div class="filter-label">State</div>
+          <div class="custom-multiselect" id="filter-state">
+            <div class="multiselect-toggle">
+              <span class="multiselect-toggle-text" data-default="All">All</span>
+              <span class="material-icons-outlined multiselect-toggle-icon">expand_more</span>
+            </div>
+            <div class="multiselect-dropdown" id="filter-state-dropdown"></div>
+          </div>
+        </div>
+        
+        <div>
+          <div class="filter-label">District</div>
+          <div class="custom-multiselect" id="filter-district">
+            <div class="multiselect-toggle">
+              <span class="multiselect-toggle-text" data-default="All">All</span>
+              <span class="material-icons-outlined multiselect-toggle-icon">expand_more</span>
+            </div>
+            <div class="multiselect-dropdown" id="filter-district-dropdown"></div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="filter-actions">
+        <button class="btn btn-primary" id="applyFilterBtn">
+          <span class="material-icons-outlined">check</span>
+          Apply Filters
+        </button>
+        <button class="btn" onclick="resetFlowchartFilters()">
+          <span class="material-icons-outlined">refresh</span>
+          Reset Filters
+        </button>
+        <button class="btn" id="downloadFilteredPDFBtn">
+          <span class="material-icons-outlined">picture_as_pdf</span>
+          Download Filtered Summary (PDF)
+        </button>
+        <button class="btn btn-primary" id="sendFilteredEmailBtn">
+          <span class="material-icons-outlined">email</span>
+          Send Filtered Summary (Email)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="loading" id="loading">
+      <div class="loader"></div>
+      <div class="loading-text">Initializing Program Flowchart...</div>
+    </div>
+    <div class="chart-container" id="chart-container" style="display:none">
+      <svg id="tree-svg"></svg>
+    </div>
+  </div>
+      </div>
+    </div>
+  </main>
+
+<!-- Child Modal -->
+<div class="child-modal-overlay" id="childModalOverlay" onclick="closeChildModal(event)">
+  <div class="child-modal" onclick="event.stopPropagation()">
+    <div class="child-modal-header">
+      <div class="child-modal-title">
+        <div class="child-modal-icon">
+          <span class="material-icons-outlined">person</span>
+        </div>
+        <div class="child-modal-title-text">
+          <h2 id="modalChildName">Child Name</h2>
+          <p id="modalChildDetails">Loading details...</p>
+        </div>
+      </div>
+      <div class="child-modal-actions">
+        <button class="child-modal-btn" id="editChildBtn" onclick="toggleEditMode()">
+          <span class="material-icons-outlined">edit</span>
+          Edit
+        </button>
+        <button class="child-modal-btn" id="saveChildBtn" style="display:none;background:#4CAF50" onclick="saveChildData()">
+          <span class="material-icons-outlined">save</span>
+          Save
+        </button>
+        <button class="child-modal-btn" onclick="downloadChildPDF()">
+          <span class="material-icons-outlined">picture_as_pdf</span>
+          Download PDF
+        </button>
+        <button class="child-modal-close" onclick="closeChildModal()">
+          <span class="material-icons-outlined">close</span>
+        </button>
+      </div>
+    </div>
+    <div class="child-modal-body">
+      <div class="documents-section" id="documentsSection">
+        <!-- Document images will be populated here -->
+      </div>
+      <div class="child-form-grid" id="childFormGrid">
+        <!-- Form sections will be populated here -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Image Preview Modal -->
+<div class="image-preview-overlay" id="imagePreviewOverlay" onclick="closeImagePreview(event)">
+  <div class="image-preview-modal" onclick="event.stopPropagation()">
+    <div class="image-preview-header">
+      <h3 id="imagePreviewTitle">Image Preview</h3>
+      <button class="image-preview-close" onclick="closeImagePreview()">
+        <span class="material-icons-outlined">close</span>
+      </button>
+    </div>
+    <div class="image-preview-body">
+      <img id="imagePreviewImg" src="" alt="Preview" style="max-width: 100%; max-height: 80vh; object-fit: contain;">
+    </div>
+  </div>
+</div>
+
+<script>
+var i = 0;
+var originalTreeData = null;
+var treeData = null;
+var currentChildUuid = null;
+var filterOptions = {};
+var audioContext = null;
+
+// Initialize audio context on first user interaction
+function initAudioContext() {
+  if (!audioContext) {
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  }
+}
+
+// Play a simple sound effect
+function playSound(type) {
+  if (!audioContext) initAudioContext();
+  
+  const oscillator = audioContext.createOscillator();
+  const gainNode = audioContext.createGain();
+  
+  oscillator.connect(gainNode);
+  gainNode.connect(audioContext.destination);
+  
+  // Different sounds for different node types
+  if (type === 'child') {
+    oscillator.type = 'sine';
+    oscillator.frequency.setValueAtTime(880, audioContext.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(1760, audioContext.currentTime + 0.1);
+    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.2);
+  } else if (type === 'root') {
+    oscillator.type = 'triangle';
+    oscillator.frequency.setValueAtTime(220, audioContext.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(440, audioContext.currentTime + 0.15);
+    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.3);
+  } else if (type === 'consent') {
+    oscillator.type = 'square';
+    oscillator.frequency.setValueAtTime(523, audioContext.currentTime);
+    gainNode.gain.setValueAtTime(0.15, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.15);
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.15);
+  } else if (type === 'school') {
+    oscillator.type = 'sawtooth';
+    oscillator.frequency.setValueAtTime(330, audioContext.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(660, audioContext.currentTime + 0.2);
+    gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.25);
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.25);
+  } else {
+    oscillator.type = 'sine';
+    oscillator.frequency.setValueAtTime(440, audioContext.currentTime);
+    gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.2);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  loadFlowchartData();
+  loadDynamicFilterOptions();
+  initializeCustomMultiSelects();
+  
+  // Toggle filters button
+  document.getElementById('filtersToggleBtn').addEventListener('click', function() {
+    var section = document.getElementById('filtersSection');
+    if (section.style.display === 'block') {
+      section.style.display = 'none';
+    } else {
+      section.style.display = 'block';
+    }
+  });
+  
+  // Apply Filters button
+  document.getElementById('applyFilterBtn').addEventListener('click', function() {
+    applyFlowchartFilters();
+  });
+  
+  // Download Filtered PDF button
+  document.getElementById('downloadFilteredPDFBtn').addEventListener('click', downloadFilteredSummaryPDF);
+  
+  // Send Filtered Email button
+  document.getElementById('sendFilteredEmailBtn').addEventListener('click', openFilteredEmailModal);
+});
+
+function downloadFilteredSummaryPDF() {
+  const filters = getFilterParams();
+  const btn = document.getElementById('downloadFilteredPDFBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="material-icons-outlined">hourglass_empty</span>Generating PDF...';
+  
+  google.script.run
+    .withSuccessHandler(function(url) {
+      if (url) {
+        window.open(url, '_blank');
+      } else {
+        alert('PDF generated successfully! Check your Google Drive!');
+      }
+      btn.disabled = false;
+      btn.innerHTML = '<span class="material-icons-outlined">picture_as_pdf</span>Download Filtered Summary (PDF)';
+    })
+    .withFailureHandler(function(error) {
+      alert('Error generating PDF: ' + error.message);
+      btn.disabled = false;
+      btn.innerHTML = '<span class="material-icons-outlined">picture_as_pdf</span>Download Filtered Summary (PDF)';
+    })
+    .downloadFilteredSummaryAsPDF(filters);
+}
+
+function openFilteredEmailModal() {
+  alert('Filtered email modal coming soon!');
+}
+
+// Custom Multi-Select Functions
+function initializeCustomMultiSelects() {
+  const allMultiselects = document.querySelectorAll('.custom-multiselect');
+  
+  allMultiselects.forEach(function(multiselect) {
+    const toggle = multiselect.querySelector('.multiselect-toggle');
+    const dropdown = multiselect.querySelector('.multiselect-dropdown');
+    
+    // Toggle on click
+    toggle.addEventListener('click', function(e) {
+      e.stopPropagation();
+      // Close all other open multiselects
+      allMultiselects.forEach(function(other) {
+        if (other !== multiselect) {
+          other.classList.remove('open');
+        }
+      });
+      multiselect.classList.toggle('open');
+    });
+    
+    // Close when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!multiselect.contains(e.target)) {
+        multiselect.classList.remove('open');
+      }
+    });
+    
+    // Update toggle text on checkbox change
+    const checkboxes = dropdown.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach(function(checkbox) {
+      checkbox.addEventListener('change', function() {
+        updateMultiSelectToggleText(multiselect);
+        // Don't auto-apply filters on checkbox change
+        // applyFlowchartFilters();
+      });
+    });
+  });
+}
+
+function updateMultiSelectToggleText(multiselect) {
+  const checkboxes = multiselect.querySelectorAll('input[type="checkbox"]:checked');
+  const toggleText = multiselect.querySelector('.multiselect-toggle-text');
+  const defaultText = toggleText.getAttribute('data-default') || 'All';
+  
+  if (checkboxes.length === 0) {
+    toggleText.textContent = defaultText;
+  } else if (checkboxes.length === 1) {
+    toggleText.textContent = checkboxes[0].parentNode.querySelector('label').textContent;
+  } else {
+    toggleText.textContent = checkboxes.length + ' selected';
+  }
+}
+
+function loadDynamicFilterOptions() {
+  google.script.run.withSuccessHandler(function(options) {
+    populateCustomMultiSelect('filter-schooltype', options.schoolType, 'School Type');
+    populateCustomMultiSelect('filter-class', options.currentClass, 'Current Class');
+    populateCustomMultiSelect('filter-orphan', options.orphanStatus, 'Orphan Status');
+    populateCustomMultiSelect('filter-gender', options.gender, 'Gender');
+    populateCustomMultiSelect('filter-edu', options.educationStatus, 'Education Status');
+    populateCustomMultiSelect('filter-income', options.incomeSource, 'Income Source');
+    populateCustomMultiSelect('filter-state', options.state, 'State');
+    populateCustomMultiSelect('filter-district', options.district, 'District');
+    populateCustomMultiSelect('filter-bmi', options.bmiCategory, 'BMI Category');
+    populateCustomMultiSelect('filter-hb', options.hbCategory, 'Hb Category');
+    populateCustomMultiSelect('filter-vl', options.vlCategory, 'VL Category');
+    
+    setDefaultSelections();
+  }).getDynamicFilterOptions();
+}
+
+function populateCustomMultiSelect(containerId, options, label) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  
+  const dropdown = container.querySelector('.multiselect-dropdown');
+  if (!dropdown) return;
+  
+  dropdown.innerHTML = '';
+  
+  options.forEach(function(option, index) {
+    const value = option.toLowerCase().replace(/\s+/g, '_');
+    const optionDiv = document.createElement('div');
+    optionDiv.className = 'multiselect-option';
+    
+    const checkboxId = containerId + '-' + index;
+    
+    optionDiv.innerHTML = `
+      <input type="checkbox" id="${checkboxId}" value="${value}">
+      <label for="${checkboxId}">${option}</label>
+    `;
+    
+    dropdown.appendChild(optionDiv);
+    
+    const checkbox = optionDiv.querySelector('input[type="checkbox"]');
+    checkbox.addEventListener('change', function() {
+      updateMultiSelectToggleText(container);
+      // Don't auto-apply filters on checkbox change
+      // applyFlowchartFilters();
+    });
+  });
+}
+
+function setDefaultSelections() {
+  // Don't set any default selections - show all data by default
+  // Users can manually apply filters if needed
+  
+  // const consentYes = document.getElementById('consent-yes');
+  // if (consentYes) {
+  //   consentYes.checked = true;
+  //   updateMultiSelectToggleText(document.getElementById('filter-consent'));
+  // }
+  
+  // const totalCostNotZero = document.getElementById('totalcost-notzero');
+  // if (totalCostNotZero) {
+  //   totalCostNotZero.checked = true;
+  //   updateMultiSelectToggleText(document.getElementById('filter-totalcost'));
+  // }
+}
+
+function getCustomMultiSelectValues(containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return [];
+  
+  const checkboxes = container.querySelectorAll('input[type="checkbox"]:checked');
+  const values = [];
+  checkboxes.forEach(function(cb) {
+    values.push(cb.value);
+  });
+  return values;
+}
+
+function resetFlowchartFilters() {
+  const filterIds = [
+    'filter-consent', 'filter-schooltype', 'filter-class', 'filter-totalcost',
+    'filter-orphan', 'filter-gender', 'filter-age', 'filter-bmi',
+    'filter-hb', 'filter-vl', 'filter-edu', 'filter-income',
+    'filter-state', 'filter-district'
+  ];
+  
+  filterIds.forEach(function(id) {
+    const container = document.getElementById(id);
+    if (container) {
+      const checkboxes = container.querySelectorAll('input[type="checkbox"]');
+      checkboxes.forEach(function(cb) {
+        cb.checked = false;
+      });
+      updateMultiSelectToggleText(container);
+    }
+  });
+  
+  setDefaultSelections();
+  
+  applyFlowchartFilters();
+}
+
+function passesAllFilters(childData, filters) {
+  let passes = true;
+  
+  // Consent filter
+  if (filters.consent.length > 0) {
+    const consent = childData.consent_obtained ? childData.consent_obtained.value : '';
+    const consentVal = (consent || '').toLowerCase() === 'yes' ? 'yes' : 'no';
+    if (!filters.consent.includes(consentVal)) {
+      passes = false;
+    }
+  }
+  
+  // School Type filter
+  if (filters.schoolType.length > 0) {
+    const schoolType = childData.schooltype ? childData.schooltype.value : '';
+    const schoolTypeVal = (schoolType || '').toLowerCase().replace(/\s+/g, '_');
+    if (!filters.schoolType.includes(schoolTypeVal)) {
+      passes = false;
+    }
+  }
+  
+  // Class filter
+  if (filters.classFilter.length > 0) {
+    const currentClass = childData.currentclass ? childData.currentclass.value : '';
+    const classVal = (currentClass || '').toLowerCase().replace(/\s+/g, '_');
+    if (!filters.classFilter.includes(classVal)) {
+      passes = false;
+    }
+  }
+  
+  // Total Cost filter
+  if (filters.totalCost.length > 0) {
+    const totalCost = childData.edutotalannual ? childData.edutotalannual.value : '';
+    const isZeroOrBlank = !totalCost || totalCost === 0 || totalCost === '0' || totalCost === '';
+    let totalCostPasses = false;
+    if (filters.totalCost.includes('notzero') && !isZeroOrBlank) totalCostPasses = true;
+    if (filters.totalCost.includes('zero') && isZeroOrBlank) totalCostPasses = true;
+    if (!totalCostPasses) {
+      passes = false;
+    }
+  }
+  
+  // Orphan Status filter
+  if (filters.orphanStatus.length > 0) {
+    const orphanStatus = childData.orphanstatus ? childData.orphanstatus.value : '';
+    const orphanVal = (orphanStatus || '').toLowerCase().replace(/\s+/g, '_');
+    if (!filters.orphanStatus.includes(orphanVal)) {
+      passes = false;
+    }
+  }
+  
+  // Gender filter
+  if (filters.gender.length > 0) {
+    const gender = childData.gender ? childData.gender.value : '';
+    const genderVal = (gender || '').toLowerCase().replace(/\s+/g, '_');
+    if (!filters.gender.includes(genderVal)) {
+      passes = false;
+    }
+  }
+  
+  // Age Group filter
+  if (filters.ageGroup.length > 0) {
+    const age = childData.age_calc ? parseFloat(childData.age_calc.value) : 0;
+    let agePasses = false;
+    if (filters.ageGroup.includes('under8') && age < 8) agePasses = true;
+    if (filters.ageGroup.includes('8to10') && age >= 8 && age <= 10) agePasses = true;
+    if (filters.ageGroup.includes('11to12') && age >= 11 && age <= 12) agePasses = true;
+    if (filters.ageGroup.includes('over10') && age > 10) agePasses = true;
+    if (!agePasses) {
+      passes = false;
+    }
+  }
+  
+  // BMI Category filter
+  if (filters.bmiCategory.length > 0) {
+    const bmiCategory = childData.bmicategory ? childData.bmicategory.value : '';
+    const bmiVal = (bmiCategory || '').toLowerCase().replace(/\s+/g, '_');
+    if (!filters.bmiCategory.includes(bmiVal)) {
+      passes = false;
+    }
+  }
+  
+  // Hb Category filter
+  if (filters.hbCategory.length > 0) {
+    const hbCategory = childData.hb_category ? childData.hb_category.value : '';
+    const hbVal = (hbCategory || '').toLowerCase().replace(/\s+/g, '_');
+    if (!filters.hbCategory.includes(hbVal)) {
+      passes = false;
+    }
+  }
+  
+  // VL Category filter
+  if (filters.vlCategory.length > 0) {
+    const vlCategory = childData.vl_category ? childData.vl_category.value : '';
+    const vlVal = (vlCategory || '').toLowerCase().replace(/\s+/g, '_');
+    if (!filters.vlCategory.includes(vlVal)) {
+      passes = false;
+    }
+  }
+  
+  // Education Status filter
+  if (filters.educationStatus.length > 0) {
+    const educationStatus = childData.educationstatus ? childData.educationstatus.value : '';
+    const eduVal = (educationStatus || '').toLowerCase().replace(/\s+/g, '_');
+    if (!filters.educationStatus.includes(eduVal)) {
+      passes = false;
+    }
+  }
+  
+  // Income Source filter
+  if (filters.incomeSource.length > 0) {
+    const incomeSource = childData.incomesource ? childData.incomesource.value : '';
+    const incomeVal = (incomeSource || '').toLowerCase().replace(/\s+/g, '_');
+    if (!filters.incomeSource.includes(incomeVal)) {
+      passes = false;
+    }
+  }
+  
+  // State filter
+  if (filters.state.length > 0) {
+    const childState = childData.addressstate ? childData.addressstate.value : '';
+    const stateVal = (childState || '').toLowerCase().replace(/\s+/g, '_');
+    if (!filters.state.includes(stateVal)) {
+      passes = false;
+    }
+  }
+  
+  // District filter
+  if (filters.district.length > 0) {
+    const childDistrict = childData.addressdistrict ? childData.addressdistrict.value : '';
+    const districtVal = (childDistrict || '').toLowerCase().replace(/\s+/g, '_');
+    if (!filters.district.includes(districtVal)) {
+      passes = false;
+    }
+  }
+  
+  return passes;
+}
+
+function getFilterParams() {
+  return {
+    consent: getCustomMultiSelectValues('filter-consent'),
+    schoolType: getCustomMultiSelectValues('filter-schooltype'),
+    classFilter: getCustomMultiSelectValues('filter-class'),
+    totalCost: getCustomMultiSelectValues('filter-totalcost'),
+    orphanStatus: getCustomMultiSelectValues('filter-orphan'),
+    gender: getCustomMultiSelectValues('filter-gender'),
+    ageGroup: getCustomMultiSelectValues('filter-age'),
+    bmiCategory: getCustomMultiSelectValues('filter-bmi'),
+    hbCategory: getCustomMultiSelectValues('filter-hb'),
+    vlCategory: getCustomMultiSelectValues('filter-vl'),
+    educationStatus: getCustomMultiSelectValues('filter-edu'),
+    incomeSource: getCustomMultiSelectValues('filter-income'),
+    state: getCustomMultiSelectValues('filter-state'),
+    district: getCustomMultiSelectValues('filter-district')
+  };
+}
+
+// Collect all child nodes from original tree
+function collectAllChildren(node) {
+  let children = [];
+  if (node.role === 'child' && node.childData) {
+    children.push(node);
+  }
+  if (node.children) {
+    node.children.forEach(child => {
+      children = children.concat(collectAllChildren(child));
+    });
+  }
+  return children;
+}
+
+// Convert child node's childData to the format passesAllFilters expects
+function convertToPassesFormat(childData) {
+  const formatted = {};
+  Object.keys(childData).forEach(key => {
+    formatted[key] = { value: childData[key] };
+  });
+  return formatted;
+}
+
+// Create child nodes for filtered children
+function createChildNodesForFiltered(children) {
+  return children.map(function(child) {
+    var name = child.childData.childname || 'Unnamed Child';
+    return {
+      name: name,
+      role: 'child',
+      count: 1,
+      uuid: child.childData._uuid,
+      childData: child.childData
+    };
+  });
+}
+
+// Create school node for filtered data
+function createFilteredSchoolNode(name, schoolChildren, filters) {
+  // Filter children for this school
+  const filteredSchoolChildren = schoolChildren.filter(function(child) {
+    const formatted = convertToPassesFormat(child.childData);
+    return passesAllFilters(formatted, filters);
+  });
+  
+  if (filteredSchoolChildren.length === 0) return null;
+  
+  // Age nodes
+  const ageUnder8 = filteredSchoolChildren.filter(function(child) {
+    const age = parseFloat(child.childData.age_calc);
+    return !isNaN(age) && age < 8;
+  });
+  const age8to10 = filteredSchoolChildren.filter(function(child) {
+    const age = parseFloat(child.childData.age_calc);
+    return !isNaN(age) && age >= 8 && age <= 10;
+  });
+  const age11to12 = filteredSchoolChildren.filter(function(child) {
+    const age = parseFloat(child.childData.age_calc);
+    return !isNaN(age) && age > 10;
+  });
+  
+  var ageNodes = [
+    { 
+      name: 'Under 8 Years', 
+      role: 'age', 
+      count: ageUnder8.length,
+      children: createChildNodesForFiltered(ageUnder8)
+    },
+    { 
+      name: '8 to 10 Years', 
+      role: 'age', 
+      count: age8to10.length,
+      children: createChildNodesForFiltered(age8to10)
+    },
+    { 
+      name: '11 to 12 Years', 
+      role: 'age', 
+      count: age11to12.length,
+      children: createChildNodesForFiltered(age11to12)
+    }
+  ].filter(function(node) { return node.count > 0; });
+  
+  // Orphan nodes
+  const bothAlive = filteredSchoolChildren.filter(function(child) {
+    return child.childData.orphanstatus && child.childData.orphanstatus.toLowerCase() === 'both_alive';
+  });
+  const singleOrphan = filteredSchoolChildren.filter(function(child) {
+    return child.childData.orphanstatus && child.childData.orphanstatus.toLowerCase() === 'single_orphan';
+  });
+  const doubleOrphan = filteredSchoolChildren.filter(function(child) {
+    return child.childData.orphanstatus && child.childData.orphanstatus.toLowerCase() === 'double_orphan';
+  });
+  
+  var orphanNodes = [
+    { 
+      name: 'Both Parents Alive', 
+      role: 'orphan-status', 
+      count: bothAlive.length,
+      children: createChildNodesForFiltered(bothAlive)
+    },
+    { 
+      name: 'Single Orphan', 
+      role: 'orphan-status', 
+      count: singleOrphan.length,
+      children: createChildNodesForFiltered(singleOrphan)
+    },
+    { 
+      name: 'Double Orphan', 
+      role: 'orphan-status', 
+      count: doubleOrphan.length,
+      children: createChildNodesForFiltered(doubleOrphan)
+    }
+  ].filter(function(node) { return node.count > 0; });
+  
+  // Gender nodes
+  const male = filteredSchoolChildren.filter(function(child) {
+    return child.childData.gender && child.childData.gender.toLowerCase() === 'male';
+  });
+  const female = filteredSchoolChildren.filter(function(child) {
+    return child.childData.gender && child.childData.gender.toLowerCase() === 'female';
+  });
+  
+  var genderNodes = [
+    { 
+      name: 'Male Children', 
+      role: 'gender-type', 
+      count: male.length,
+      children: createChildNodesForFiltered(male)
+    },
+    { 
+      name: 'Female Children', 
+      role: 'gender-type', 
+      count: female.length,
+      children: createChildNodesForFiltered(female)
+    }
+  ].filter(function(node) { return node.count > 0; });
+  
+  // Income nodes
+  const dailyWage = filteredSchoolChildren.filter(function(child) {
+    return child.childData.incomesource && child.childData.incomesource.toLowerCase() === 'daily_wage';
+  });
+  const salaried = filteredSchoolChildren.filter(function(child) {
+    return child.childData.incomesource && child.childData.incomesource.toLowerCase() === 'salaried';
+  });
+  const selfEmployed = filteredSchoolChildren.filter(function(child) {
+    return child.childData.incomesource && child.childData.incomesource.toLowerCase() === 'self_employed';
+  });
+  const pension = filteredSchoolChildren.filter(function(child) {
+    return child.childData.incomesource && child.childData.incomesource.toLowerCase() === 'pension';
+  });
+  const noIncome = filteredSchoolChildren.filter(function(child) {
+    return child.childData.incomesource && child.childData.incomesource.toLowerCase() === 'no_income';
+  });
+  
+  var incomeNodes = [
+    { 
+      name: 'Daily Wage', 
+      role: 'income-type', 
+      count: dailyWage.length,
+      children: createChildNodesForFiltered(dailyWage)
+    },
+    { 
+      name: 'Salaried', 
+      role: 'income-type', 
+      count: salaried.length,
+      children: createChildNodesForFiltered(salaried)
+    },
+    { 
+      name: 'Self Employed', 
+      role: 'income-type', 
+      count: selfEmployed.length,
+      children: createChildNodesForFiltered(selfEmployed)
+    },
+    { 
+      name: 'Pension', 
+      role: 'income-type', 
+      count: pension.length,
+      children: createChildNodesForFiltered(pension)
+    },
+    { 
+      name: 'No Income', 
+      role: 'income-type', 
+      count: noIncome.length,
+      children: createChildNodesForFiltered(noIncome)
+    }
+  ].filter(function(node) { return node.count > 0; });
+  
+  var ageGroupCount = ageUnder8.length + age8to10.length + age11to12.length;
+  var orphanGroupCount = bothAlive.length + singleOrphan.length + doubleOrphan.length;
+  var genderGroupCount = male.length + female.length;
+  var incomeGroupCount = dailyWage.length + salaried.length + selfEmployed.length + pension.length + noIncome.length;
+  
+  var children = [];
+  
+  if (ageGroupCount > 0) {
+    children.push({
+      name: 'Age Distribution',
+      role: 'age-group',
+      count: ageGroupCount,
+      children: ageNodes
+    });
+  }
+  
+  if (orphanGroupCount > 0) {
+    children.push({
+      name: 'Orphan Status',
+      role: 'orphan-group',
+      count: orphanGroupCount,
+      children: orphanNodes
+    });
+  }
+  
+  if (genderGroupCount > 0) {
+    children.push({
+      name: 'Gender Distribution',
+      role: 'gender-group',
+      count: genderGroupCount,
+      children: genderNodes
+    });
+  }
+  
+  if (incomeGroupCount > 0) {
+    children.push({
+      name: 'Income Source',
+      role: 'income-group',
+      count: incomeGroupCount,
+      children: incomeNodes
+    });
+  }
+  
+  return {
+    name: name,
+    role: 'school',
+    count: filteredSchoolChildren.length,
+    children: children
+  };
+}
+
+// Rebuild entire hierarchy from scratch with filtered children
+function rebuildFilteredHierarchy(filters) {
+  // Collect all children from original tree
+  const allChildren = collectAllChildren(originalTreeData);
+  
+  // Separate children by consent
+  const consentNoChildren = allChildren.filter(function(child) {
+    const formatted = convertToPassesFormat(child.childData);
+    const consent = formatted.consent_obtained ? formatted.consent_obtained.value : '';
+    const consentVal = (consent || '').toLowerCase() === 'yes' ? 'yes' : 'no';
+    return consentVal === 'no' && passesAllFilters(formatted, filters);
+  });
+  
+  const consentYesChildren = allChildren.filter(function(child) {
+    const formatted = convertToPassesFormat(child.childData);
+    const consent = formatted.consent_obtained ? formatted.consent_obtained.value : '';
+    const consentVal = (consent || '').toLowerCase() === 'yes' ? 'yes' : 'no';
+    return consentVal === 'yes' && passesAllFilters(formatted, filters);
+  });
+  
+  // Separate consent yes children by school type
+  const privateChildren = consentYesChildren.filter(function(child) {
+    return child.childData.schooltype && child.childData.schooltype.toLowerCase() === 'private';
+  });
+  const aidedChildren = consentYesChildren.filter(function(child) {
+    return child.childData.schooltype && child.childData.schooltype.toLowerCase() === 'aided';
+  });
+  const govtChildren = consentYesChildren.filter(function(child) {
+    return child.childData.schooltype && child.childData.schooltype.toLowerCase() === 'government';
+  });
+  
+  // Build consent given children
+  var consentGivenChildren = [];
+  const privateNode = createFilteredSchoolNode('Private School', privateChildren, filters);
+  const aidedNode = createFilteredSchoolNode('Aided School', aidedChildren, filters);
+  const govtNode = createFilteredSchoolNode('Government School', govtChildren, filters);
+  
+  if (privateNode) consentGivenChildren.push(privateNode);
+  if (aidedNode) consentGivenChildren.push(aidedNode);
+  if (govtNode) consentGivenChildren.push(govtNode);
+  
+  // Build root children
+  var rootChildren = [];
+  if (consentNoChildren.length > 0) {
+    rootChildren.push({
+      name: 'Consent Not Given',
+      role: 'consent-no',
+      count: consentNoChildren.length
+    });
+  }
+  if (consentGivenChildren.length > 0) {
+    rootChildren.push({
+      name: 'Consent Given',
+      role: 'consent-yes',
+      count: consentYesChildren.length,
+      children: consentGivenChildren
+    });
+  }
+  
+  return {
+    name: 'Total Children',
+    role: 'root',
+    count: consentNoChildren.length + consentYesChildren.length,
+    children: rootChildren
+  };
+}
+
+// Recursive function to filter tree data
+function filterTreeData(node) {
+  const filters = getFilterParams();
+  return rebuildFilteredHierarchy(filters);
+}
+
+function applyFlowchartFilters() {
+  if (!originalTreeData) {
+    console.log('applyFlowchartFilters: No original data yet, skipping');
+    return;
+  }
+  
+  console.log('Applying filters...');
+  const filteredTree = filterTreeData(originalTreeData);
+  
+  if (!filteredTree) {
+    console.error('filterTreeData returned null/undefined');
+    return;
+  }
+  
+  treeData = filteredTree;
+  drawTree(treeData);
+}
+
+
+
+function enterFullscreen() {
+  const elem = document.documentElement;
+  if (elem.requestFullscreen) {
+    elem.requestFullscreen().catch(err => {
+      console.log('Fullscreen request failed:', err);
+    });
+  }
+}
+
+function toggleFullscreen() {
+  const elem = document.documentElement;
+  if (!document.fullscreenElement) {
+    if (elem.requestFullscreen) {
+      elem.requestFullscreen().catch(err => {
+        console.log('Fullscreen request failed:', err);
+      });
+    }
+    document.getElementById('fullscreen-icon').textContent = 'fullscreen_exit';
+  } else {
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    }
+    document.getElementById('fullscreen-icon').textContent = 'fullscreen';
+  }
+}
+
+function openProgramDocumentsFolder() {
+  google.script.run
+    .withSuccessHandler(function(folderUrl) {
+      window.open(folderUrl, '_blank');
+    })
+    .withFailureHandler(function(err) {
+      console.error('Error getting folder URL:', err);
+      alert('Could not open documents folder: ' + err.message);
+    })
+    .getProgramDocumentsFolderUrl();
+}
+
+function runMigration() {
+  if (!confirm('This will organize all existing documents into the new folder structure and update URLs. Continue?')) {
+    return;
+  }
+  
+  // Create a simple progress UI
+  var progressDiv = document.createElement('div');
+  progressDiv.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#0f172a;border:2px solid #818cf8;border-radius:12px;padding:30px;z-index:99999;text-align:center;min-width:300px;';
+  progressDiv.id = 'migration-progress';
+  
+  progressDiv.innerHTML = `
+    <div style="font-size:1.2rem;font-weight:bold;color:#818cf8;margin-bottom:15px;">Organizing Documents...</div>
+    <div id="migration-status" style="color:#e2e8f0;margin-bottom:15px;">Starting...</div>
+    <div style="height:8px;background:#1e293b;border-radius:4px;overflow:hidden;">
+      <div id="migration-progress-bar" style="height:100%;background:linear-gradient(90deg,#818cf8,#a78bfa);width:0%;transition:width 0.3s;"></div>
+    </div>
+  `;
+  
+  document.body.appendChild(progressDiv);
+  
+  var totalUpdated = 0;
+  var totalMoved = 0;
+  
+  function processBatch() {
+    google.script.run
+      .withSuccessHandler(function(result) {
+        totalUpdated += result.updated || 0;
+        totalMoved += result.moved || 0;
+        
+        var progressText = `Processed ${result.processedRow}/${result.totalRows} rows<br>`;
+        progressText += `Total updated: ${totalUpdated} | Total moved: ${totalMoved}`;
+        document.getElementById('migration-status').innerHTML = progressText;
+        
+        // Update progress bar
+        if (result.totalRows > 3) {
+          var progress = Math.min(100, ((result.processedRow - 3) / (result.totalRows - 3)) * 100);
+          document.getElementById('migration-progress-bar').style.width = progress + '%';
+        }
+        
+        if (!result.done) {
+          // Continue with next batch after a short delay
+          setTimeout(processBatch, 500);
+        } else {
+          // Done!
+          document.getElementById('migration-status').innerHTML = `
+            <div style="color:#34d399;font-weight:bold;margin-bottom:10px;">Organization Complete!</div>
+            <div>Total updated: ${totalUpdated} | Total moved: ${totalMoved}</div>
+          `;
+          document.getElementById('migration-progress-bar').style.width = '100%';
+          setTimeout(function() {
+            var div = document.getElementById('migration-progress');
+            if (div) div.remove();
+          }, 3000);
+        }
+      })
+      .withFailureHandler(function(err) {
+        console.error('Migration error:', err);
+        document.getElementById('migration-status').innerHTML = `
+          <div style="color:#f87171;font-weight:bold;">Error:</div>
+          <div>${err.message}</div>
+        `;
+        // Add a close button
+        var closeBtn = document.createElement('button');
+        closeBtn.style.cssText = 'margin-top:15px;padding:10px 20px;background:#818cf8;border:none;border-radius:8px;color:#fff;cursor:pointer;';
+        closeBtn.textContent = 'Close';
+        closeBtn.onclick = function() {
+          var div = document.getElementById('migration-progress');
+          if (div) div.remove();
+        };
+        document.getElementById('migration-progress').appendChild(closeBtn);
+      })
+      .migrateOldDocumentEntries(10);
+  }
+  
+  // Start processing
+  processBatch();
+}
+
+function loadFlowchartData() {
+  google.script.run
+    .withSuccessHandler(function(data) {
+      console.log('Flowchart data received:', data);
+      
+      if (!data || typeof data !== 'object') {
+        console.error('Invalid data received:', data);
+        document.getElementById('loading').querySelector('.loading-text').textContent = 'Error: Invalid data format';
+        return;
+      }
+      
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('chart-container').style.display = 'flex';
+      originalTreeData = JSON.parse(JSON.stringify(data)); // Deep copy
+      treeData = data;
+      
+      drawTree(data);
+      
+      // Initialize search functionality
+      initSearch();
+      
+      // Don't apply filters on initial load - show all data first
+      // setTimeout(function() {
+      //   applyFlowchartFilters();
+      // }, 100);
+    })
+    .withFailureHandler(function(err) {
+      console.error('Failed to load flowchart data:', err);
+      document.getElementById('loading').querySelector('.loading-text').textContent = 'Error: ' + err.message;
+    })
+    .getFlowchartHierarchyData();
+}
+
+function drawTree(data, skipCollapse = false) {
+  console.log('drawTree called with data:', data, 'skipCollapse:', skipCollapse);
+  
+  if (!data || typeof data !== 'object') {
+    console.error('Invalid data passed to drawTree:', data);
+    return;
+  }
+  
+  var container = document.getElementById('chart-container');
+  var W = container.clientWidth || window.innerWidth;
+  var H = container.clientHeight || window.innerHeight;
+
+  var svg = d3.select('#tree-svg');
+  svg.selectAll('*').remove();
+
+  var defs = svg.append('defs');
+  
+  var rootGrad = defs.append('radialGradient').attr('id','rootGrad');
+  rootGrad.append('stop').attr('offset','0%').attr('stop-color','#6366F1').attr('stop-opacity','1');
+  rootGrad.append('stop').attr('offset','100%').attr('stop-color','#4F46E5').attr('stop-opacity','0.9');
+  
+  var consentYesGrad = defs.append('radialGradient').attr('id','consentYesGrad');
+  consentYesGrad.append('stop').attr('offset','0%').attr('stop-color','#10B981').attr('stop-opacity','1');
+  consentYesGrad.append('stop').attr('offset','100%').attr('stop-color','#059669').attr('stop-opacity','0.9');
+  
+  var consentNoGrad = defs.append('radialGradient').attr('id','consentNoGrad');
+  consentNoGrad.append('stop').attr('offset','0%').attr('stop-color','#EF4444').attr('stop-opacity','1');
+  consentNoGrad.append('stop').attr('offset','100%').attr('stop-color','#DC2626').attr('stop-opacity','0.9');
+  
+  var schoolGrad = defs.append('radialGradient').attr('id','schoolGrad');
+  schoolGrad.append('stop').attr('offset','0%').attr('stop-color','#F59E0B').attr('stop-opacity','1');
+  schoolGrad.append('stop').attr('offset','100%').attr('stop-color','#D97706').attr('stop-opacity','0.9');
+  
+  var ageGrad = defs.append('radialGradient').attr('id','ageGrad');
+  ageGrad.append('stop').attr('offset','0%').attr('stop-color','#8B5CF6').attr('stop-opacity','1');
+  ageGrad.append('stop').attr('offset','100%').attr('stop-color','#7C3AED').attr('stop-opacity','0.9');
+  
+  var orphanGrad = defs.append('radialGradient').attr('id','orphanGrad');
+  orphanGrad.append('stop').attr('offset','0%').attr('stop-color','#EC4899').attr('stop-opacity','1');
+  orphanGrad.append('stop').attr('offset','100%').attr('stop-color','#DB2777').attr('stop-opacity','0.9');
+  
+  var genderGrad = defs.append('radialGradient').attr('id','genderGrad');
+  genderGrad.append('stop').attr('offset','0%').attr('stop-color','#059669').attr('stop-opacity','1');
+  genderGrad.append('stop').attr('offset','100%').attr('stop-color','#047857').attr('stop-opacity','0.9');
+  
+  var incomeGrad = defs.append('radialGradient').attr('id','incomeGrad');
+  incomeGrad.append('stop').attr('offset','0%').attr('stop-color','#D97706').attr('stop-opacity','1');
+  incomeGrad.append('stop').attr('offset','100%').attr('stop-color','#B45309').attr('stop-opacity','0.9');
+  
+  var childGrad = defs.append('radialGradient').attr('id','childGrad');
+  childGrad.append('stop').attr('offset','0%').attr('stop-color','#EC4899').attr('stop-opacity','1');
+  childGrad.append('stop').attr('offset','100%').attr('stop-color','#8B5CF6').attr('stop-opacity','0.9');
+  
+  var glowFilter = defs.append('filter').attr('id','glow').attr('x','-50%').attr('y','-50%').attr('width','200%').attr('height','200%');
+  glowFilter.append('feGaussianBlur').attr('stdDeviation','6').attr('result','blur');
+  var fm = glowFilter.append('feMerge');
+  fm.append('feMergeNode').attr('in','blur');
+  fm.append('feMergeNode').attr('in','SourceGraphic');
+
+  var textGlowPink = defs.append('filter').attr('id','textGlowPink').attr('x','-150%').attr('y','-150%').attr('width','400%').attr('height','400%');
+  var tg1 = textGlowPink.append('feGaussianBlur').attr('stdDeviation','3').attr('result','blur1');
+  var tg2 = textGlowPink.append('feFlood').attr('flood-color','#F472B6').attr('flood-opacity','0.9').attr('result','color1');
+  var tg3 = textGlowPink.append('feComposite').attr('in','color1').attr('in2','blur1').attr('operator','in').attr('result','coloredBlur1');
+  var tgMerge = textGlowPink.append('feMerge');
+  tgMerge.append('feMergeNode').attr('in','coloredBlur1');
+  tgMerge.append('feMergeNode').attr('in','SourceGraphic');
+
+  var textGlowCyan = defs.append('filter').attr('id','textGlowCyan').attr('x','-150%').attr('y','-150%').attr('width','400%').attr('height','400%');
+  var tc1 = textGlowCyan.append('feGaussianBlur').attr('stdDeviation','3').attr('result','blur2');
+  var tc2 = textGlowCyan.append('feFlood').attr('flood-color','#22D3EE').attr('flood-opacity','0.9').attr('result','color2');
+  var tc3 = textGlowCyan.append('feComposite').attr('in','color2').attr('in2','blur2').attr('operator','in').attr('result','coloredBlur2');
+  var tcMerge = textGlowCyan.append('feMerge');
+  tcMerge.append('feMergeNode').attr('in','coloredBlur2');
+  tcMerge.append('feMergeNode').attr('in','SourceGraphic');
+
+  var g = svg.append('g').attr('id','treeG');
+
+  var root = d3.hierarchy(data);
+  var treeHeight = H * 2;
+
+  var treeLayout = d3.tree().size([treeHeight, W - 200]).separation(function(a, b) { 
+    if (a.data.role === 'child' || b.data.role === 'child') return 1; 
+    return a.parent === b.parent ? 0.5 : 1; 
+  });
+  
+  root.x0 = W / 2;
+  root.y0 = H / 2;
+  
+  if (root.children && !skipCollapse) {
+    root.children.forEach(collapse);
+  }
+  update(root);
+
+  function collapse(d) {
+    if (d.children) {
+      d._children = d.children;
+      d._children.forEach(collapse);
+      d.children = null;
+    }
+  }
+
+  function update(source) {
+    treeLayout(root);
+    
+    // Calculate node radii
+    function getNodeRadius(d) {
+      if (d.data.role === 'root') return 140;
+      if (d.data.role === 'consent-no' || d.data.role === 'consent-yes') return 125;
+      if (d.data.role === 'school') return 115;
+      if (d.data.role === 'age-group' || d.data.role === 'orphan-group' || d.data.role === 'gender-group' || d.data.role === 'income-group') return 110;
+      if (d.data.role === 'child') return 55;
+      return 95;
+    }
+    
+    // Process each node's children
+    root.each(function(d) {
+      if (d.children) {
+        // First separate child nodes and non-child nodes
+        var childNodes = d.children.filter(function(child) { return child.data.role === 'child'; });
+        var nonChildNodes = d.children.filter(function(child) { return child.data.role !== 'child'; });
+        
+        // Check if all children are child nodes (final level)
+        if (childNodes.length > 0 && nonChildNodes.length === 0) {
+          // Grape-like cluster only for final child nodes (hexagonal grid)
+          var centerX = d.x + 350;
+          var centerY = d.y;
+          var grapeRadius = 55; // Our child node radius
+          var spacing = grapeRadius * 2.2; // Even more spacing
+          
+          childNodes.forEach(function(child, index) {
+            // Hexagonal grid coordinates
+            var row = Math.floor(Math.sqrt(index));
+            var col = index - row * row;
+            
+            // Offset odd rows
+            var offsetX = (row % 2 === 1) ? (spacing / 2) : 0;
+            
+            var x = col * spacing + offsetX - (row * spacing / 2);
+            var y = row * (spacing * 0.866); // 0.866 is sqrt(3)/2 for hex grid height
+            
+            // Center the cluster
+            child.x = centerX + x;
+            child.y = centerY + y;
+          });
+        } else {
+          // Spread non-child nodes vertically with enough spacing between them
+          var currentY = d.y;
+          nonChildNodes.forEach(function(child, index) {
+            var parentRadius = getNodeRadius(d);
+            var childRadius = getNodeRadius(child);
+            var spacing = parentRadius + childRadius + 200; // Add 200px extra space
+            
+            child.y = currentY + spacing;
+            currentY = child.y;
+          });
+        }
+      }
+    });
+    
+    // Swap x and y to make it horizontal
+    root.each(function(d) {
+      var tmp = d.x;
+      d.x = d.y + 20;
+      d.y = tmp + 100;
+    });
+
+    function getFill(d) {
+      if (d.data.role === 'child') return 'url(#childGrad)';
+      if (d.data.role === 'root') return 'url(#rootGrad)';
+      if (d.data.role === 'consent-no') return 'url(#consentNoGrad)';
+      if (d.data.role === 'consent-yes') return 'url(#consentYesGrad)';
+      if (d.data.role === 'school') return 'url(#schoolGrad)';
+      if (d.data.role === 'age-group' || d.data.role === 'age') return 'url(#ageGrad)';
+      if (d.data.role === 'orphan-group' || d.data.role === 'orphan-status') return 'url(#orphanGrad)';
+      if (d.data.role === 'gender-group' || d.data.role === 'gender-type') return 'url(#genderGrad)';
+      if (d.data.role === 'income-group' || d.data.role === 'income-type') return 'url(#incomeGrad)';
+      return 'url(#rootGrad)';
+    }
+    
+    function getRadius(d) {
+      if (d.data.role === 'root') return 140;
+      if (d.data.role === 'consent-no' || d.data.role === 'consent-yes') return 125;
+      if (d.data.role === 'school') return 115;
+      if (d.data.role === 'age-group' || d.data.role === 'orphan-group' || d.data.role === 'gender-group' || d.data.role === 'income-group') return 110;
+      if (d.data.role === 'child') return 55;
+      return 95;
+    }
+    
+    function getStroke(d) {
+      if (d.data.role === 'child') return '#F9A8D4';
+      if (d.data.role === 'root') return '#818CF8';
+      if (d.data.role === 'consent-no') return '#FCA5A5';
+      if (d.data.role === 'consent-yes') return '#6EE7B7';
+      if (d.data.role === 'school') return '#FCD34D';
+      if (d.data.role === 'age-group' || d.data.role === 'age') return '#C4B5FD';
+      if (d.data.role === 'orphan-group' || d.data.role === 'orphan-status') return '#F9A8D4';
+      if (d.data.role === 'gender-group' || d.data.role === 'gender-type') return '#6EE7B7';
+      if (d.data.role === 'income-group' || d.data.role === 'income-type') return '#FCD34D';
+      return '#818CF8';
+    }
+
+    var nodes = root.descendants();
+    var links = root.links();
+
+    var node = g.selectAll('g.node').data(nodes, function(d) { 
+      return d.id || (d.id = ++i); 
+    });
+
+    var nodeEnter = node.enter().append('g')
+      .attr('class', function(d) { 
+        return 'node' + (d.data.role === 'child' ? ' child-node' : ''); 
+      })
+      .attr('transform', function(d) { 
+        return 'translate(' + (source.x0 || 0) + ',' + (source.y0 || 0) + ')'; 
+      })
+      .on('click', clickNode);
+
+    nodeEnter.append('circle')
+      .attr('r', 1e-6)
+      .style('fill', function(d) { return getFill(d); })
+      .style('fill-opacity', 0.95)
+      .style('stroke', function(d) { return getStroke(d); })
+      .style('stroke-width', 3)
+      .style('filter', 'url(#glow)');
+
+    var textEnter = nodeEnter.append('text')
+      .attr('x', 0)
+      .attr('y', 0)
+      .attr('dy', '0.35em')
+      .attr('text-anchor', 'middle')
+      .attr('dominant-baseline', function(d) { 
+        return d.data.role !== 'child' ? 'middle' : 'middle'; 
+      })
+      .style('fill', function(d) { 
+        if (d.data.role === 'child') return '#ffffff';
+        if (d.data.role === 'root') return '#ffffff';
+        if (d.data.role === 'consent-no' || d.data.role === 'consent-yes') return '#ffffff';
+        if (d.data.role === 'school') return '#ffffff';
+        if (d.data.role === 'age-group' || d.data.role === 'age') return '#ffffff';
+        if (d.data.role === 'orphan-group' || d.data.role === 'orphan-status') return '#ffffff';
+        if (d.data.role === 'gender-group' || d.data.role === 'gender-type') return '#ffffff';
+        if (d.data.role === 'income-group' || d.data.role === 'income-type') return '#ffffff';
+        return '#ffffff'; 
+      })
+      .style('font-size', function(d) { 
+        if (d.data.role === 'child') return '11px';
+        if (d.data.role === 'root') return '20px';
+        if (d.data.role === 'consent-no' || d.data.role === 'consent-yes') return '19px';
+        if (d.data.role === 'school') return '18px';
+        return '17px'; 
+      })
+      .style('font-weight', function(d) { 
+        return '900'; 
+      })
+      .style('opacity', 0)
+      .style('pointer-events', 'none')
+      .style('text-transform', function(d) { 
+        return d.data.role === 'child' ? 'uppercase' : 'none'; 
+      })
+      .style('letter-spacing', function(d) { 
+        return d.data.role === 'child' ? '0.4px' : 'normal'; 
+      })
+      .style('filter', function(d) { 
+        if (d.data.role === 'child') return 'url(#textGlowPink)';
+        return 'url(#textGlowCyan)'; 
+      });
+
+    textEnter.each(function(d) {
+      var textEl = d3.select(this);
+      
+      if (d.data.role === 'child') {
+        var name = d.data.name || 'Child';
+        
+        if (name.length > 8) {
+          var mid = Math.floor(name.length / 2);
+          var line1 = name.substring(0, mid);
+          var line2 = name.substring(mid);
+          
+          textEl.text('');
+          
+          textEl.append('tspan')
+            .attr('x', 0)
+            .attr('dy', '-0.8em')
+            .text(line1);
+          
+          textEl.append('tspan')
+            .attr('x', 0)
+            .attr('dy', '1.6em')
+            .text(line2);
+        } else {
+          textEl.text(name);
+        }
+      } else {
+        // Dynamically generate text based on node role and count from data
+        var textVal = '';
+        var count = d.data.count || 0;
+        
+        if (d.data.role === 'root') {
+          textVal = 'Total: ' + count + ' Children';
+        } else if (d.data.role === 'consent-no') {
+          textVal = 'Consent Not Given: ' + count;
+        } else if (d.data.role === 'consent-yes') {
+          textVal = 'Consent Given: ' + count;
+        } else if (d.data.role === 'school') {
+          textVal = d.data.name + ': ' + count;
+        } else if (d.data.role === 'age-group') {
+          textVal = 'Age Distribution';
+        } else if (d.data.role === 'age') {
+          textVal = d.data.name + ': ' + count;
+        } else if (d.data.role === 'orphan-group') {
+          textVal = 'Orphan Status';
+        } else if (d.data.role === 'orphan-status') {
+          textVal = d.data.name + ': ' + count;
+        } else if (d.data.role === 'gender-group') {
+          textVal = 'Gender Distribution';
+        } else if (d.data.role === 'gender-type') {
+          textVal = d.data.name + ': ' + count;
+        } else if (d.data.role === 'income-group') {
+          textVal = 'Income Source';
+        } else if (d.data.role === 'income-type') {
+          textVal = d.data.name + ': ' + count;
+        } else {
+          textVal = d.data.name + (count ? ': ' + count : '');
+        }
+        
+        textEl.text(textVal);
+      }
+    });
+
+    var nodeUpdate = nodeEnter.merge(node);
+
+    nodeUpdate.transition().duration(800)
+      .attr('transform', function(d) { 
+        return 'translate(' + d.x + ',' + d.y + ')'; 
+      });
+
+    nodeUpdate.select('circle')
+      .transition().duration(800)
+      .attr('r', function(d) { return getRadius(d); });
+
+    nodeUpdate.select('text')
+      .transition().duration(800)
+      .style('opacity', 1);
+
+    var nodeExit = node.exit().transition().duration(800)
+      .attr('transform', function(d) { 
+        return 'translate(' + source.x + ',' + source.y + ')'; 
+      })
+      .remove();
+
+    nodeExit.select('circle').attr('r', 1e-6);
+    nodeExit.select('text').style('opacity', 0);
+
+    var link = g.selectAll('path.link').data(links, function(d) { 
+      return d.target.id; 
+    });
+
+    var linkEnter = link.enter().insert('path', 'g')
+      .attr('class', 'link')
+      .attr('d', function(d) { 
+        var o = {x: source.x0, y: source.y0};
+        return diagonal(o, o); 
+      });
+
+    var linkUpdate = linkEnter.merge(link);
+
+    linkUpdate.transition().duration(800)
+      .attr('d', function(d) { 
+        return diagonal(d.source, d.target); 
+      });
+
+    link.exit().transition().duration(800)
+      .attr('d', function(d) { 
+        var o = {x: source.x, y: source.y};
+        return diagonal(o, o); 
+      })
+      .remove();
+
+    nodes.forEach(function(d) {
+      d.x0 = d.x;
+      d.y0 = d.y;
+    });
+
+    function diagonal(s, d) {
+      var mx = (s.x + d.x) / 2;
+      return 'M' + s.x + ',' + s.y +
+             'C' + mx + ',' + s.y +
+             ' ' + mx + ',' + d.y +
+             ' ' + d.x + ',' + d.y;
+    }
+
+    function clickNode(event, d) {
+      // Play sound based on node type
+      if (d.data.role === 'child') {
+        playSound('child');
+        openChildModal(d.data.uuid);
+      } else if (d.data.role === 'root') {
+        playSound('root');
+        if (d.children) {
+          d._children = d.children;
+          d.children = null;
+        } else {
+          d.children = d._children;
+          d._children = null;
+        }
+        update(d);
+        
+        // Refit the view after update
+        setTimeout(function() {
+          var bounds = g.node().getBBox();
+          var scale = Math.min(0.9, Math.min((W - 100) / bounds.width, (H - 100) / bounds.height));
+          var tx = (W - bounds.width * scale) / 2 - bounds.x * scale;
+          var ty = (H - bounds.height * scale) / 2 - bounds.y * scale;
+          svg.transition().duration(500).call(zoom.transform, d3.zoomIdentity.translate(tx, ty).scale(scale));
+        }, 850);
+      } else if (d.data.role === 'consent-yes' || d.data.role === 'consent-no') {
+        playSound('consent');
+        if (d.children) {
+          d._children = d.children;
+          d.children = null;
+        } else {
+          d.children = d._children;
+          d._children = null;
+        }
+        update(d);
+        
+        // Refit the view after update
+        setTimeout(function() {
+          var bounds = g.node().getBBox();
+          var scale = Math.min(0.9, Math.min((W - 100) / bounds.width, (H - 100) / bounds.height));
+          var tx = (W - bounds.width * scale) / 2 - bounds.x * scale;
+          var ty = (H - bounds.height * scale) / 2 - bounds.y * scale;
+          svg.transition().duration(500).call(zoom.transform, d3.zoomIdentity.translate(tx, ty).scale(scale));
+        }, 850);
+      } else if (d.data.role === 'school') {
+        playSound('school');
+        if (d.children) {
+          d._children = d.children;
+          d.children = null;
+        } else {
+          d.children = d._children;
+          d._children = null;
+        }
+        update(d);
+        
+        // Refit the view after update
+        setTimeout(function() {
+          var bounds = g.node().getBBox();
+          var scale = Math.min(0.9, Math.min((W - 100) / bounds.width, (H - 100) / bounds.height));
+          var tx = (W - bounds.width * scale) / 2 - bounds.x * scale;
+          var ty = (H - bounds.height * scale) / 2 - bounds.y * scale;
+          svg.transition().duration(500).call(zoom.transform, d3.zoomIdentity.translate(tx, ty).scale(scale));
+        }, 850);
+      } else {
+        playSound('default');
+        if (d.children) {
+          d._children = d.children;
+          d.children = null;
+        } else {
+          d.children = d._children;
+          d._children = null;
+        }
+        update(d);
+        
+        // Refit the view after update
+        setTimeout(function() {
+          var bounds = g.node().getBBox();
+          var scale = Math.min(0.9, Math.min((W - 100) / bounds.width, (H - 100) / bounds.height));
+          var tx = (W - bounds.width * scale) / 2 - bounds.x * scale;
+          var ty = (H - bounds.height * scale) / 2 - bounds.y * scale;
+          svg.transition().duration(500).call(zoom.transform, d3.zoomIdentity.translate(tx, ty).scale(scale));
+        }, 850);
+      }
+    }
+  }
+
+  var zoom = d3.zoom().scaleExtent([0.05, 5]).on('zoom', function(event) {
+    g.attr('transform', event.transform);
+  });
+  svg.call(zoom);
+  svg.call(zoom.transform, d3.zoomIdentity);
+
+  var bounds = g.node().getBBox();
+  var scale = Math.min(0.8, Math.min((W - 100) / bounds.width, (H - 100) / bounds.height));
+  var tx = (W - bounds.width * scale) / 2 - bounds.x * scale;
+  var ty = (H - bounds.height * scale) / 2 - bounds.y * scale;
+  setTimeout(function() {
+    svg.call(zoom.transform, d3.zoomIdentity.translate(tx, ty).scale(scale));
+  }, 100);
+}
+
+function openChildModal(uuid) {
+  currentChildUuid = uuid;
+  document.getElementById('childModalOverlay').classList.add('active');
+  document.getElementById('modalChildName').textContent = 'Loading...';
+  document.getElementById('modalChildDetails').textContent = 'Fetching child data...';
+  document.getElementById('childFormGrid').innerHTML = '';
+  
+  google.script.run
+    .withSuccessHandler(function(childData) {
+      populateChildForm(childData);
+    })
+    .withFailureHandler(function(err) {
+      console.error('Failed to load child:', err);
+      document.getElementById('modalChildName').textContent = 'Error';
+      document.getElementById('modalChildDetails').textContent = 'Failed to load child data';
+    })
+    .getChildByUuid(uuid);
+}
+
+function closeChildModal(event) {
+  if (!event || event.target === document.getElementById('childModalOverlay')) {
+    document.getElementById('childModalOverlay').classList.remove('active');
+    currentChildUuid = null;
+  }
+}
+
+var isEditMode = false;
+
+// Helper function to extract file ID from URL (or return empty if none)
+function getFileIdFromUrl(url) {
+  if (!url) return '';
+  if (url.includes('file/d/')) {
+    return url.split('file/d/')[1].split('/')[0];
+  } else if (url.includes('open?id=')) {
+    return url.split('open?id=')[1].split('&')[0];
+  } else if (url.includes('id=')) {
+    var idMatch = url.match(/id=([^&]+)/);
+    return idMatch ? idMatch[1] : '';
+  }
+  return '';
+}
+
+function populateChildForm(childData) {
+  if (!childData) {
+    document.getElementById('modalChildName').textContent = 'Not Found';
+    document.getElementById('modalChildDetails').textContent = 'No data available';
+    return;
+  }
+
+  window.currentChildData = childData;
+  console.log('Child Data:', childData);
+  var name = childData.childname ? childData.childname.value : 'Unnamed Child';
+  var age = childData.age_calc ? childData.age_calc.value : '';
+  var gender = childData.gender ? childData.gender.value : '';
+  document.getElementById('modalChildName').textContent = name;
+  document.getElementById('modalChildDetails').textContent = [age ? age + ' years' : '', gender].filter(Boolean).join(' • ');
+
+  // Populate documents section
+  var documentsSection = document.getElementById('documentsSection');
+  var documentFields = [
+    { key: 'doc_photo_link', label: 'Child Photo', icon: 'photo_camera' },
+    { key: 'doc_aadhaar_link', label: 'Aadhaar Card', icon: 'badge' },
+    { key: 'doc_passbook_link', label: 'Bank Passbook', icon: 'account_balance' },
+    { key: '__marksheet_link', label: 'Marksheet', icon: 'school' },
+    { key: '__receipt_link', label: 'Fee Receipt', icon: 'receipt' },
+    { key: '__thumb_link', label: 'Signature', icon: 'draw' }
+  ];
+  
+  var documentsHtml = '<div class="documents-section-title"><span class="material-icons-outlined">image</span><h3>Uploaded Documents</h3></div><div class="documents-grid" id="documentsGrid">';
+  
+  documentFields.forEach(function(doc) {
+    var field = childData[doc.key];
+    var url = field ? field.value : '';
+    console.log('Document:', doc.label, 'Key:', doc.key, 'URL:', url);
+    var thumbnailUrl = url;
+    var viewUrl = url;
+    var downloadUrl = url;
+    if (url) {
+      var fileId = getFileIdFromUrl(url);
+      if (fileId) {
+        thumbnailUrl = 'https://drive.google.com/thumbnail?id=' + fileId + '&sz=w800';
+        viewUrl = 'https://drive.google.com/file/d/' + fileId + '/view';
+        downloadUrl = 'https://drive.google.com/uc?export=download&id=' + fileId;
+      }
+    }
+    documentsHtml += '<div class="document-card" data-doc-key="' + doc.key + '" data-url="' + (url || '') + '" data-label="' + doc.label + '" data-file-id="' + (getFileIdFromUrl(url) || '') + '" style="position:relative;cursor:pointer">'; 
+    if (url) {
+      documentsHtml += '<img src="' + thumbnailUrl + '" alt="' + doc.label + '" style="width:100%;height:100%;object-fit:cover" onerror="this.onerror=null;this.style.display=\'none\';this.parentElement.querySelector(\'.document-placeholder\').style.display=\'flex\'">' +
+        '<div class="document-placeholder" style="display:none;flex-direction:column;align-items:center;justify-content:center;height:100%;background:rgba(255,255,255,0.03)">' +
+          '<span class="material-icons-outlined" style="font-size:48px;color:rgba(0,212,255,0.3);margin-bottom:8px">' + doc.icon + '</span>' +
+          '<div style="color:rgba(255,255,255,0.4);font-size:12px;font-weight:600">' + doc.label + '</div>' +
+        '</div>' +
+        '<div class="document-options" style="position:absolute;top:8px;right:8px;display:flex;gap:4px;z-index:10">' +
+          '<button class="document-option-btn" data-view-url="' + viewUrl + '" style="width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,0.7);border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(10px)" title="Open in Drive">' +
+            '<span class="material-icons-outlined" style="font-size:18px">open_in_new</span>' +
+          '</button>' +
+          '<button class="document-option-btn" data-download-url="' + downloadUrl + '" style="width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,0.7);border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(10px)" title="Download">' +
+            '<span class="material-icons-outlined" style="font-size:18px">download</span>' +
+          '</button>' +
+          '<button class="document-option-btn doc-edit-btn" data-doc-key-edit="' + doc.key + '" style="display:none;width:32px;height:32px;border-radius:50%;background:rgba(0,212,255,0.8);border:none;color:#0d0d0d;cursor:pointer;align-items:center;justify-content:center;backdrop-filter:blur(10px)" title="Change">' +
+            '<span class="material-icons-outlined" style="font-size:18px">edit</span>' +
+          '</button>' +
+          '<button class="document-option-btn doc-delete-btn" data-doc-key-delete="' + doc.key + '" style="width:32px;height:32px;border-radius:50%;background:rgba(244, 67, 54, 0.8);border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(10px)" title="Delete">' +
+            '<span class="material-icons-outlined" style="font-size:18px">delete</span>' +
+          '</button>' +
+        '</div>' +
+        '<div class="document-label">' + doc.label + '</div>';
+    } else {
+      documentsHtml += '<div class="document-placeholder" style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:250px;background:rgba(255,255,255,0.03);border:2px dashed rgba(0,212,255,0.2);border-radius:12px;transition:all .3s" data-doc-key-upload="' + doc.key + '">' +
+        '<span class="material-icons-outlined" style="font-size:64px;color:rgba(0,212,255,0.3);margin-bottom:12px">' + doc.icon + '</span>' +
+        '<div style="color:rgba(255,255,255,0.5);font-size:13px;font-weight:600;margin-bottom:16px;text-align:center">' + doc.label + '</div>' +
+        '<button class="doc-upload-btn" data-doc-key-upload-btn="' + doc.key + '" style="padding:14px 28px;background:rgba(0,212,255,0.15);border:2px solid rgba(0,212,255,0.4);border-radius:10px;color:#00d4ff;font-weight:700;cursor:pointer;font-size:13px;transition:all .3s;display:flex;align-items:center;gap:8px">' +
+          '<span class="material-icons-outlined" style="font-size:20px">cloud_upload</span>' +
+          '<span>Upload</span>' +
+        '</button>' +
+        '<div class="document-label">' + doc.label + '</div>' +
+      '</div>';
+    }
+    documentsHtml += '</div>';
+  });
+  
+  documentsHtml += '</div>';
+  documentsSection.innerHTML = documentsHtml;
+  console.log('Documents HTML generated, total fields:', documentFields.length);
+  
+  // Add event listeners after inserting HTML
+  var documentCards = documentsSection.querySelectorAll('.document-card');
+  documentCards.forEach(function(card) {
+    card.addEventListener('click', function() {
+      var url = card.getAttribute('data-url');
+      var label = card.getAttribute('data-label');
+      openImagePreview(url, label);
+    });
+  });
+  
+  var viewBtns = documentsSection.querySelectorAll('[data-view-url]');
+  viewBtns.forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      window.open(btn.getAttribute('data-view-url'), '_blank');
+    });
+  });
+  
+  var downloadBtns = documentsSection.querySelectorAll('[data-download-url]');
+  downloadBtns.forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      window.open(btn.getAttribute('data-download-url'), '_blank');
+    });
+  });
+  
+  var editBtns = documentsSection.querySelectorAll('[data-doc-key-edit]');
+  editBtns.forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      changeDocument(btn.getAttribute('data-doc-key-edit'));
+    });
+  });
+
+  var deleteBtns = documentsSection.querySelectorAll('[data-doc-key-delete]');
+  deleteBtns.forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      deleteDocument(btn.getAttribute('data-doc-key-delete'));
+    });
+  });
+  
+  var uploadBtns = documentsSection.querySelectorAll('[data-doc-key-upload-btn]');
+  uploadBtns.forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      uploadDocument(btn.getAttribute('data-doc-key-upload-btn'));
+    });
+  });
+  
+  var uploadPlaceholders = documentsSection.querySelectorAll('[data-doc-key-upload]');
+  uploadPlaceholders.forEach(function(placeholder) {
+    placeholder.addEventListener('mouseenter', function() {
+      this.style.borderColor = 'rgba(0,212,255,0.5)';
+      this.style.background = 'rgba(255,255,255,0.05)';
+    });
+    placeholder.addEventListener('mouseleave', function() {
+      this.style.borderColor = 'rgba(0,212,255,0.2)';
+      this.style.background = 'rgba(255,255,255,0.03)';
+    });
+  });
+
+  // Populate form grid
+  var grid = document.getElementById('childFormGrid');
+  
+  var sections = [
+    {
+      icon: 'badge',
+      title: 'Child & Caregiver Details',
+      fields: ['childname', 'dateofbirth', 'age_calc', 'gender', 'orphanstatus', 'caregivername', 'caregiverrelation', 'caregivercontact', 'address', 'addressstate', 'addressdistrict']
+    },
+    {
+      icon: 'home',
+      title: 'Household & Financial',
+      fields: ['householdmembers', 'noofchildren', 'householdincomemonthly', 'incomesource']
+    },
+    {
+      icon: 'medical_services',
+      title: 'Health & Clinical',
+      fields: ['artstatus', 'art_registration_date', 'art_id_number', 'current_weight', 'current_height', 'bmicalc', 'bmicategory', 'hemoglobin', 'hb_category', 'vlstatus', 'vldate', 'viralload', 'vl_category', 'comorbidities', 'comorbidities_other']
+    },
+    {
+      icon: 'restaurant',
+      title: 'Nutrition',
+      fields: ['appetite', 'mealsperday']
+    },
+    {
+      icon: 'school',
+      title: 'Education',
+      fields: ['educationstatus', 'educationstatus_other', 'schoolname', 'schooltype', 'currentclass', 'attendancestatus']
+    },
+    {
+      icon: 'payments',
+      title: 'Education Expenses & Support',
+      fields: ['eduschoolfees', 'private_tution_fee', 'edubooks', 'edustationery', 'eduuniform', 'edutransport', 'eduother', 'edutotalannual', 'reqschoolfees', 'reqbooks', 'reqstationery', 'requniform', 'reqtransport', 'reqother', 'reqtotalsupport']
+    },
+    {
+      icon: 'review',
+      title: 'Review & Bank',
+      fields: ['visitdate', 'interviewer_name', 'csc_name', 'csc_email', 'bank_account_holder', 'bank_account_number', 'bank_ifsc_code', 'bank_mobile', 'child_aadhaar_number']
+    },
+    {
+      icon: 'admin_panel_settings',
+      title: 'System',
+      fields: ['consent_obtained', 'approved_alliance_india', '_uuid', '_id']
+    }
+  ];
+
+  grid.innerHTML = sections.map(function(section) {
+    var fieldsHtml = section.fields.map(function(key) {
+      var field = childData[key];
+      var label = field ? field.label : key;
+      var value = field ? field.value : '';
+      return '<div class="form-field" data-field-key="' + key + '">' +
+        '<label>' + label + '</label>' +
+        '<div class="field-value">' + (value || '') + '</div>' +
+        '<input type="text" class="field-input" style="display:none" value="' + (value || '').replace(/"/g, '&quot;') + '">' +
+        '</div>';
+    }).join('');
+    
+    return '<div class="form-section"><div class="form-section-title"><span class="material-icons-outlined">' + section.icon + '</span><h3>' + section.title + '</h3></div>' + fieldsHtml + '</div>';
+  }).join('');
+}
+
+function toggleEditMode() {
+  isEditMode = !isEditMode;
+  var editBtn = document.getElementById('editChildBtn');
+  var saveBtn = document.getElementById('saveChildBtn');
+  var fieldValues = document.querySelectorAll('.field-value');
+  var fieldInputs = document.querySelectorAll('.field-input');
+  var docEditBtns = document.querySelectorAll('.doc-edit-btn, [data-doc-key-edit]');
+  var docUploadBtns = document.querySelectorAll('.doc-upload-btn, [data-doc-key-upload-btn]');
+  var docDeleteBtns = document.querySelectorAll('.doc-delete-btn, [data-doc-key-delete]');
+  
+  if (isEditMode) {
+    editBtn.style.display = 'none';
+    saveBtn.style.display = 'flex';
+    fieldValues.forEach(function(el) { el.style.display = 'none'; });
+    fieldInputs.forEach(function(el) { el.style.display = 'block'; });
+    docEditBtns.forEach(function(el) { el.style.display = 'flex'; });
+    docUploadBtns.forEach(function(el) { el.style.display = 'flex'; });
+    docDeleteBtns.forEach(function(el) { el.style.display = 'flex'; });
+  } else {
+    editBtn.style.display = 'flex';
+    saveBtn.style.display = 'none';
+    fieldValues.forEach(function(el) { el.style.display = 'block'; });
+    fieldInputs.forEach(function(el) { el.style.display = 'none'; });
+    docEditBtns.forEach(function(el) { el.style.display = 'none'; });
+    docUploadBtns.forEach(function(el) { el.style.display = 'none'; });
+    docDeleteBtns.forEach(function(el) { el.style.display = 'none'; });
+  }
+}
+
+function saveChildData() {
+  if (!currentChildUuid || !window.currentChildData) return;
+  
+  var updatedData = {};
+  var fieldInputs = document.querySelectorAll('.field-input');
+  
+  fieldInputs.forEach(function(input) {
+    var fieldKey = input.closest('.form-field').getAttribute('data-field-key');
+    updatedData[fieldKey] = input.value;
+  });
+  
+  document.getElementById('saveChildBtn').disabled = true;
+  document.getElementById('saveChildBtn').innerHTML = '<span class="material-icons-outlined">hourglass_empty</span>Saving...';
+  
+  google.script.run
+    .withSuccessHandler(function() {
+      alert('Child data saved successfully!');
+      toggleEditMode();
+      openChildModal(currentChildUuid);
+    })
+    .withFailureHandler(function(err) {
+      console.error('Save failed:', err);
+      alert('Failed to save child data. Please try again.');
+      document.getElementById('saveChildBtn').disabled = false;
+      document.getElementById('saveChildBtn').innerHTML = '<span class="material-icons-outlined">save</span>Save';
+    })
+    .saveChildData(currentChildUuid, updatedData);
+}
+
+function uploadDocument(docKey) {
+  if (!currentChildUuid) {
+    alert('Error: No child selected');
+    return;
+  }
+  
+  var input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*,application/pdf';
+  input.onchange = function(e) {
+    var file = e.target.files[0];
+    if (!file) return;
+    
+    if (file.size > 10 * 1024 * 1024) {
+      alert('File size must be less than 10MB');
+      return;
+    }
+    
+    var reader = new FileReader();
+    reader.onload = function(event) {
+      var base64Data = event.target.result.split(',')[1];
+      console.log('Uploading:', file.name, 'Size:', (file.size / 1024).toFixed(2) + 'KB', 'Type:', file.type);
+      alert('Uploading ' + file.name + ' to Google Drive...');
+      
+      google.script.run
+        .withSuccessHandler(function(url) {
+          console.log('Upload success! URL:', url);
+          if (url) {
+            alert('Document uploaded successfully to Google Drive!\n\nFile will now appear in the dashboard.');
+            openChildModal(currentChildUuid);
+          } else {
+            alert('Upload failed - no URL returned from server');
+          }
+        })
+        .withFailureHandler(function(err) {
+          console.error('Upload failed:', err);
+          alert('Failed to upload document: ' + err.message + '\n\nPlease check console for details.');
+        })
+        .uploadChildDocument(currentChildUuid, docKey, base64Data, file.name, file.type);
+    };
+    reader.readAsDataURL(file);
+  };
+  input.click();
+}
+
+function changeDocument(docKey) {
+  if (confirm('Replace this document with a new one?')) {
+    uploadDocument(docKey);
+  }
+}
+
+function deleteDocument(docKey) {
+  if (!currentChildUuid) {
+    alert('Error: No child selected');
+    return;
+  }
+  
+  if (!confirm('Are you sure you want to delete this document?')) {
+    return;
+  }
+  
+  google.script.run
+    .withSuccessHandler(function() {
+      alert('Document deleted successfully!');
+      openChildModal(currentChildUuid);
+    })
+    .withFailureHandler(function(err) {
+      console.error('Delete failed:', err);
+      alert('Failed to delete document: ' + err.message + '\n\nPlease check console for details.');
+    })
+    .deleteChildDocument(currentChildUuid, docKey);
+}
+
+function openImagePreview(url, label) {
+  if (!url) return;
+  
+  var fileId = getFileIdFromUrl(url);
+  
+  var previewUrl = url;
+  if (fileId) {
+    previewUrl = 'https://drive.google.com/thumbnail?id=' + fileId + '&sz=w1600';
+  }
+  
+  document.getElementById('imagePreviewTitle').textContent = label;
+  document.getElementById('imagePreviewImg').src = previewUrl;
+  document.getElementById('imagePreviewImg').onerror = function() {
+    this.onerror = null;
+    // If file ID exists, try just opening Drive view instead, or fallback to original URL
+    if (fileId) {
+      window.open('https://drive.google.com/file/d/' + fileId + '/view', '_blank');
+      closeImagePreview();
+    } else {
+      alert('Could not load preview. File may not have a valid Google Drive URL.');
+    }
+  };
+  document.getElementById('imagePreviewOverlay').classList.add('active');
+}
+
+function closeImagePreview(event) {
+  if (!event || event.target === document.getElementById('imagePreviewOverlay')) {
+    document.getElementById('imagePreviewOverlay').classList.remove('active');
+    document.getElementById('imagePreviewImg').src = '';
+  }
+}
+
+// Search functionality
+let searchRoot = null;
+let searchG = null;
+let searchSvg = null;
+let searchW = 0;
+let searchH = 0;
+
+function initSearch() {
+  const searchInput = document.getElementById('childSearchInput');
+  const searchClearBtn = document.getElementById('searchClearBtn');
+  
+  if (!searchInput) return;
+  
+  searchInput.addEventListener('input', handleSearchInput);
+  searchInput.addEventListener('paste', function(e) {
+    // Ensure paste works normally
+    setTimeout(function() {
+      handleSearchInput({ target: searchInput });
+    }, 0);
+  });
+  searchClearBtn.addEventListener('click', clearSearch);
+  
+  // Focus search input when page loads
+  setTimeout(function() {
+    searchInput.focus();
+  }, 1000);
+}
+
+function handleSearchInput(event) {
+  const query = event.target.value.trim().toLowerCase();
+  const searchClearBtn = document.getElementById('searchClearBtn');
+  
+  if (searchClearBtn) {
+    searchClearBtn.style.display = query.length > 0 ? 'flex' : 'none';
+  }
+  
+  if (query.length === 0) {
+    clearSearch();
+    return;
+  }
+  
+  searchChildren(query);
+}
+
+function clearSearch() {
+  const searchInput = document.getElementById('childSearchInput');
+  const searchClearBtn = document.getElementById('searchClearBtn');
+  
+  if (searchInput) {
+    searchInput.value = '';
+  }
+  if (searchClearBtn) {
+    searchClearBtn.style.display = 'none';
+  }
+  
+  // Reset tree to original state
+  if (originalTreeData) {
+    treeData = JSON.parse(JSON.stringify(originalTreeData));
+    drawTree(treeData);
+  }
+}
+
+function searchChildren(query) {
+  console.log('searchChildren called with query:', query);
+  if (!originalTreeData) {
+    console.log('originalTreeData is null/undefined');
+    return;
+  }
+  
+  // Create a deep copy of the original tree to modify
+  const searchTree = JSON.parse(JSON.stringify(originalTreeData));
+  console.log('searchTree created:', searchTree);
+  
+  // Collect all child nodes and their paths
+  const childNodes = [];
+  collectChildNodes(searchTree, [], childNodes);
+  console.log('Total child nodes collected:', childNodes.length);
+  
+  // Filter child nodes that match the query, then select the one with the shortest path
+  let shortestMatch = null;
+  childNodes.forEach(function(node) {
+    const name = (node.node.name || '').toLowerCase();
+    const matches = name.includes(query);
+    if (matches) {
+      if (!shortestMatch || node.path.length < shortestMatch.path.length) {
+        shortestMatch = node;
+        console.log('New shortest match found:', node.node.name, 'path length:', node.path.length);
+        console.log('Path nodes:', node.path.map(function(p) { return { name: p.name, role: p.role }; }));
+      }
+    }
+  });
+  console.log('Shortest match selected:', shortestMatch ? shortestMatch.node.name : 'none');
+  
+  if (!shortestMatch) {
+    console.log('No matching children found');
+    // No matches found, just draw the normal tree
+    drawTree(searchTree);
+    return;
+  }
+  
+  // Collapse all nodes first, then only expand the shortest path
+  console.log('Collapsing all nodes...');
+  collapseAll(searchTree);
+  
+  // Expand only the shortest path
+  console.log('Expanding shortest path...');
+  // Remove first item from path (it's the root node itself!)
+  const pathWithoutRoot = shortestMatch.path.slice(1);
+  console.log('Path without root:', pathWithoutRoot.map(function(p) { return { name: p.name, role: p.role }; }));
+  expandSpecificPath(searchTree, pathWithoutRoot);
+  
+  // Draw the tree with only the shortest path expanded
+  console.log('Drawing tree with skipCollapse=true...');
+  drawTree(searchTree, true);
+  
+  // Highlight matching child and zoom to it
+  setTimeout(function() {
+    console.log('Highlighting matching child...');
+    // Temporarily override search query for highlighting
+    const tempQuery = query;
+    highlightMatchingChildren(tempQuery);
+  }, 900);
+}
+
+function collapseAll(node) {
+  if (node.children && node.children.length > 0) {
+    node._children = node.children;
+    node.children = null;
+    node._children.forEach(function(child) {
+      collapseAll(child);
+    });
+  }
+}
+
+function expandSpecificPath(tree, path) {
+  console.log('expandSpecificPath: tree name:', tree.name, 'tree role:', tree.role, 'path length:', path.length);
+  let current = tree;
+  path.forEach(function(ancestor) {
+    console.log('expandSpecificPath: looking for ancestor:', ancestor.name, ancestor.role);
+    // Look in _children first, then children
+    let childrenToCheck = current._children ? current._children : (current.children ? current.children : []);
+    const found = childrenToCheck.find(function(c) {
+      return c.name === ancestor.name && c.role === ancestor.role;
+    });
+    if (found) {
+      console.log('expandSpecificPath: found ancestor:', found.name, 'expanding node');
+      // If children were stored in _children, move them to children to expand
+      if (current._children) {
+        current.children = current._children;
+        current._children = null;
+      }
+      current = found;
+    } else {
+      console.log('expandSpecificPath: ancestor NOT found:', ancestor.name, ancestor.role);
+    }
+  });
+  
+  // Finally, ensure the current node (last ancestor) has its children exposed too!
+  if (current._children) {
+    current.children = current._children;
+    current._children = null;
+    console.log('expandSpecificPath: exposing final node children');
+  }
+}
+
+function collectChildNodes(node, path, result) {
+  if (node.role === 'child') {
+    result.push({ node: node, path: [...path] });
+  }
+  if (node.children) {
+    node.children.forEach(function(child) {
+      collectChildNodes(child, [...path, node], result);
+    });
+  }
+  if (node._children) {
+    node._children.forEach(function(child) {
+      collectChildNodes(child, [...path, node], result);
+    });
+  }
+}
+
+function expandPath(tree, path) {
+  let current = tree;
+  path.forEach(function(ancestor) {
+    // Find the child in current's children that matches the ancestor
+    if (current.children) {
+      const found = current.children.find(function(c) {
+        return c.name === ancestor.name && c.role === ancestor.role;
+      });
+      if (found) {
+        current = found;
+      }
+    }
+  });
+  // Now make sure all children along the path are expanded (not hidden as _children)
+  // We'll do this by rebuilding the tree without collapsing for search
+}
+
+function highlightMatchingChildren(query) {
+  const svg = d3.select('#tree-svg');
+  
+  // Highlight matching child nodes
+  svg.selectAll('g.node.child-node')
+    .filter(function(d) {
+      const name = (d.data.name || '').toLowerCase();
+      return name.includes(query);
+    })
+    .select('circle')
+    .style('stroke', '#00ffff')
+    .style('stroke-width', 6)
+    .style('filter', 'url(#textGlowCyan)');
+  
+  // Zoom to the first matching child
+  const firstMatch = svg.selectAll('g.node.child-node')
+    .filter(function(d) {
+      const name = (d.data.name || '').toLowerCase();
+      return name.includes(query);
+    })
+    .node();
+  
+  if (firstMatch) {
+    const container = document.getElementById('chart-container');
+    const W = container.clientWidth || window.innerWidth;
+    const H = container.clientHeight || window.innerHeight;
+    
+    const bounds = firstMatch.getBBox();
+    const g = svg.select('#treeG');
+    const transform = d3.zoomTransform(g.node());
+    
+    const cx = bounds.x + bounds.width / 2;
+    const cy = bounds.y + bounds.height / 2;
+    
+    const scale = Math.min(0.8, Math.min((W - 200) / bounds.width, (H - 200) / bounds.height));
+    const tx = W / 2 - cx * scale;
+    const ty = H / 2 - cy * scale;
+    
+    svg.transition().duration(1000).call(
+      d3.zoom().transform,
+      d3.zoomIdentity.translate(tx, ty).scale(scale)
+    );
+  }
+}
+
+// Call initSearch after the page loads
+document.addEventListener('DOMContentLoaded', initSearch);
+
+
+function downloadChildPDF() {
+  const element = document.querySelector('.child-modal');
+  const originalOverflow = element.style.overflow;
+  element.style.overflow = 'visible';
+  
+  html2canvas(element, { scale: 2, useCORS: true, backgroundColor: '#14141e' })
+    .then(canvas => {
+      const imgData = canvas.toDataURL('image/png');
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+      
+      const imgWidth = 190;
+      const pageHeight = 277;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 10;
+      
+      pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+      
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+      
+      pdf.save('Child-Record-' + (document.getElementById('modalChildName').textContent || 'Unnamed') + '.pdf');
+      element.style.overflow = originalOverflow;
+    })
+    .catch(error => {
+      console.error('PDF download failed:', error);
+      alert('Failed to download PDF. Please try again.');
+      element.style.overflow = originalOverflow;
+    });
+}
+
+async function downloadPDF() {
+  const element = document.getElementById('root');
+  
+  try {
+    const canvas = await html2canvas(element, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#0B0E14'
+    });
+    
+    const imgData = canvas.toDataURL('image/png');
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({
+      orientation: 'landscape',
+      unit: 'mm',
+      format: 'a4'
+    });
+    
+    const imgWidth = 280;
+    const pageHeight = 210;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    let heightLeft = imgHeight;
+    let position = 0;
+    
+    pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
+    
+    while (heightLeft >= 0) {
+      position = heightLeft - imgHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, 'PNG', 10, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+    }
+    
+    pdf.save('Program-Flowchart.pdf');
+  } catch (error) {
+    console.error('PDF download failed:', error);
+    alert('Failed to download PDF. Please try again.');
+  }
+}
+
+</script>
+</body>
+</html>
