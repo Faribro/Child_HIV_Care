@@ -1451,3 +1451,496 @@ function cleanAllHistoricalSheetChoices() {
     return "Error: " + err.message;
   }
 }
+
+function getFilterOptions() {
+  return {
+    schoolType: ["Private", "Aided", "Government"],
+    currentClass: ["Class 1", "Class 2", "Class 3", "Class 4", "Class 5", "Class 6", "Class 7", "Class 8", "Class 9", "Class 10", "Class 11", "Class 12"],
+    orphanStatus: ["Both Alive", "Single Orphan", "Double Orphan"],
+    gender: ["Male", "Female"],
+    educationStatus: ["School Going", "Never Enrolled", "Dropout"]
+  };
+}
+
+function getProgramDocumentsFolderUrl() {
+  try {
+    var folders = DriveApp.getFoldersByName("ChildCare Attachments");
+    var folder = folders.hasNext() ? folders.next() : DriveApp.createFolder("ChildCare Attachments");
+    return folder.getUrl();
+  } catch (e) {
+    return "";
+  }
+}
+
+function migrateOldDocumentEntries(batchSize) {
+  return { done: true, processedRow: 0, totalRows: 0, updated: 0, moved: 0 };
+}
+
+function getFlowchartData() {
+  var sheet = safeGetSheet_();
+  var lastRow = sheet.getLastRow();
+  var lastCol = sheet.getLastColumn();
+  
+  var emptyMetrics = {
+    total: 0, consentNo: 0, consentYes: 0,
+    consentNoChildren: [],
+    private: {total:0, ageUnder8:0, age8to10:0, age11to12:0, bothAlive:0, singleOrphan:0, doubleOrphan:0, male:0, female:0, dailyWage:0, salaried:0, selfEmployed:0, pension:0, noIncome:0, children:[]},
+    aided: {total:0, ageUnder8:0, age8to10:0, age11to12:0, bothAlive:0, singleOrphan:0, doubleOrphan:0, male:0, female:0, dailyWage:0, salaried:0, selfEmployed:0, pension:0, noIncome:0, children:[]},
+    govt: {total:0, ageUnder8:0, age8to10:0, age11to12:0, bothAlive:0, singleOrphan:0, doubleOrphan:0, male:0, female:0, dailyWage:0, salaried:0, selfEmployed:0, pension:0, noIncome:0, children:[]}
+  };
+
+  if (lastRow < 4 || lastCol < 1) return emptyMetrics;
+
+  var data = sheet.getRange(4, 1, lastRow - 3, lastCol).getValues();
+  
+  // O(1) Header index map optimization
+  var colMap = {};
+  CONFIG.COLUMN_MAP.forEach((col, idx) => {
+    colMap[col[0]] = idx;
+  });
+
+  var metrics = {
+    total: 0, consentNo: 0, consentYes: 0,
+    consentNoChildren: [],
+    private: {total:0, ageUnder8:0, age8to10:0, age11to12:0, bothAlive:0, singleOrphan:0, doubleOrphan:0, male:0, female:0, dailyWage:0, salaried:0, selfEmployed:0, pension:0, noIncome:0, children:[]},
+    aided: {total:0, ageUnder8:0, age8to10:0, age11to12:0, bothAlive:0, singleOrphan:0, doubleOrphan:0, male:0, female:0, dailyWage:0, salaried:0, selfEmployed:0, pension:0, noIncome:0, children:[]},
+    govt: {total:0, ageUnder8:0, age8to10:0, age11to12:0, bothAlive:0, singleOrphan:0, doubleOrphan:0, male:0, female:0, dailyWage:0, salaried:0, selfEmployed:0, pension:0, noIncome:0, children:[]}
+  };
+
+  data.forEach(function(row, rowIndex) {
+    var childNameIdx = colMap['childname'];
+    var uuidIdx      = colMap['_uuid'];
+    
+    var childName = childNameIdx !== undefined ? String(row[childNameIdx] || '').trim() : '';
+    var uuid      = uuidIdx !== undefined ? String(row[uuidIdx] || '').trim() : '';
+    if (!childName && !uuid) return;
+
+    var childData = {};
+    CONFIG.COLUMN_MAP.forEach(([key]) => {
+      var idx = colMap[key];
+      childData[key] = idx !== undefined ? String(row[idx] || '').trim() : '';
+    });
+    childData._rowNumber = rowIndex + 4;
+
+    metrics.total++;
+
+    var consent = (childData['consent_obtained'] || '').toLowerCase();
+    if (consent === 'no') {
+      metrics.consentNo++;
+      metrics.consentNoChildren.push(childData);
+      return;
+    }
+    if (consent === 'yes') {
+      metrics.consentYes++;
+    }
+
+    var schoolType = (childData['schooltype'] || '').toLowerCase();
+    var schoolData = null;
+    if (schoolType === 'private') {
+      metrics.private.total++;
+      schoolData = metrics.private;
+    } else if (schoolType === 'aided') {
+      metrics.aided.total++;
+      schoolData = metrics.aided;
+    } else if (schoolType === 'government' || schoolType === 'govt') {
+      metrics.govt.total++;
+      schoolData = metrics.govt;
+    }
+
+    if (schoolData) {
+      schoolData.children.push(childData);
+      
+      var gender = (childData['gender'] || '').toLowerCase();
+      if (gender === 'male') schoolData.male++;
+      if (gender === 'female') schoolData.female++;
+
+      var age = parseFloat(childData['age_calc']);
+      if (!isNaN(age)) {
+        if (age < 8) schoolData.ageUnder8++;
+        else if (age >= 8 && age <= 10) schoolData.age8to10++;
+        else if (age > 10) schoolData.age11to12++;
+      }
+
+      var orphanLower = (childData['orphanstatus'] || '').toLowerCase();
+      if (orphanLower === 'both_alive' || orphanLower === 'none') schoolData.bothAlive++;
+      if (orphanLower === 'single_orphan') schoolData.singleOrphan++;
+      if (orphanLower === 'double_orphan') schoolData.doubleOrphan++;
+
+      var incomeLower = (childData['incomesource'] || '').toLowerCase();
+      if (incomeLower === 'daily_wage' || incomeLower === 'daily wager') schoolData.dailyWage++;
+      if (incomeLower === 'salaried') schoolData.salaried++;
+      if (incomeLower === 'self_employed' || incomeLower === 'business') schoolData.selfEmployed++;
+      if (incomeLower === 'pension') schoolData.pension++;
+      if (incomeLower === 'no_income' || incomeLower === 'no income') schoolData.noIncome++;
+    }
+  });
+
+  return metrics;
+}
+
+function getFlowchartHierarchyData() {
+  try {
+    var metrics = getFlowchartData();
+    
+    var root = {
+      name: 'Program Flow',
+      role: 'root',
+      count: metrics.total || 0,
+      children: []
+    };
+    
+    // Consent Not Given branch
+    if (metrics.consentNo > 0) {
+      var consentNoNode = {
+        name: 'Consent Not Given',
+        role: 'consent-no',
+        count: metrics.consentNo,
+        children: metrics.consentNoChildren.map(function(child) {
+          return {
+            name: child.childname || 'Unnamed',
+            role: 'child',
+            count: 1,
+            uuid: child._uuid,
+            childData: child
+          };
+        })
+      };
+      root.children.push(consentNoNode);
+    }
+    
+    // Consent Given branch
+    if (metrics.consentYes > 0) {
+      var consentYesNode = {
+        name: 'Consent Given',
+        role: 'consent-yes',
+        count: metrics.consentYes,
+        children: []
+      };
+      
+      // Private School
+      if (metrics.private.total > 0) {
+        var privateNode = buildSchoolNode('Private School', metrics.private, 'private');
+        consentYesNode.children.push(privateNode);
+      }
+      
+      // Aided School
+      if (metrics.aided.total > 0) {
+        var aidedNode = buildSchoolNode('Aided School', metrics.aided, 'aided');
+        consentYesNode.children.push(aidedNode);
+      }
+      
+      // Government School
+      if (metrics.govt.total > 0) {
+        var govtNode = buildSchoolNode('Government School', metrics.govt, 'government');
+        consentYesNode.children.push(govtNode);
+      }
+      
+      root.children.push(consentYesNode);
+    }
+    
+    return root;
+  } catch (e) {
+    Logger.log('getFlowchartHierarchyData ERROR: ' + e.message);
+    return {
+      name: 'Program Flow',
+      role: 'root',
+      count: 0,
+      children: []
+    };
+  }
+}
+
+function buildSchoolNode(name, schoolData, type) {
+  var node = {
+    name: name,
+    role: 'school',
+    count: schoolData.total,
+    children: []
+  };
+  
+  // Age Distribution
+  var ageChildren = [];
+  if (schoolData.ageUnder8 > 0) {
+    ageChildren.push({
+      name: 'Under 8 Years',
+      role: 'age',
+      count: schoolData.ageUnder8,
+      children: schoolData.children.filter(function(c) {
+        var age = parseFloat(c.age_calc);
+        return !isNaN(age) && age < 8;
+      }).map(function(c) {
+        return {
+          name: c.childname || 'Unnamed',
+          role: 'child',
+          count: 1,
+          uuid: c._uuid,
+          childData: c
+        };
+      })
+    });
+  }
+  if (schoolData.age8to10 > 0) {
+    ageChildren.push({
+      name: '8 to 10 Years',
+      role: 'age',
+      count: schoolData.age8to10,
+      children: schoolData.children.filter(function(c) {
+        var age = parseFloat(c.age_calc);
+        return !isNaN(age) && age >= 8 && age <= 10;
+      }).map(function(c) {
+        return {
+          name: c.childname || 'Unnamed',
+          role: 'child',
+          count: 1,
+          uuid: c._uuid,
+          childData: c
+        };
+      })
+    });
+  }
+  if (schoolData.age11to12 > 0) {
+    ageChildren.push({
+      name: '11 to 12 Years',
+      role: 'age',
+      count: schoolData.age11to12,
+      children: schoolData.children.filter(function(c) {
+        var age = parseFloat(c.age_calc);
+        return !isNaN(age) && age > 10;
+      }).map(function(c) {
+        return {
+          name: c.childname || 'Unnamed',
+          role: 'child',
+          count: 1,
+          uuid: c._uuid,
+          childData: c
+        };
+      })
+    });
+  }
+  if (ageChildren.length > 0) {
+    node.children.push({
+      name: 'Age Distribution',
+      role: 'age-group',
+      count: ageChildren.reduce(function(sum, n) { return sum + n.count; }, 0),
+      children: ageChildren
+    });
+  }
+  
+  // Orphan Status
+  var orphanChildren = [];
+  if (schoolData.bothAlive > 0) {
+    orphanChildren.push({
+      name: 'Both Parents Alive',
+      role: 'orphan-status',
+      count: schoolData.bothAlive,
+      children: schoolData.children.filter(function(c) {
+        return (c.orphanstatus || '').toLowerCase() === 'both_alive' || (c.orphanstatus || '').toLowerCase() === 'none';
+      }).map(function(c) {
+        return {
+          name: c.childname || 'Unnamed',
+          role: 'child',
+          count: 1,
+          uuid: c._uuid,
+          childData: c
+        };
+      })
+    });
+  }
+  if (schoolData.singleOrphan > 0) {
+    orphanChildren.push({
+      name: 'Single Orphan',
+      role: 'orphan-status',
+      count: schoolData.singleOrphan,
+      children: schoolData.children.filter(function(c) {
+        return (c.orphanstatus || '').toLowerCase() === 'single_orphan';
+      }).map(function(c) {
+        return {
+          name: c.childname || 'Unnamed',
+          role: 'child',
+          count: 1,
+          uuid: c._uuid,
+          childData: c
+        };
+      })
+    });
+  }
+  if (schoolData.doubleOrphan > 0) {
+    orphanChildren.push({
+      name: 'Double Orphan',
+      role: 'orphan-status',
+      count: schoolData.doubleOrphan,
+      children: schoolData.children.filter(function(c) {
+        return (c.orphanstatus || '').toLowerCase() === 'double_orphan';
+      }).map(function(c) {
+        return {
+          name: c.childname || 'Unnamed',
+          role: 'child',
+          count: 1,
+          uuid: c._uuid,
+          childData: c
+        };
+      })
+    });
+  }
+  if (orphanChildren.length > 0) {
+    node.children.push({
+      name: 'Orphan Status',
+      role: 'orphan-group',
+      count: orphanChildren.reduce(function(sum, n) { return sum + n.count; }, 0),
+      children: orphanChildren
+    });
+  }
+  
+  // Gender Distribution
+  var genderChildren = [];
+  if (schoolData.male > 0) {
+    genderChildren.push({
+      name: 'Male Children',
+      role: 'gender-type',
+      count: schoolData.male,
+      children: schoolData.children.filter(function(c) {
+        return (c.gender || '').toLowerCase() === 'male';
+      }).map(function(c) {
+        return {
+          name: c.childname || 'Unnamed',
+          role: 'child',
+          count: 1,
+          uuid: c._uuid,
+          childData: c
+        };
+      })
+    });
+  }
+  if (schoolData.female > 0) {
+    genderChildren.push({
+      name: 'Female Children',
+      role: 'gender-type',
+      count: schoolData.female,
+      children: schoolData.children.filter(function(c) {
+        return (c.gender || '').toLowerCase() === 'female';
+      }).map(function(c) {
+        return {
+          name: c.childname || 'Unnamed',
+          role: 'child',
+          count: 1,
+          uuid: c._uuid,
+          childData: c
+        };
+      })
+    });
+  }
+  if (genderChildren.length > 0) {
+    node.children.push({
+      name: 'Gender Distribution',
+      role: 'gender-group',
+      count: genderChildren.reduce(function(sum, n) { return sum + n.count; }, 0),
+      children: genderChildren
+    });
+  }
+  
+  // Income Source
+  var incomeChildren = [];
+  if (schoolData.dailyWage > 0) {
+    incomeChildren.push({
+      name: 'Daily Wage',
+      role: 'income-type',
+      count: schoolData.dailyWage,
+      children: schoolData.children.filter(function(c) {
+        var inc = (c.incomesource || '').toLowerCase();
+        return inc === 'daily_wage' || inc === 'daily wager';
+      }).map(function(c) {
+        return {
+          name: c.childname || 'Unnamed',
+          role: 'child',
+          count: 1,
+          uuid: c._uuid,
+          childData: c
+        };
+      })
+    });
+  }
+  if (schoolData.salaried > 0) {
+    incomeChildren.push({
+      name: 'Salaried',
+      role: 'income-type',
+      count: schoolData.salaried,
+      children: schoolData.children.filter(function(c) {
+        return (c.incomesource || '').toLowerCase() === 'salaried';
+      }).map(function(c) {
+        return {
+          name: c.childname || 'Unnamed',
+          role: 'child',
+          count: 1,
+          uuid: c._uuid,
+          childData: c
+        };
+      })
+    });
+  }
+  if (schoolData.selfEmployed > 0) {
+    incomeChildren.push({
+      name: 'Self Employed',
+      role: 'income-type',
+      count: schoolData.selfEmployed,
+      children: schoolData.children.filter(function(c) {
+        var inc = (c.incomesource || '').toLowerCase();
+        return inc === 'self_employed' || inc === 'business';
+      }).map(function(c) {
+        return {
+          name: c.childname || 'Unnamed',
+          role: 'child',
+          count: 1,
+          uuid: c._uuid,
+          childData: c
+        };
+      })
+    });
+  }
+  if (schoolData.pension > 0) {
+    incomeChildren.push({
+      name: 'Pension',
+      role: 'income-type',
+      count: schoolData.pension,
+      children: schoolData.children.filter(function(c) {
+        return (c.incomesource || '').toLowerCase() === 'pension';
+      }).map(function(c) {
+        return {
+          name: c.childname || 'Unnamed',
+          role: 'child',
+          count: 1,
+          uuid: c._uuid,
+          childData: c
+        };
+      })
+    });
+  }
+  if (schoolData.noIncome > 0) {
+    incomeChildren.push({
+      name: 'No Income',
+      role: 'income-type',
+      count: schoolData.noIncome,
+      children: schoolData.children.filter(function(c) {
+        var inc = (c.incomesource || '').toLowerCase();
+        return inc === 'no_income' || inc === 'no income';
+      }).map(function(c) {
+        return {
+          name: c.childname || 'Unnamed',
+          role: 'child',
+          count: 1,
+          uuid: c._uuid,
+          childData: c
+        };
+      })
+    });
+  }
+  if (incomeChildren.length > 0) {
+    node.children.push({
+      name: 'Income Source',
+      role: 'income-group',
+      count: incomeChildren.reduce(function(sum, n) { return sum + n.count; }, 0),
+      children: incomeChildren
+    });
+  }
+  
+  return node;
+}
