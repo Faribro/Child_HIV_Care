@@ -24,80 +24,74 @@ function fmtDate(raw: string | undefined): string {
   return d.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
-function getDriveViewUrl(url: string): string {
+function getDriveThumbnailUrl(url: string, sz = 'w100'): string {
   if (!url) return '';
-  const m = url.match(/\/file\/d\/([^/]+)/) || url.match(/id=([^&]+)/);
-  if (m?.[1]) return `https://drive.google.com/file/d/${m[1]}/view`;
+  const driveIdMatch = url.match(/\/file\/d\/([^\/]+)/) || url.match(/id=([^&]+)/);
+  if (driveIdMatch && driveIdMatch[1]) {
+    return `https://drive.google.com/thumbnail?id=${driveIdMatch[1]}&sz=${sz}`;
+  }
   return url;
 }
 
-function getDriveThumbnail(url: string): string {
+function getDriveEmbedUrl(url: string): string {
   if (!url) return '';
-  const m = url.match(/\/file\/d\/([^/]+)/) || url.match(/id=([^&]+)/);
-  if (m?.[1]) return `https://drive.google.com/thumbnail?id=${m[1]}&sz=w80`;
+  const driveIdMatch = url.match(/\/file\/d\/([^\/]+)/) || url.match(/id=([^&]+)/);
+  if (driveIdMatch && driveIdMatch[1]) {
+    const fileId = driveIdMatch[1];
+    const isImage = url.match(/\.(jpeg|jpg|gif|png|webp)/i) || url.includes('export=view');
+    if (isImage) {
+      return `https://drive.google.com/uc?export=view&id=${fileId}`;
+    }
+    return `https://drive.google.com/file/d/${fileId}/preview`;
+  }
+  return url;
+}
+
+function getDriveViewUrl(url: string): string {
+  if (!url) return '';
+  const driveIdMatch = url.match(/\/file\/d\/([^\/]+)/) || url.match(/id=([^&]+)/);
+  if (driveIdMatch && driveIdMatch[1]) {
+    return `https://drive.google.com/file/d/${driveIdMatch[1]}/view`;
+  }
   return url;
 }
 
 // ─── Document Preview Component ─────────────────────────────────────────────
-// Handles both base64 data URIs (renders inline) and Google Drive links
+// Handles both base64 data URIs (renders inline) and Google Drive links with same-tab overlay preview
 
-function DocPreview({ label, url }: { label: string; url?: string }) {
-  const [expanded, setExpanded] = React.useState(false);
+function DocPreview({ label, url, onPreview }: { label: string; url?: string; onPreview: (url: string) => void }) {
   if (!url) return <span className="text-gray-400 text-xs italic">—</span>;
 
   const isBase64 = url.startsWith('data:');
-  const driveUrl = isBase64 ? null : getDriveViewUrl(url);
-  const thumbUrl = isBase64 ? url : getDriveThumbnail(url);
+  const fileIdMatch = url.match(/\/file\/d\/([^\/]+)/) || url.match(/id=([^&]+)/);
+  const isDriveFile = !!fileIdMatch;
+  const isImage = url.match(/\.(jpeg|jpg|gif|png|webp)/i) || isBase64 || url.includes('export=view') || label.toLowerCase().includes('signature') || label.toLowerCase().includes('receipt') || label.toLowerCase().includes('marksheet');
 
-  if (isBase64) {
-    return (
-      <div className="flex flex-col gap-1.5">
-        <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">{label}</span>
-        {expanded ? (
-          <div className="relative">
-            <img
-              src={url}
-              alt={label}
-              className="rounded-xl border border-gray-200 max-w-full max-h-64 object-contain bg-gray-50"
-            />
-            <button
-              onClick={() => setExpanded(false)}
-              className="absolute top-1 right-1 bg-white/80 rounded-full p-0.5 text-gray-600 hover:text-red-500 border border-gray-200"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        ) : (
-          <button
-            onClick={() => setExpanded(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold rounded-lg hover:bg-blue-100 transition-colors w-fit"
-          >
-            <Eye className="w-3 h-3" /> View {label}
-          </button>
-        )}
-      </div>
-    );
-  }
+  const embedUrl = isBase64 ? url : getDriveEmbedUrl(url);
+  const thumbnailUrl = isDriveFile ? getDriveThumbnailUrl(url, 'w300') : url;
 
   return (
-    <div className="flex flex-col gap-1.5">
-      <span className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide">{label}</span>
-      <a
-        href={driveUrl!}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold rounded-lg hover:bg-blue-100 transition-colors w-fit"
-      >
-        <ExternalLink className="w-3 h-3" /> {label}
-      </a>
-      {thumbUrl && (
-        <img
-          src={thumbUrl}
-          alt={label}
-          className="rounded-lg border border-gray-200 w-20 h-16 object-cover bg-gray-50"
-          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-        />
-      )}
+    <div className="flex flex-col gap-2 rounded-xl border border-gray-200 bg-gray-50/50 p-4">
+      <label className="text-xs text-gray-500 font-bold uppercase tracking-wider">{label}</label>
+      <div className="flex items-center gap-4">
+        <div 
+          onClick={() => onPreview(embedUrl)}
+          className="relative h-20 w-32 border border-gray-200 hover:border-blue-500 rounded-lg overflow-hidden cursor-pointer group bg-black/5 flex items-center justify-center text-center transition-all duration-200"
+          aria-label={`Preview ${label}`}
+        >
+          {isDriveFile || isImage ? (
+            <img src={thumbnailUrl} alt={label} className="h-full w-full object-cover transition-transform duration-200 group-hover:scale-105" />
+          ) : (
+            <div className="flex flex-col items-center justify-center p-2">
+              <FileText className="h-6 w-6 text-gray-400 mb-1" />
+              <span className="font-mono text-[9px] text-gray-500 truncate w-28">Document</span>
+            </div>
+          )}
+          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center text-xs text-white font-bold uppercase tracking-wider">
+            Preview
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -105,6 +99,8 @@ function DocPreview({ label, url }: { label: string; url?: string }) {
 // ─── View Modal ──────────────────────────────────────────────────────────────
 
 function ViewModal({ record, onClose }: { record: Patient; onClose: () => void }) {
+  const [selectedPreviewUrl, setSelectedPreviewUrl] = React.useState<string | null>(null);
+
   const Section = ({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) => (
     <div className="border border-gray-200 rounded-xl overflow-hidden">
       <div className="flex items-center gap-2 px-4 py-2.5 bg-gray-50 border-b border-gray-200">
@@ -204,9 +200,9 @@ function ViewModal({ record, onClose }: { record: Patient; onClose: () => void }
           <div className="p-4 flex flex-col gap-4">
             {record.thumb_impression || record.school_fee_receipt || record.marksheet_prev_year ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {record.thumb_impression && <DocPreview label="Caregiver Signature" url={record.thumb_impression} />}
-                {record.school_fee_receipt && <DocPreview label="School Fee Receipt" url={record.school_fee_receipt} />}
-                {record.marksheet_prev_year && <DocPreview label="Previous Marksheet" url={record.marksheet_prev_year} />}
+                {record.thumb_impression && <DocPreview label="Caregiver Signature" url={record.thumb_impression} onPreview={setSelectedPreviewUrl} />}
+                {record.school_fee_receipt && <DocPreview label="School Fee Receipt" url={record.school_fee_receipt} onPreview={setSelectedPreviewUrl} />}
+                {record.marksheet_prev_year && <DocPreview label="Previous Marksheet" url={record.marksheet_prev_year} onPreview={setSelectedPreviewUrl} />}
               </div>
             ) : (
               <span className="text-xs text-gray-400 italic">No documents attached.</span>
@@ -215,11 +211,39 @@ function ViewModal({ record, onClose }: { record: Patient; onClose: () => void }
         </div>
       </div>
 
-      <div className="sticky bottom-0 bg-white border-t border-gray-100 px-6 py-3 rounded-b-3xl">
+      <div className="sticky bottom-0 bg-white border-t border-gray-100 px-6 py-3 rounded-b-3xl flex justify-between items-center">
         <Button variant="secondary" onClick={onClose} className="rounded-xl text-gray-700 border-gray-200">
           Close
         </Button>
       </div>
+
+      {/* Same-Tab Lightbox Overlay */}
+      {selectedPreviewUrl && (
+        <div
+          className="fixed inset-0 z-[9999] bg-black/80 backdrop-blur-sm flex items-center justify-center"
+          onClick={() => setSelectedPreviewUrl(null)}
+          role="dialog"
+          aria-label="Document Preview"
+        >
+          <div
+            className="relative w-[85vw] h-[85vh] rounded-xl overflow-hidden border border-gray-800 bg-zinc-950 flex items-center justify-center"
+            onClick={e => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setSelectedPreviewUrl(null)}
+              className="absolute top-3 right-3 z-10 p-2 rounded-lg bg-black/50 border border-gray-800 text-white/80 hover:text-white transition-colors cursor-pointer"
+              aria-label="Close preview"
+            >
+              <X size={18} />
+            </button>
+            {selectedPreviewUrl.includes('drive.google.com') && !selectedPreviewUrl.includes('uc?export=view') && !selectedPreviewUrl.includes('thumbnail')
+              ? <iframe src={selectedPreviewUrl} className="w-full h-full border-0" title="Document preview" />
+              : <img src={selectedPreviewUrl} alt="Preview" className="max-w-full max-h-full object-contain" />
+            }
+          </div>
+        </div>
+      )}
     </DialogContent>
   );
 }
@@ -609,109 +633,405 @@ interface RecordFormProps {
   onCancel: () => void;
 }
 
+type FormTab = 'demographics' | 'household' | 'health' | 'education' | 'finance' | 'review';
+
 const RecordForm: React.FC<RecordFormProps> = ({ initialData, onSave, onCancel }) => {
-  const [formValues, setFormValues] = React.useState<any>(initialData || {
+  const [formValues, setFormValues] = React.useState<any>({
     consent_obtained: 'yes',
+    thumb_impression: '',
     visitdate: new Date().toISOString().split('T')[0],
-    childname: '', dateofbirth: '', gender: '',
-    orphanstatus: 'both_alive', caregivername: '',
-    caregiverrelation: 'mother', caregivercontact: '',
-    address: '', addressstate: '', addressdistrict: '',
-    householdmembers: 0, noofchildren: 0,
-    householdincomemonthly: 0, incomesource: '',
-    current_weight: 0, current_height: 0,
-    bmicalc: 0, bmicategory: 'Normal',
-    hemoglobin: 0, hb_category: 'Normal',
-    comorbidities: '', appetite: 'good',
-    mealsperday: 3, educationstatus: 'school_going',
+    childname: '',
+    dateofbirth: '',
+    age_calc: '',
+    gender: 'male',
+    orphanstatus: 'both_alive',
+    caregivername: '',
+    caregiverrelation: 'mother',
+    caregivercontact: '',
+    address: '',
+    addressstate: '',
+    addressdistrict: '',
+    householdmembers: 0,
+    noofchildren: 0,
+    householdincomemonthly: 0,
+    incomesource: '',
+    current_weight: 0,
+    current_height: 0,
+    bmicalc: 0,
+    bmicategory: 'Normal',
+    hemoglobin: 0,
+    hb_category: 'Normal',
+    comorbidities: '',
+    comorbidities_other: '',
+    appetite: 'good',
+    mealsperday: 3,
+    educationstatus: 'school_going',
+    educationstatus_other: '',
+    schoolname: '',
+    School_Session_Start_Date: '',
+    schooltype: 'government',
+    currentclass: '',
+    attendancestatus: 'regular',
+    eduschoolfees: 0,
+    private_tution_fee: 0,
+    edubooks: 0,
+    edustationery: 0,
+    eduuniform: 0,
+    edutransport: 0,
+    eduother: 0,
+    edutotalannual: 0,
+    school_fee_receipt: '',
+    marksheet_prev_year: '',
+    Remarks_If_Any: '',
+    reqschoolfees: 0,
+    reqbooks: 0,
+    reqstationery: 0,
+    requniform: 0,
+    reqtransport: 0,
+    reqother: 0,
+    reqtotalsupport: 0,
+    reviewconfirmed: 'yes',
+    organization_name: '',
+    Form_Submitted_by: '',
+    organization_email: '',
+    ...initialData
   });
 
+  const [activeTab, setActiveTab] = React.useState<FormTab>('demographics');
   const [saving, setSaving] = React.useState(false);
-  const set = (k: string, v: any) => setFormValues((p: any) => ({ ...p, [k]: v }));
+
+  const set = (k: string, v: any) => {
+    setFormValues((p: any) => {
+      const updated = { ...p, [k]: v };
+      
+      // Auto-calculate Age
+      if (k === 'dateofbirth' && v) {
+        const dob = new Date(v);
+        if (!isNaN(dob.getTime())) {
+          const diffMs = Date.now() - dob.getTime();
+          const ageDate = new Date(diffMs);
+          const yrs = Math.abs(ageDate.getUTCFullYear() - 1970);
+          const mos = ageDate.getUTCMonth();
+          updated.age_calc = yrs > 0 ? `${yrs} Yrs ${mos} Mos` : `${mos} Mos`;
+        }
+      }
+
+      // Auto-calculate BMI & Category
+      if (k === 'current_weight' || k === 'current_height') {
+        const w = Number(updated.current_weight || 0);
+        const h = Number(updated.current_height || 0);
+        if (w > 0 && h > 0) {
+          const bmiVal = w / Math.pow(h / 100, 2);
+          updated.bmicalc = parseFloat(bmiVal.toFixed(1));
+          if (updated.bmicalc < 16) updated.bmicategory = 'Severely Underweight';
+          else if (updated.bmicalc < 18.5) updated.bmicategory = 'Underweight';
+          else if (updated.bmicalc < 25) updated.bmicategory = 'Normal';
+          else updated.bmicategory = 'Overweight';
+        }
+      }
+
+      // Auto-calculate Hb Category
+      if (k === 'hemoglobin') {
+        const hb = Number(v || 0);
+        if (hb > 0) {
+          if (hb < 7) updated.hb_category = 'Severe Anaemia';
+          else if (hb < 10) updated.hb_category = 'Moderate Anaemia';
+          else if (hb < 11.5) updated.hb_category = 'Mild Anaemia';
+          else updated.hb_category = 'Normal';
+        }
+      }
+
+      // Auto-calculate Total Annual Education Cost
+      if (['eduschoolfees', 'private_tution_fee', 'edubooks', 'edustationery', 'eduuniform', 'edutransport', 'eduother'].includes(k)) {
+        updated.edutotalannual = 
+          Number(updated.eduschoolfees || 0) +
+          Number(updated.private_tution_fee || 0) +
+          Number(updated.edubooks || 0) +
+          Number(updated.edustationery || 0) +
+          Number(updated.eduuniform || 0) +
+          Number(updated.edutransport || 0) +
+          Number(updated.eduother || 0);
+      }
+
+      // Auto-calculate Total Required Support
+      if (['reqschoolfees', 'reqbooks', 'reqstationery', 'requniform', 'reqtransport', 'reqother'].includes(k)) {
+        updated.reqtotalsupport = 
+          Number(updated.reqschoolfees || 0) +
+          Number(updated.reqbooks || 0) +
+          Number(updated.reqstationery || 0) +
+          Number(updated.requniform || 0) +
+          Number(updated.reqtransport || 0) +
+          Number(updated.reqother || 0);
+      }
+
+      return updated;
+    });
+  };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formValues.childname || !formValues.dateofbirth || !formValues.addressstate || !formValues.addressdistrict) {
-      alert('Please fill in: Child name, Date of birth, State and District.');
+      alert('Please fill in required fields: Child Name, Date of Birth, State and District (under Demographics).');
+      setActiveTab('demographics');
       return;
     }
     setSaving(true);
-    try { await onSave(formValues); } finally { setSaving(false); }
+    try {
+      await onSave(formValues);
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const sectionHead = (label: string) => (
-    <h4 className="text-xs font-extrabold text-gray-600 uppercase tracking-wider pb-1 border-b border-gray-100">{label}</h4>
-  );
+  const tabClass = (tab: FormTab) => 
+    `w-full text-left px-4 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 ${
+      activeTab === tab 
+        ? 'bg-blue-600 text-white font-bold shadow-md shadow-blue-500/20' 
+        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+    }`;
 
   return (
     <form onSubmit={handleSave} className="flex flex-col gap-4 text-left">
-      <div className="flex flex-col gap-5 max-h-[55vh] overflow-y-auto pr-1">
-
-        {/* Child details */}
-        <div className="flex flex-col gap-3">
-          {sectionHead('Child Details')}
-          <div className="grid grid-cols-2 gap-3">
-            <Input label="Child's Full Name *" value={formValues.childname} onChange={(e) => set('childname', e.target.value)} />
-            <Input label="Date of Birth *" type="date" value={formValues.dateofbirth} onChange={(e) => set('dateofbirth', e.target.value)} />
-          </div>
-          <div className="grid grid-cols-3 gap-3">
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-semibold text-gray-600">Gender</label>
-              <Select value={formValues.gender} onValueChange={(v) => set('gender', v)}>
-                <SelectTrigger className="h-9"><SelectValue placeholder="Select" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="male">Male</SelectItem>
-                  <SelectItem value="female">Female</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-semibold text-gray-600">Orphan Status</label>
-              <Select value={formValues.orphanstatus} onValueChange={(v) => set('orphanstatus', v)}>
-                <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="both_alive">Both Alive</SelectItem>
-                  <SelectItem value="single_orphan">Single Orphan</SelectItem>
-                  <SelectItem value="double_orphan">Double Orphan</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <Input label="Contact" value={formValues.caregivercontact} onChange={(e) => set('caregivercontact', e.target.value)} />
-          </div>
+      <div className="flex flex-col md:flex-row gap-6 min-h-[450px]">
+        {/* Sidebar tabs */}
+        <div className="w-full md:w-48 shrink-0 flex flex-row md:flex-col gap-1 overflow-x-auto md:overflow-x-visible border-b md:border-b-0 md:border-r border-gray-100 pb-3 md:pb-0 md:pr-4">
+          <button type="button" onClick={() => setActiveTab('demographics')} className={tabClass('demographics')}>1. Demographics</button>
+          <button type="button" onClick={() => setActiveTab('household')} className={tabClass('household')}>2. Household & Finance</button>
+          <button type="button" onClick={() => setActiveTab('health')} className={tabClass('health')}>3. Health & Nutrition</button>
+          <button type="button" onClick={() => setActiveTab('education')} className={tabClass('education')}>4. School & Class</button>
+          <button type="button" onClick={() => setActiveTab('finance')} className={tabClass('finance')}>5. Costs & Support</button>
+          <button type="button" onClick={() => setActiveTab('review')} className={tabClass('review')}>6. Review & Uploads</button>
         </div>
 
-        {/* Location */}
-        <div className="flex flex-col gap-3">
-          {sectionHead('Location')}
-          <div className="grid grid-cols-2 gap-3">
-            <Input label="State / UT *" value={formValues.addressstate} onChange={(e) => set('addressstate', e.target.value)} placeholder="e.g. maharashtra" />
-            <Input label="District *" value={formValues.addressdistrict} onChange={(e) => set('addressdistrict', e.target.value)} placeholder="e.g. pune" />
-          </div>
-          <Input label="Address" value={formValues.address} onChange={(e) => set('address', e.target.value)} />
-        </div>
-
-        {/* Clinical */}
-        <div className="flex flex-col gap-3">
-          {sectionHead('Clinical Records')}
-          <div className="grid grid-cols-2 gap-3">
-            <Input label="Weight (kg)" type="number" step="0.1" value={formValues.current_weight || ''} onChange={(e) => set('current_weight', Number(e.target.value))} />
-            <Input label="Height (cm)" type="number" value={formValues.current_height || ''} onChange={(e) => set('current_height', Number(e.target.value))} />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <Input label="Haemoglobin (g/dL)" type="number" step="0.1" value={formValues.hemoglobin || ''} onChange={(e) => set('hemoglobin', Number(e.target.value))} />
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-semibold text-gray-600">Appetite</label>
-              <Select value={formValues.appetite} onValueChange={(v) => set('appetite', v)}>
-                <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="good">Good</SelectItem>
-                  <SelectItem value="fair">Fair</SelectItem>
-                  <SelectItem value="poor">Poor</SelectItem>
-                </SelectContent>
-              </Select>
+        {/* Content Pane */}
+        <div className="flex-1 max-h-[50vh] overflow-y-auto pr-2">
+          {activeTab === 'demographics' && (
+            <div className="flex flex-col gap-4">
+              <h4 className="text-xs font-extrabold text-gray-500 uppercase tracking-wider">Child & Caregiver Details</h4>
+              <div className="grid grid-cols-2 gap-3">
+                <Input label="Child's Full Name *" value={formValues.childname} onChange={(e) => set('childname', e.target.value)} />
+                <Input label="Date of Birth *" type="date" value={formValues.dateofbirth ? formValues.dateofbirth.split('T')[0] : ''} onChange={(e) => set('dateofbirth', e.target.value)} />
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-semibold text-gray-600">Calculated Age</label>
+                  <input type="text" value={formValues.age_calc || '—'} disabled className="h-9 w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-400 cursor-not-allowed" />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-semibold text-gray-600">Gender</label>
+                  <Select value={formValues.gender} onValueChange={(v) => set('gender', v)}>
+                    <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="male">Male</SelectItem>
+                      <SelectItem value="female">Female</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-semibold text-gray-600">Consent Obtained</label>
+                  <Select value={formValues.consent_obtained} onValueChange={(v) => set('consent_obtained', v)}>
+                    <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="yes">Yes</SelectItem>
+                      <SelectItem value="no">No</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <Input label="Caregiver Full Name" value={formValues.caregivername} onChange={(e) => set('caregivername', e.target.value)} />
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-semibold text-gray-600">Caregiver Relationship</label>
+                  <Select value={formValues.caregiverrelation} onValueChange={(v) => set('caregiverrelation', v)}>
+                    <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="mother">Mother</SelectItem>
+                      <SelectItem value="father">Father</SelectItem>
+                      <SelectItem value="grandmother">Grandmother</SelectItem>
+                      <SelectItem value="grandfather">Grandfather</SelectItem>
+                      <SelectItem value="uncle">Uncle</SelectItem>
+                      <SelectItem value="aunt">Aunt</SelectItem>
+                      <SelectItem value="sibling">Sibling</SelectItem>
+                      <SelectItem value="guardian">Other Guardian</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                <Input label="Caregiver Contact" value={formValues.caregivercontact} onChange={(e) => set('caregivercontact', e.target.value)} />
+                <Input label="State / UT *" value={formValues.addressstate} onChange={(e) => set('addressstate', e.target.value)} placeholder="e.g. maharashtra" />
+                <Input label="District *" value={formValues.addressdistrict} onChange={(e) => set('addressdistrict', e.target.value)} placeholder="e.g. pune" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <Input label="Address" value={formValues.address} onChange={(e) => set('address', e.target.value)} />
+                <Input label="Visit Date" type="date" value={formValues.visitdate ? formValues.visitdate.split('T')[0] : ''} onChange={(e) => set('visitdate', e.target.value)} />
+              </div>
             </div>
-          </div>
+          )}
+
+          {activeTab === 'household' && (
+            <div className="flex flex-col gap-4">
+              <h4 className="text-xs font-extrabold text-gray-500 uppercase tracking-wider">Household Economics</h4>
+              <div className="grid grid-cols-2 gap-3">
+                <Input label="Total Family Members" type="number" value={formValues.householdmembers || ''} onChange={(e) => set('householdmembers', Number(e.target.value))} />
+                <Input label="Number of Children (≤18 yrs)" type="number" value={formValues.noofchildren || ''} onChange={(e) => set('noofchildren', Number(e.target.value))} />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <Input label="Monthly Income (Rs.)" type="number" value={formValues.householdincomemonthly || ''} onChange={(e) => set('householdincomemonthly', Number(e.target.value))} />
+                <Input label="Main Source of Income" value={formValues.incomesource} onChange={(e) => set('incomesource', e.target.value)} placeholder="e.g. Daily wage labour" />
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'health' && (
+            <div className="flex flex-col gap-4">
+              <h4 className="text-xs font-extrabold text-gray-500 uppercase tracking-wider">Health & Nutritional Status</h4>
+              <div className="grid grid-cols-3 gap-3">
+                <Input label="Current Weight (kg)" type="number" step="0.1" value={formValues.current_weight || ''} onChange={(e) => set('current_weight', Number(e.target.value))} />
+                <Input label="Current Height (cm)" type="number" step="0.1" value={formValues.current_height || ''} onChange={(e) => set('current_height', Number(e.target.value))} />
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-semibold text-gray-600">Calculated BMI</label>
+                  <input type="text" value={formValues.bmicalc ? `${formValues.bmicalc} (${formValues.bmicategory})` : '—'} disabled className="h-9 w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-400 cursor-not-allowed" />
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                <Input label="Hemoglobin (g/dL)" type="number" step="0.1" value={formValues.hemoglobin || ''} onChange={(e) => set('hemoglobin', Number(e.target.value))} />
+                <div className="flex flex-col gap-1 col-span-2">
+                  <label className="text-xs font-semibold text-gray-600">Hb Category</label>
+                  <input type="text" value={formValues.hb_category || 'Normal'} disabled className="h-9 w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-400 cursor-not-allowed" />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-semibold text-gray-600">Child's Appetite</label>
+                  <Select value={formValues.appetite} onValueChange={(v) => set('appetite', v)}>
+                    <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="good">Good</SelectItem>
+                      <SelectItem value="fair">Fair</SelectItem>
+                      <SelectItem value="poor">Poor</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Input label="Meals Per Day" type="number" value={formValues.mealsperday || ''} onChange={(e) => set('mealsperday', Number(e.target.value))} />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <Input label="Comorbidities" value={formValues.comorbidities} onChange={(e) => set('comorbidities', e.target.value)} placeholder="e.g. tuberculosis, asthma" />
+                <Input label="Comorbidities Other" value={formValues.comorbidities_other} onChange={(e) => set('comorbidities_other', e.target.value)} />
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'education' && (
+            <div className="flex flex-col gap-4">
+              <h4 className="text-xs font-extrabold text-gray-500 uppercase tracking-wider">Education Details</h4>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-semibold text-gray-600">Education Status</label>
+                  <Select value={formValues.educationstatus} onValueChange={(v) => set('educationstatus', v)}>
+                    <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="school_going">School Going</SelectItem>
+                      <SelectItem value="dropout">Dropout</SelectItem>
+                      <SelectItem value="never_enrolled">Never Enrolled</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Input label="Education Status Other" value={formValues.educationstatus_other} onChange={(e) => set('educationstatus_other', e.target.value)} />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <Input label="School Name" value={formValues.schoolname} onChange={(e) => set('schoolname', e.target.value)} />
+                <Input label="School Session Start Date" type="date" value={formValues.School_Session_Start_Date ? formValues.School_Session_Start_Date.split('T')[0] : ''} onChange={(e) => set('School_Session_Start_Date', e.target.value)} />
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-semibold text-gray-600">School Type</label>
+                  <Select value={formValues.schooltype} onValueChange={(v) => set('schooltype', v)}>
+                    <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="government">Government</SelectItem>
+                      <SelectItem value="private">Private</SelectItem>
+                      <SelectItem value="aided">Aided</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Input label="Current Class" value={formValues.currentclass} onChange={(e) => set('currentclass', e.target.value)} />
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-semibold text-gray-600">Attendance Status</label>
+                  <Select value={formValues.attendancestatus} onValueChange={(v) => set('attendancestatus', v)}>
+                    <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="regular">Regular</SelectItem>
+                      <SelectItem value="irregular">Irregular</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <Input label="Orphan Status" value={formValues.orphanstatus} onChange={(e) => set('orphanstatus', e.target.value)} />
+            </div>
+          )}
+
+          {activeTab === 'finance' && (
+            <div className="flex flex-col gap-4">
+              <h4 className="text-xs font-extrabold text-gray-500 uppercase tracking-wider">Expenses & Required Support</h4>
+              <div className="grid grid-cols-3 gap-2 border-b pb-4">
+                <Input label="School Fees" type="number" value={formValues.eduschoolfees || ''} onChange={(e) => set('eduschoolfees', Number(e.target.value))} />
+                <Input label="Private Tuition Fee" type="number" value={formValues.private_tution_fee || ''} onChange={(e) => set('private_tution_fee', Number(e.target.value))} />
+                <Input label="School Books" type="number" value={formValues.edubooks || ''} onChange={(e) => set('edubooks', Number(e.target.value))} />
+                <Input label="School Stationery" type="number" value={formValues.edustationery || ''} onChange={(e) => set('edustationery', Number(e.target.value))} />
+                <Input label="School Uniform" type="number" value={formValues.eduuniform || ''} onChange={(e) => set('eduuniform', Number(e.target.value))} />
+                <Input label="School Transport" type="number" value={formValues.edutransport || ''} onChange={(e) => set('edutransport', Number(e.target.value))} />
+                <Input label="Other Expenses" type="number" value={formValues.eduother || ''} onChange={(e) => set('eduother', Number(e.target.value))} />
+                <div className="flex flex-col gap-1 col-span-2">
+                  <label className="text-xs font-semibold text-gray-600">Total Annual Education Cost</label>
+                  <input type="text" value={formValues.edutotalannual ? `₹${formValues.edutotalannual}` : '₹0'} disabled className="h-9 w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-400 cursor-not-allowed" />
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                <Input label="Req. School Fees" type="number" value={formValues.reqschoolfees || ''} onChange={(e) => set('reqschoolfees', Number(e.target.value))} />
+                <Input label="Req. Books" type="number" value={formValues.reqbooks || ''} onChange={(e) => set('reqbooks', Number(e.target.value))} />
+                <Input label="Req. Stationery" type="number" value={formValues.reqstationery || ''} onChange={(e) => set('reqstationery', Number(e.target.value))} />
+                <Input label="Req. Uniform" type="number" value={formValues.requniform || ''} onChange={(e) => set('requniform', Number(e.target.value))} />
+                <Input label="Req. Transport" type="number" value={formValues.reqtransport || ''} onChange={(e) => set('reqtransport', Number(e.target.value))} />
+                <Input label="Req. Other Support" type="number" value={formValues.reqother || ''} onChange={(e) => set('reqother', Number(e.target.value))} />
+                <div className="flex flex-col gap-1 col-span-3">
+                  <label className="text-xs font-semibold text-gray-600">Total Required Support</label>
+                  <input type="text" value={formValues.reqtotalsupport ? `₹${formValues.reqtotalsupport}` : '₹0'} disabled className="h-9 w-full rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-400 cursor-not-allowed" />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'review' && (
+            <div className="flex flex-col gap-4">
+              <h4 className="text-xs font-extrabold text-gray-500 uppercase tracking-wider">Review & Attachments</h4>
+              <div className="grid grid-cols-2 gap-3">
+                <Input label="Organization Name" value={formValues.organization_name} onChange={(e) => set('organization_name', e.target.value)} />
+                <Input label="Form Submitted By" value={formValues.Form_Submitted_by} onChange={(e) => set('Form_Submitted_by', e.target.value)} />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <Input label="Organization Email" value={formValues.organization_email} onChange={(e) => set('organization_email', e.target.value)} />
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-semibold text-gray-600">Is All Information Correct?</label>
+                  <Select value={formValues.reviewconfirmed} onValueChange={(v) => set('reviewconfirmed', v)}>
+                    <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="yes">Yes</SelectItem>
+                      <SelectItem value="no">No</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                <Input label="Signature / Thumb Imp Link" value={formValues.thumb_impression} onChange={(e) => set('thumb_impression', e.target.value)} placeholder="Google Drive url or base64" />
+                <Input label="School Fee Receipt Link" value={formValues.school_fee_receipt} onChange={(e) => set('school_fee_receipt', e.target.value)} placeholder="Google Drive url" />
+                <Input label="Marksheet Photo Link" value={formValues.marksheet_prev_year} onChange={(e) => set('marksheet_prev_year', e.target.value)} placeholder="Google Drive url" />
+              </div>
+              <Input label="Remarks (If Any)" value={formValues.Remarks_If_Any} onChange={(e) => set('Remarks_If_Any', e.target.value)} />
+            </div>
+          )}
         </div>
       </div>
 
@@ -720,7 +1040,7 @@ const RecordForm: React.FC<RecordFormProps> = ({ initialData, onSave, onCancel }
           Cancel
         </Button>
         <Button variant="primary" type="submit" isLoading={saving} className="rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700">
-          Save Record
+          Save Profile
         </Button>
       </DialogFooter>
     </form>
