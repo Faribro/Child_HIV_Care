@@ -122,6 +122,37 @@ function buildRowFromWebhook_(raw) {
       val = new Date().toISOString();
     }
     
+    if (key === 'age_calc') {
+      if (!val) {
+        var dobVal = '';
+        var dobKeys = [
+          'dateofbirth',
+          'grp_main/grp_demographics/dateofbirth',
+          'grp_main/dateofbirth'
+        ];
+        for (var i = 0; i < dobKeys.length; i++) {
+          if (raw.hasOwnProperty(dobKeys[i])) {
+            dobVal = raw[dobKeys[i]];
+            break;
+          }
+        }
+        if (dobVal) {
+          try {
+            var dobDate = new Date(dobVal);
+            if (!isNaN(dobDate.getTime())) {
+              var today = new Date();
+              var age = today.getFullYear() - dobDate.getFullYear();
+              var m = today.getMonth() - dobDate.getMonth();
+              if (m < 0 || (m === 0 && today.getDate() < dobDate.getDate())) {
+                age--;
+              }
+              val = age >= 0 ? age : '';
+            }
+          } catch (e) {}
+        }
+      }
+    }
+    
     row.push(cleanChoiceValue(key, val));
   });
   

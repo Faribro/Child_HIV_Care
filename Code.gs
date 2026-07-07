@@ -24,7 +24,7 @@ const CONFIG = {
     ["visitdate", "Visit Date"],
     ["childname", "Child Name"],
     ["dateofbirth", "Date of Birth"],
-    ["age_calc", "Calculated Age"],
+    ["age_calc", "Age"],
     ["gender", "Gender"],
     ["orphanstatus", "Orphan Status"],
     ["caregivername", "Caregiver Full Name"],
@@ -243,6 +243,27 @@ function ensureSheetSchema(sheet) {
         sheet.setColumnWidth(c, 50); // Rotate headers allow narrow columns
       }
     }
+  } else {
+    // Spreadsheet already has data! Let's check for any missing columns and append them in row 3!
+    const lastCol = sheet.getLastColumn();
+    const existingHeaders = sheet.getRange(3, 1, 1, lastCol).getValues()[0].map(h => String(h).trim().toLowerCase());
+    
+    CONFIG.COLUMN_MAP.forEach(([key, label]) => {
+      if (existingHeaders.indexOf(label.toLowerCase()) === -1) {
+        // Appending the missing column
+        var newColIdx = sheet.getLastColumn() + 1;
+        var headerCell = sheet.getRange(3, newColIdx);
+        headerCell.setValue(label);
+        headerCell.setFontWeight('bold')
+                  .setFontColor('#0F172A')
+                  .setBackground('#F1F5F9')
+                  .setHorizontalAlignment('center')
+                  .setVerticalAlignment('middle')
+                  .setTextRotation(90);
+        sheet.setColumnWidth(newColIdx, 100);
+        Logger.log("Appended missing column: " + label);
+      }
+    });
   }
 }
 
@@ -904,11 +925,354 @@ function deleteChildByUuid(uuid) {
 }
 
 function getPDFDownloadUrl(uuid) {
-  return "Error: PDF download is currently disabled for this instance.";
+  try {
+    SpreadsheetApp.flush();
+    var sheet = safeGetSheet_();
+    var rowNum = findRowByUuid(sheet, uuid);
+    
+    Logger.log("getPDFDownloadUrl | UUID: " + uuid + " | Row: " + rowNum);
+    
+    if (rowNum < 4) {
+      return "Error: Child not found";
+    }
+    
+    var result = generateBeneficiaryPDF(rowNum);
+    if (result.error) {
+      return "Error: " + result.error;
+    }
+    
+    var folderName = "Temp PDFs";
+    var folders = DriveApp.getFoldersByName(folderName);
+    var folder = folders.hasNext() ? folders.next() : DriveApp.createFolder(folderName);
+    
+    var pdfFile = folder.createFile(result.pdf);
+    pdfFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    
+    return "https://drive.google.com/uc?export=download&id=" + pdfFile.getId();
+  } catch (e) {
+    Logger.log("getPDFDownloadUrl ERROR: " + e.message);
+    return "Error: " + e.message;
+  }
+}
+
+function extractFileIdOnly_(url) {
+  if (!url || typeof url !== 'string') return "";
+  var match = url.match(/id=([^&]+)/);
+  if (match) return match[1];
+  match = url.match(/\/file\/d\/([^\/]+)/);
+  if (match) return match[1];
+  return "";
 }
 
 function generateBeneficiaryPDF(rowNum) {
-  return { error: "PDF generation is disabled" };
+  try {
+    var sheet = safeGetSheet_();
+    var lastRow = sheet.getLastRow();
+    var lastCol = sheet.getLastColumn();
+    
+    if (rowNum < 4 || rowNum > lastRow) return { error: "Invalid row number: " + rowNum };
+    
+    var rowValues = sheet.getRange(rowNum, 1, 1, lastCol).getValues()[0];
+    var formulas = sheet.getRange(rowNum, 1, 1, lastCol).getFormulas()[0];
+    
+    function getValue(key) {
+      var colIdx = safeColIndex_(key);
+      if (colIdx <= 0 || colIdx > lastCol) return "";
+      
+      // If it is a hyperlink formula, extract the raw URL
+      var formula = formulas[colIdx - 1];
+      if (formula && formula.toUpperCase().indexOf('=HYPERLINK(') === 0) {
+        var match = formula.match(/=HYPERLINK\(\s*["']([^"']+)["']/i);
+        if (match && match[1]) return match[1];
+      }
+      return String(rowValues[colIdx - 1] || '').trim();
+    }
+    
+    var childName = getValue("childname") || "Unknown Child";
+    var dob = getValue("dateofbirth");
+    var age = getValue("age_calc");
+    var gender = getValue("gender");
+    var district = getValue("addressdistrict");
+    var state = getValue("addressstate");
+    
+    // Format DOB if it's a date string
+    var dobStr = "";
+    if (dob) {
+      try {
+        var d = new Date(dob);
+        if (!isNaN(d.getTime())) {
+          dobStr = Utilities.formatDate(d, Session.getScriptTimeZone() || "UTC", "dd-MMM-yyyy");
+        } else {
+          dobStr = String(dob);
+        }
+      } catch (e) {
+        dobStr = String(dob);
+      }
+    }
+    
+    var html = '<!DOCTYPE html><html><head><meta charset="UTF-8">';
+    html += '<style>';
+    html += 'body { font-family: "Helvetica Neue", Arial, sans-serif; color: #334155; margin: 25px; line-height: 1.4; font-size: 11px; }';
+    html += '.header { text-align: center; border-bottom: 2px solid #2C5F2E; padding-bottom: 10px; margin-bottom: 15px; }';
+    html += '.header h1 { color: #2C5F2E; font-size: 18px; margin: 0 0 5px 0; font-weight: bold; letter-spacing: 1px; }';
+    html += '.header h2 { color: #C8922A; font-size: 14px; margin: 0; font-weight: 500; }';
+    html += '.section-title { font-size: 11px; font-weight: bold; color: white; background-color: #2C5F2E; padding: 4px 8px; margin-top: 15px; margin-bottom: 8px; border-radius: 2px; text-transform: uppercase; }';
+    html += '.section-title.alt { background-color: #C8922A; }';
+    html += 'table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }';
+    html += 'th, td { padding: 5px 8px; text-align: left; vertical-align: top; border: 1px solid #cbd5e1; }';
+    html += 'th { background-color: #f1f5f9; font-weight: bold; width: 25%; color: #475569; }';
+    html += 'td { color: #334155; }';
+    html += '.grid-table td { width: 25%; }';
+    html += '.grid-table td.label { font-weight: bold; background-color: #f1f5f9; color: #475569; border-right: 1px solid #cbd5e1; }';
+    html += '.bold { font-weight: bold; }';
+    html += '.footer { text-align: center; font-size: 9px; color: #64748b; border-top: 1px solid #cbd5e1; padding-top: 10px; margin-top: 25px; }';
+    html += '.doc-image { text-align: center; margin: 15px 0; page-break-inside: avoid; }';
+    html += '.doc-image img { max-width: 100%; height: auto; max-height: 200px; border: 1px solid #cbd5e1; border-radius: 4px; padding: 4px; }';
+    html += '.doc-image-title { font-weight: bold; margin-bottom: 5px; color: #334155; text-align: left; }';
+    html += '</style></head><body>';
+    
+    // Header
+    html += '<div class="header">';
+    html += '<h1>BENEFICIARY PROFILE</h1>';
+    html += '<h2>' + childName + '</h2>';
+    html += '</div>';
+    
+    // Quick summary
+    html += '<table>';
+    html += '<tr>';
+    html += '<th>Child Name</th><td>' + childName + '</td>';
+    html += '<th>Age</th><td>' + age + ' years</td>';
+    html += '</tr>';
+    html += '<tr>';
+    html += '<th>Gender</th><td>' + gender + '</td>';
+    html += '<th>Location</th><td>' + district + ', ' + state + '</td>';
+    html += '</tr>';
+    html += '</table>';
+    
+    // 1. Personal Information
+    html += '<div class="section-title">Personal Information</div>';
+    html += '<table class="grid-table">';
+    html += '<tr>';
+    html += '<td class="label">Date of Birth</td><td>' + dobStr + '</td>';
+    html += '<td class="label">Age</td><td>' + age + '</td>';
+    html += '</tr>';
+    html += '<tr>';
+    html += '<td class="label">Gender</td><td>' + gender + '</td>';
+    html += '<td class="label">Orphan Status</td><td>' + getValue("orphanstatus") + '</td>';
+    html += '</tr>';
+    html += '</table>';
+    
+    // 2. Caregiver Information
+    html += '<div class="section-title alt">Caregiver Information</div>';
+    html += '<table class="grid-table">';
+    html += '<tr>';
+    html += '<td class="label">Caregiver Name</td><td>' + getValue("caregivername") + '</td>';
+    html += '<td class="label">Relation</td><td>' + getValue("caregiverrelation") + '</td>';
+    html += '</tr>';
+    html += '<tr>';
+    html += '<td class="label">Contact</td><td>' + getValue("caregivercontact") + '</td>';
+    html += '<td class="label">Address</td><td>' + getValue("address") + '</td>';
+    html += '</tr>';
+    html += '</table>';
+    
+    // 2b. Bank Details
+    html += '<div class="section-title">Bank Details</div>';
+    html += '<table class="grid-table">';
+    html += '<tr>';
+    html += '<td class="label">Account Holder</td><td>' + getValue("bank_account_holder") + '</td>';
+    html += '<td class="label">Account Number</td><td>' + getValue("bank_account_number") + '</td>';
+    html += '</tr>';
+    html += '<tr>';
+    html += '<td class="label">Bank IFSC Code</td><td>' + getValue("bank_ifsc_code") + '</td>';
+    html += '<td class="label">Linked Mobile</td><td>' + getValue("bank_mobile") + '</td>';
+    html += '</tr>';
+    html += '<tr>';
+    html += '<td class="label">Child Aadhaar</td><td>' + getValue("child_aadhaar_number") + '</td>';
+    html += '<td class="label">—</td><td>—</td>';
+    html += '</tr>';
+    html += '</table>';
+    
+    // 3. Health Metrics
+    html += '<div class="section-title">Health Metrics</div>';
+    html += '<table class="grid-table">';
+    html += '<tr>';
+    html += '<td class="label">BMI</td><td>' + getValue("bmicalc") + '</td>';
+    html += '<td class="label">BMI Category</td><td>' + getValue("bmicategory") + '</td>';
+    html += '</tr>';
+    html += '<tr>';
+    html += '<td class="label">Hemoglobin</td><td>' + getValue("hemoglobin") + ' g/dL</td>';
+    html += '<td class="label">Hb Category</td><td>' + getValue("hb_category") + '</td>';
+    html += '</tr>';
+    html += '</table>';
+    
+    // Detailed Health Table
+    html += '<table class="grid-table">';
+    html += '<tr>';
+    html += '<td class="label">ART Status</td><td>' + getValue("artstatus") + '</td>';
+    html += '<td class="label">ART Reg. Date</td><td>' + getValue("art_registration_date") + '</td>';
+    html += '</tr>';
+    html += '<tr>';
+    html += '<td class="label">ART ID Number</td><td>' + getValue("art_id_number") + '</td>';
+    html += '<td class="label">Current Weight</td><td>' + getValue("current_weight") + ' kg</td>';
+    html += '</tr>';
+    html += '<tr>';
+    html += '<td class="label">Current Height</td><td>' + getValue("current_height") + ' cm</td>';
+    html += '<td class="label">—</td><td>—</td>';
+    html += '</tr>';
+    html += '</table>';
+    
+    // 4. HIV Care
+    html += '<div class="section-title alt">HIV Care Information</div>';
+    html += '<table class="grid-table">';
+    html += '<tr>';
+    html += '<td class="label">VL Status</td><td>' + getValue("vlstatus") + '</td>';
+    html += '<td class="label">VL Date</td><td>' + getValue("vldate") + '</td>';
+    html += '</tr>';
+    html += '<tr>';
+    html += '<td class="label">Viral Load</td><td>' + getValue("viralload") + '</td>';
+    html += '<td class="label">VL Category</td><td>' + getValue("vl_category") + '</td>';
+    html += '</tr>';
+    html += '<tr>';
+    html += '<td class="label">Comorbidities</td><td>' + getValue("comorbidities") + '</td>';
+    html += '<td class="label">Appetite</td><td>' + getValue("appetite") + '</td>';
+    html += '</tr>';
+    html += '<tr>';
+    html += '<td class="label">Meals Per Day</td><td>' + getValue("mealsperday") + '</td>';
+    html += '<td class="label">—</td><td>—</td>';
+    html += '</tr>';
+    html += '</table>';
+    
+    // 5. Education
+    html += '<div class="section-title">Education Expenses & Support</div>';
+    html += '<table>';
+    html += '<tr>';
+    html += '<th>Education Status</th><td>' + getValue("educationstatus") + '</td>';
+    html += '<th>School Name</th><td>' + getValue("schoolname") + '</td>';
+    html += '</tr>';
+    html += '<tr>';
+    html += '<th>School Type</th><td>' + getValue("schooltype") + '</td>';
+    html += '<th>Current Class</th><td>' + getValue("currentclass") + '</td>';
+    html += '</tr>';
+    html += '<tr>';
+    html += '<th>Attendance Status</th><td>' + getValue("attendancestatus") + '</td>';
+    html += '<th>School Fees</th><td>' + getValue("eduschoolfees") + '</td>';
+    html += '</tr>';
+    html += '<tr>';
+    html += '<th>Tuition Fees</th><td>' + getValue("private_tution_fee") + '</td>';
+    html += '<th>Books</th><td>' + getValue("edubooks") + '</td>';
+    html += '</tr>';
+    html += '<tr>';
+    html += '<th>Stationery</th><td>' + getValue("edustationery") + '</td>';
+    html += '<th>Uniform</th><td>' + getValue("eduuniform") + '</td>';
+    html += '</tr>';
+    html += '<tr>';
+    html += '<th>Transport</th><td>' + getValue("edutransport") + '</td>';
+    html += '<th>Other Edu Costs</th><td>' + getValue("eduother") + '</td>';
+    html += '</tr>';
+    html += '<tr class="bold">';
+    html += '<th>Total Edu Cost</th><td colspan="3" style="font-weight:bold; background-color:#f1f5f9;">' + getValue("edutotalannual") + '</td>';
+    html += '</tr>';
+    html += '</table>';
+    
+    // 6. Funding Requirements
+    html += '<div class="section-title alt">Funding Requirements</div>';
+    html += '<table>';
+    var fundingFields = [
+      {label: "Req. school fees", key: "reqschoolfees"},
+      {label: "Req. books", key: "reqbooks"},
+      {label: "Req. stationery", key: "reqstationery"},
+      {label: "Req. uniform", key: "requniform"},
+      {label: "Req. transport", key: "reqtransport"},
+      {label: "Req. other", key: "reqother"}
+    ];
+    for (var i = 0; i < fundingFields.length; i++) {
+      var fValue = getValue(fundingFields[i].key) || "0";
+      html += '<tr><th>' + fundingFields[i].label + '</th><td>' + fValue + '</td></tr>';
+    }
+    var totalValue = getValue("reqtotalsupport") || "0";
+    html += '<tr class="bold"><th>Req. total support</th><td style="font-weight:bold; background-color:#f1f5f9;">' + totalValue + '</td></tr>';
+    html += '</table>';
+    
+    // 7. Attached Documents
+    html += '<div class="section-title">Attached Documents</div>';
+    var docColumns = [
+      { keys: ["thumb_impression"], name: "Signature / Thumb Impression" },
+      { keys: ["school_fee_receipt"], name: "School Fee Receipt" },
+      { keys: ["marksheet_prev_year"], name: "Marksheet Previous Year" }
+    ];
+    
+    html += '<table>';
+    html += '<tr><th>Document Type</th><th>Status</th></tr>';
+    
+    var imagesToEmbed = [];
+    
+    for (var i = 0; i < docColumns.length; i++) {
+      var docInfo = docColumns[i];
+      var isAvailable = false;
+      var urlToUse = null;
+      
+      for (var k = 0; k < docInfo.keys.length; k++) {
+        var colKey = docInfo.keys[k];
+        var cellValue = getValue(colKey);
+        
+        if (typeof cellValue === 'string' && cellValue.trim() !== '') {
+          isAvailable = true;
+          urlToUse = cellValue;
+          break;
+        }
+      }
+      
+      html += '<tr><td>' + docInfo.name + '</td><td>' + (isAvailable ? '✓ Available' : '— Not uploaded') + '</td></tr>';
+      
+      if (isAvailable && urlToUse) {
+        try {
+          var fileId = extractFileIdOnly_(urlToUse);
+          if (fileId) {
+            imagesToEmbed.push({ name: docInfo.name, fileId: fileId });
+          }
+        } catch (e) {
+          Logger.log("generateBeneficiaryPDF | Could not resolve document " + docInfo.name);
+        }
+      }
+    }
+    html += '</table>';
+    
+    // Embed Images as Base64 if available
+    for (var i = 0; i < imagesToEmbed.length; i++) {
+      try {
+        var imgInfo = imagesToEmbed[i];
+        var file = DriveApp.getFileById(imgInfo.fileId);
+        var blob = file.getBlob();
+        if (blob && blob.getBytes() && blob.getBytes().length > 0) {
+          var base64 = Utilities.base64Encode(blob.getBytes());
+          var contentType = blob.getContentType();
+          var dataUri = 'data:' + contentType + ';base64,' + base64;
+          
+          html += '<div class="doc-image">';
+          html += '<div class="doc-image-title">' + imgInfo.name + ':</div>';
+          html += '<img src="' + dataUri + '" />';
+          html += '</div>';
+        }
+      } catch (e) {
+        Logger.log("generateBeneficiaryPDF | Skipped embedding image for " + imgInfo.name + ": " + e.message);
+      }
+    }
+    
+    // Footer
+    var dateStr = Utilities.formatDate(new Date(), Session.getScriptTimeZone() || "UTC", "dd MMM yyyy 'at' HH:mm");
+    html += '<div class="footer">Generated on ' + dateStr + ' | Alliance India Child Care Support Portal</div>';
+    html += '</body></html>';
+    
+    // Convert HTML to PDF Blob
+    var htmlBlob = Utilities.newBlob(html, 'text/html', 'profile.html');
+    var pdfBlob = htmlBlob.getAs('application/pdf');
+    pdfBlob.setName(childName + "_Beneficiary_Profile.pdf");
+    
+    return { pdf: pdfBlob, filename: childName + "_Beneficiary_Profile.pdf" };
+  } catch (e) {
+    Logger.log("generateBeneficiaryPDF ERROR: " + e.message);
+    return { error: e.message };
+  }
 }
 
 function getImageProxy(fileId) {
@@ -1423,9 +1787,38 @@ function cleanAllHistoricalSheetChoices() {
     var values = dataRange.getValues();
     var updatedCount = 0;
     
+    // Find Date of Birth and Age indices
+    var dobIdx = headers.indexOf('Date of Birth');
+    var ageIdx = headers.indexOf('Age');
+    if (ageIdx === -1) ageIdx = headers.indexOf('Calculated Age');
+    
     for (var r = 0; r < values.length; r++) {
       var row = values[r];
       var rowUpdated = false;
+      
+      // Calculate missing age from DOB
+      if (dobIdx !== -1 && ageIdx !== -1) {
+        var dobVal = row[dobIdx];
+        var ageVal = String(row[ageIdx] || '').trim();
+        if (dobVal && !ageVal) {
+          try {
+            var dobDate = new Date(dobVal);
+            if (!isNaN(dobDate.getTime())) {
+              var today = new Date();
+              var age = today.getFullYear() - dobDate.getFullYear();
+              var m = today.getMonth() - dobDate.getMonth();
+              if (m < 0 || (m === 0 && today.getDate() < dobDate.getDate())) {
+                age--;
+              }
+              if (age >= 0) {
+                row[ageIdx] = age;
+                rowUpdated = true;
+              }
+            }
+          } catch(e) {}
+        }
+      }
+      
       for (var c = 0; c < headers.length; c++) {
         var headerLabel = headers[c];
         var colPair = CONFIG.COLUMN_MAP.find(pair => pair[1] === headerLabel);
@@ -1445,7 +1838,7 @@ function cleanAllHistoricalSheetChoices() {
     if (updatedCount > 0) {
       dataRange.setValues(values);
     }
-    return "Cleaned choice values in " + updatedCount + " rows successfully.";
+    return "Cleaned choice values and calculated ages in " + updatedCount + " rows successfully.";
   } catch (err) {
     Logger.log("cleanAllHistoricalSheetChoices ERROR: " + err.message);
     return "Error: " + err.message;
