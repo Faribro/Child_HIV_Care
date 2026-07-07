@@ -27,6 +27,11 @@ function handleSubmission(payload) {
       Logger.log(`Adding new webhook entry at row: ${rowNum}`);
       sheet.getRange(rowNum, 1, 1, rowValues.length).setValues([rowValues]);
       formatDataRow(sheet, rowNum);
+      try {
+        writeAttachmentLinks_(sheet, rowNum, payload);
+      } catch (attErr) {
+        Logger.log(`Failed to process attachments on webhook: ${attErr.message}`);
+      }
       writeAuditLog_('WEBHOOK_SUBMIT', uuid, `Processed new webhook entry for child: ${payload.childname || 'N/A'}`);
     } else {
       Logger.log(`Webhook entry with UUID ${uuid} already exists at row ${rowNum}. Skipping to avoid overwriting manually updated values.`);

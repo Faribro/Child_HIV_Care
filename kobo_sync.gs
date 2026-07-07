@@ -46,6 +46,11 @@ function pullAllKoboData() {
         rowNum = Math.max(sheet.getLastRow() + 1, 4);
         sheet.getRange(rowNum, 1, 1, rowValues.length).setValues([rowValues]);
         formatDataRow(sheet, rowNum);
+        try {
+          writeAttachmentLinks_(sheet, rowNum, sub);
+        } catch (attErr) {
+          Logger.log(`Failed to process attachments on sync: ${attErr.message}`);
+        }
         addedCount++;
       } else {
         // Skip overwrite of manually updated/existing sheet data

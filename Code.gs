@@ -103,9 +103,11 @@ function getSpreadsheet_() {
 function onOpen() {
   const ui = SpreadsheetApp.getUi();
   ui.createMenu('Child Nutrition Registry')
-    .addItem('One-Click Setup', 'oneClickSetupAll')
+    .addItem('📊 Open Dashboard', 'openDashboard')
     .addSeparator()
+    .addItem('One-Click Setup', 'oneClickSetupAll')
     .addItem('🚀 Sync Kobo Data', 'pullAllKoboData')
+    .addItem('🧹 Migrate Attachment Links', 'migrateExistingAttachmentFilenamesToDriveLinks')
     .addToUi();
 }
 
@@ -574,8 +576,589 @@ function hashPassword_(password) {
   return hexString;
 }
 
-function doGet() {
-  return HtmlService.createHtmlOutput('<h3>Google Web App Active. Connect via Next.js proxy API client.</h3>');
+function doGet(e) {
+  try {
+    // Handle image proxy requests
+    if (e && e.parameter && e.parameter.action === 'getImage' && e.parameter.fileId) {
+      return getImageProxy(e.parameter.fileId);
+    }
+    
+    // Handle PDF download requests
+    if (e && e.parameter && e.parameter.action === 'downloadPDF' && e.parameter.rowNum) {
+      var rowNum = parseInt(e.parameter.rowNum);
+      var result = generateBeneficiaryPDF(rowNum);
+      if (result.error) {
+        return ContentService.createTextOutput('Error: ' + result.error)
+          .setMimeType(ContentService.MimeType.TEXT);
+      }
+      return result.pdf;
+    }
+    
+    // Default dashboard response
+    return HtmlService.createTemplateFromFile('index')
+      .evaluate()
+      .setTitle(CONFIG.TITLE_TEXT)
+      .setSandboxMode(HtmlService.SandboxMode.IFRAME)
+      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+  } catch (err) {
+    return HtmlService.createHtmlOutput('Error loading dashboard: ' + err.message);
+  }
+}
+
+/* ── DASHBOARD SERVER BINDINGS ──────────────────────────────── */
+
+function openDashboard() {
+  var html = HtmlService.createHtmlOutputFromFile('index')
+    .setTitle('ChildCare Dashboard')
+    .setWidth(1500)
+    .setHeight(950);
+  SpreadsheetApp.getUi().showModalDialog(html, 'ChildCare Dashboard');
+}
+
+function getNationalDashboardData() {
+  var sheet = safeGetSheet_();
+  var lastRow = sheet.getLastRow();
+  var lastCol = sheet.getLastColumn();
+  if (lastRow < 4 || lastCol < 1) return emptyDashboardPayload_();
+
+  var data = sheet.getRange(4, 1, lastRow - 3, lastCol).getValues();
+
+  function v(row, key) {
+    var idx = safeColIndex_(key);
+    return idx > 0 ? row[idx - 1] : '';
+  }
+
+  var rows = [];
+  var metrics = {
+    totalChildren: 0, underweightCount: 0, normalCount: 0,
+    overweightCount: 0, obeseCount: 0, vlSuppressedCount: 0,
+    vlDetectableCount: 0, attendanceRegular: 0, attendanceIrregular: 0,
+    attendanceAbsent: 0, fundingRequested: 0, fundingDisbursed: 0,
+    bmiAssessed: 0, schoolSupport: 0, vlTested: 0, bankSubmitted: 0,
+    consentGiven: 0, consentNotGiven: 0
+  };
+  var stateAgg = {};
+  var scatter = [];
+
+  data.forEach(function(row) {
+    var childName = String(v(row, 'childname') || '').trim();
+    var uuid      = String(v(row, '_uuid')     || '').trim();
+    if (!childName && !uuid) return;
+
+    var state         = String(v(row, 'addressstate')    || '').trim();
+    var district      = String(v(row, 'addressdistrict') || '').trim();
+    var schoolName    = String(v(row, 'schoolname')      || '').trim();
+    var className     = String(v(row, 'currentclass')    || '').trim();
+    var gender        = String(v(row, 'gender')          || '').trim();
+    var orphanStatus  = String(v(row, 'orphanstatus')    || '').trim();
+    var bmiCategory   = String(v(row, 'bmicategory')     || '').trim();
+    var bmi           = parseFloat(v(row, 'bmicalc'));
+    var hemoglobin    = parseFloat(v(row, 'hemoglobin'));
+    var vlCategory    = String(v(row, 'vl_category') || v(row, 'vlstatus') || '').trim();
+    var attendance    = String(v(row, 'attendancestatus') || '').trim();
+    var educationStatus = String(v(row, 'educationstatus') || '').trim();
+    var schoolType = String(v(row, 'schooltype') || '').trim();
+    var hbCategory = String(v(row, 'hb_category') || '').trim();
+    var incomeSource = String(v(row, 'incomesource') || '').trim();
+    var reqTotal      = parseFloat(v(row, 'reqtotalsupport')) || 0;
+    var disbursed     = parseFloat(v(row, 'edutotalannual'))  || 0;
+    var age           = v(row, 'age_calc');
+    
+    // Check if approved
+    var approvedVal = v(row, 'approved_alliance_india') || v(row, 'reviewconfirmed');
+    var approved = approvedVal === true || approvedVal === 'TRUE' || approvedVal === 'true' || approvedVal === 'Yes' || approvedVal === 'YES' || approvedVal === 'yes';
+    
+    var consent = String(v(row, 'consent_obtained') || '').trim().toLowerCase();
+    if (consent === 'yes') {
+      metrics.consentGiven++;
+    } else if (consent === 'no') {
+      metrics.consentNotGiven++;
+    }
+
+    metrics.totalChildren++;
+    if (bmiCategory)                          metrics.bmiAssessed++;
+    if (schoolName || educationStatus)        metrics.schoolSupport++;
+    if (vlCategory)                           metrics.vlTested++;
+
+    if      (/underweight/i.test(bmiCategory)) metrics.underweightCount++;
+    else if (/normal/i.test(bmiCategory))      metrics.normalCount++;
+    else if (/overweight/i.test(bmiCategory))  metrics.overweightCount++;
+    else if (/obese/i.test(bmiCategory))       metrics.obeseCount++;
+
+    if      (/suppressed|undetectable/i.test(vlCategory))       metrics.vlSuppressedCount++;
+    else if (/less_than_1000|detectable|high|unsuppressed/i.test(vlCategory))  metrics.vlDetectableCount++;
+
+    if      (/regular|present|good/i.test(attendance))   metrics.attendanceRegular++;
+    else if (/irregular|partial/i.test(attendance))      metrics.attendanceIrregular++;
+    else if (/absent|drop/i.test(attendance))            metrics.attendanceAbsent++;
+
+    metrics.fundingRequested += reqTotal;
+    metrics.fundingDisbursed += disbursed;
+
+    if (!stateAgg[state]) stateAgg[state] = { state: state || 'Unknown', total: 0, bmiSum: 0, bmiCount: 0, vlSuppressed: 0 };
+    stateAgg[state].total++;
+    if (!isNaN(bmi)) { stateAgg[state].bmiSum += bmi; stateAgg[state].bmiCount++; }
+    if (/suppressed|undetectable/i.test(vlCategory)) stateAgg[state].vlSuppressed++;
+
+    if (!isNaN(bmi) && !isNaN(hemoglobin)) scatter.push({ x: bmi, y: hemoglobin });
+
+    var riskLevel = 'normal';
+    if (/underweight|obese/i.test(bmiCategory) || /detectable|high|unsuppressed/i.test(vlCategory)) riskLevel = 'high';
+    else if (/normal/i.test(bmiCategory) && /suppressed|undetectable/i.test(vlCategory)) riskLevel = 'low';
+    else riskLevel = 'medium';
+
+    rows.push({
+      uuid: uuid, childName: childName, state: state, district: district,
+      schoolName: schoolName, className: className, gender: gender,
+      orphanStatus: orphanStatus, bmiCategory: bmiCategory || 'Unknown',
+      bmi: isNaN(bmi) ? '' : bmi.toFixed(1),
+      hemoglobin: isNaN(hemoglobin) ? '' : hemoglobin.toFixed(1),
+      vlCategory: vlCategory || 'Unknown', educationStatus: educationStatus,
+      attendance: attendance, age: age || '', riskLevel: riskLevel,
+      approved: approved,
+      schoolType: schoolType,
+      consent: consent,
+      hbCategory: hbCategory,
+      incomeSource: incomeSource,
+      docPhotoLink: String(v(row, 'marksheet_prev_year') || '').trim(),
+      docAadhaarLink: String(v(row, 'school_fee_receipt') || '').trim(),
+      docPassbookLink: String(v(row, 'thumb_impression') || '').trim()
+    });
+  });
+
+  var stateSummary = Object.keys(stateAgg).sort().map(function(k) {
+    var s = stateAgg[k];
+    return {
+      state: s.state, total: s.total,
+      avgBmi: s.bmiCount ? (s.bmiSum / s.bmiCount).toFixed(1) : '0.0',
+      vlSuppressedRate: s.total ? Math.round((s.vlSuppressed / s.total) * 100) : 0
+    };
+  });
+
+  return {
+    syncedAt: Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'dd-MMM-yyyy HH:mm'),
+    metrics: addDerivedDashboardMetrics_(metrics),
+    rows: rows,
+    trend: buildDashboardTrend_(data),
+    scatter: scatter,
+    stateSummary: stateSummary.slice(0, 12),
+    warnings: buildDashboardWarnings_(rows, metrics)
+  };
+}
+
+function getChildByUuid(uuid) {
+  try {
+    if (!uuid || String(uuid).trim() === '' || String(uuid).trim() === 'undefined') return null;
+    var sheet = safeGetSheet_();
+    var lastRow = sheet.getLastRow();
+    var lastCol = sheet.getLastColumn();
+    if (lastRow < 4 || lastCol < 1) return null;
+
+    var data = sheet.getRange(4, 1, lastRow - 3, lastCol).getValues();
+    
+    function v(row, key) {
+      var idx = safeColIndex_(key);
+      return idx > 0 ? String(row[idx - 1] || '').trim() : '';
+    }
+
+    for (var i = 0; i < data.length; i++) {
+      var row = data[i];
+      var rowUuid = String(v(row, '_uuid') || '').trim();
+      if (rowUuid === String(uuid).trim() && rowUuid !== '') {
+        var childData = {};
+        CONFIG.COLUMN_MAP.forEach(([key, label]) => {
+          childData[key] = {
+            value: v(row, key),
+            label: label
+          };
+        });
+        childData._rowNumber = i + 4;
+        return childData;
+      }
+    }
+    return null;
+  } catch (err) {
+    Logger.log("getChildByUuid ERROR: " + err.message);
+    return null;
+  }
+}
+
+function saveChildData(uuid, updatedData) {
+  try {
+    var sheet = safeGetSheet_();
+    var lastRow = sheet.getLastRow();
+    var lastCol = sheet.getLastColumn();
+    if (lastRow < 4 || lastCol < 1) return false;
+    
+    var headers = CONFIG.COLUMN_MAP.map(c => c[0]);
+    var data = sheet.getRange(4, 1, lastRow - 3, lastCol).getValues();
+    
+    var uuidColIdx = headers.indexOf('_uuid');
+    if (uuidColIdx === -1) return false;
+    
+    for (var i = 0; i < data.length; i++) {
+      var rowUuid = String(data[i][uuidColIdx] || '').trim();
+      if (rowUuid === uuid) {
+        var rowNumber = i + 4;
+        for (var key in updatedData) {
+          var colIndex = headers.indexOf(key);
+          if (colIndex !== -1) {
+            sheet.getRange(rowNumber, colIndex + 1).setValue(updatedData[key]);
+          }
+        }
+        return true;
+      }
+    }
+    return false;
+  } catch (err) {
+    Logger.log('saveChildData ERROR: ' + err.message);
+    return false;
+  }
+}
+
+function approveChildByUuid(uuid) {
+  try {
+    var sheet = safeGetSheet_();
+    var rowNum = findRowByUuid(sheet, uuid);
+    if (rowNum < 4) return { success: false, error: "Child not found" };
+    
+    var approvedCol = safeColIndex_("reviewconfirmed");
+    if (approvedCol < 1) return { success: false, error: "Approved column not found" };
+    
+    sheet.getRange(rowNum, approvedCol).setValue("yes");
+    return { success: true, message: "Child approved successfully" };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
+function deleteChildByUuid(uuid) {
+  try {
+    var sheet = safeGetSheet_();
+    var rowNum = findRowByUuid(sheet, uuid);
+    if (rowNum < 4) throw new Error("Child not found with UUID: " + uuid);
+    
+    var childNameColIdx = safeColIndex_("childname");
+    var childName = childNameColIdx > 0 ? String(sheet.getRange(rowNum, childNameColIdx).getValue() || "").trim() : "Child";
+    
+    // 1. Delete PDF/receipts from drive if possible (we keep it simple here)
+    // 2. Delete row from Sheet
+    sheet.deleteRow(rowNum);
+    
+    return {
+      success: true,
+      childName: childName,
+      koboDeleted: false
+    };
+  } catch (err) {
+    Logger.log("deleteChildByUuid ERROR: " + err.message);
+    throw err;
+  }
+}
+
+function getPDFDownloadUrl(uuid) {
+  return "Error: PDF download is currently disabled for this instance.";
+}
+
+function generateBeneficiaryPDF(rowNum) {
+  return { error: "PDF generation is disabled" };
+}
+
+function getImageProxy(fileId) {
+  try {
+    var file = DriveApp.getFileById(fileId);
+    var blob = file.getBlob();
+    var bytes = blob.getBytes();
+    var mimeType = blob.getContentType();
+    return ContentService.createTextOutput()
+      .setContent(Utilities.base64Encode(bytes))
+      .setMimeType(mimeType);
+  } catch(e) {
+    return ContentService.createTextOutput('Error loading image: ' + e.message)
+      .setMimeType(ContentService.MimeType.TEXT);
+  }
+}
+
+/* ── ATTACHMENT DOWNLOAD & SAVE TO DRIVE HELPERS ─────────────── */
+
+var ATTACHMENT_CONFIG = {
+  thumb: {
+    koboKey      : "thumb_impression",
+    xpathPatterns: ["grp_consent/thumb_impression", "thumb_impression"]
+  },
+  receipt: {
+    koboKey      : "school_fee_receipt",
+    xpathPatterns: ["grp_main/grp_edu_current/school_fee_receipt", "school_fee_receipt"]
+  },
+  marksheet: {
+    koboKey      : "marksheet_prev_year",
+    xpathPatterns: ["grp_main/grp_edu_current/marksheet_prev_year", "marksheet_prev_year"]
+  }
+};
+var ATTACHMENT_ROLES = ["thumb", "receipt", "marksheet"];
+
+function writeAttachmentLinks_(sheet, rowNum, raw) {
+  var links = extractAttachmentLinks_(raw);
+  var c = {
+    thumb    : safeColIndex_("thumb_impression"),
+    receipt  : safeColIndex_("school_fee_receipt"),
+    marksheet: safeColIndex_("marksheet_prev_year")
+  };
+  
+  var driveUrls = {
+    thumb: downloadAndSaveToDrive_(links.thumb, "signature", rowNum),
+    receipt: downloadAndSaveToDrive_(links.receipt, "receipt", rowNum),
+    marksheet: downloadAndSaveToDrive_(links.marksheet, "marksheet", rowNum)
+  };
+  
+  if (c.thumb     > 0 && driveUrls.thumb)     sheet.getRange(rowNum, c.thumb).setValue(driveUrls.thumb);
+  if (c.receipt   > 0 && driveUrls.receipt)   sheet.getRange(rowNum, c.receipt).setValue(driveUrls.receipt);
+  if (c.marksheet > 0 && driveUrls.marksheet) sheet.getRange(rowNum, c.marksheet).setValue(driveUrls.marksheet);
+}
+
+function downloadAndSaveToDrive_(koboUrl, fileType, rowNum) {
+  if (!koboUrl) return "";
+  if (koboUrl.indexOf('drive.google.com') !== -1) return koboUrl;
+  
+  try {
+    var res = UrlFetchApp.fetch(koboUrl, {
+      method: "get",
+      headers: { Authorization: "Token " + CONFIG.KOBO_API_TOKEN },
+      muteHttpExceptions: true,
+      followRedirects: true
+    });
+    
+    var code = res.getResponseCode();
+    if (code >= 400) return "";
+    
+    var blob = res.getBlob();
+    var mimeType = blob.getContentType() || "image/png";
+    var folderName = "ChildCare Attachments";
+    var folders = DriveApp.getFoldersByName(folderName);
+    var folder = folders.hasNext() ? folders.next() : DriveApp.createFolder(folderName);
+    
+    var ext = mimeType.split("/")[1] || "png";
+    var filename = "row" + rowNum + "_" + fileType + "_" + Date.now() + "." + ext;
+    var file = folder.createFile(blob.setName(filename));
+    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    
+    return "https://drive.google.com/uc?export=view&id=" + file.getId();
+  } catch (e) {
+    Logger.log("downloadAndSaveToDrive_ ERROR: " + e.message);
+    return "";
+  }
+}
+
+function extractAttachmentLinks_(raw) {
+  var out  = { thumb:"", receipt:"", marksheet:"" };
+  var atts = [];
+  if (raw && Array.isArray(raw._attachments))                         atts = raw._attachments;
+  else if (raw && raw.submission && Array.isArray(raw.submission._attachments))
+                                                                      atts = raw.submission._attachments;
+  if (!atts.length) return out;
+
+  var byPath = {};
+  atts.forEach(function(a) {
+    if (!a || !a.question_xpath) return;
+    byPath[a.question_xpath] = a;
+    var short = a.question_xpath.split("/").pop();
+    if (short && !byPath[short]) byPath[short] = a;
+  });
+
+  ATTACHMENT_ROLES.forEach(function(role) {
+    var cfg = ATTACHMENT_CONFIG[role];
+    if (!cfg || !Array.isArray(cfg.xpathPatterns)) return;
+    for (var i=0; i<cfg.xpathPatterns.length; i++) {
+      var a = byPath[cfg.xpathPatterns[i]];
+      if (a) { out[role] = a.download_url || a.download_medium_url || a.download_small_url || ""; break; }
+    }
+  });
+
+  return out;
+}
+
+function migrateExistingAttachmentFilenamesToDriveLinks() {
+  var sheet = safeGetSheet_();
+  var lastRow = sheet.getLastRow();
+  var lastCol = sheet.getLastColumn();
+  if (lastRow < 4) return "No data to migrate";
+  
+  var headers = sheet.getRange(3, 1, 1, lastCol).getValues()[0];
+  var uuidColIdx = headers.indexOf('UUID');
+  var thumbColIdx = headers.indexOf('Signature / Thumb Impression');
+  var receiptColIdx = headers.indexOf('School Fee Receipt Link');
+  var marksheetColIdx = headers.indexOf('Marksheet Photo Link');
+  
+  if (uuidColIdx === -1) return "UUID column not found";
+  
+  var data = sheet.getRange(4, 1, lastRow - 3, lastCol).getValues();
+  var updatedCount = 0;
+  
+  for (var i = 0; i < data.length; i++) {
+    var row = data[i];
+    var uuid = String(row[uuidColIdx] || '').trim();
+    if (!uuid) continue;
+    
+    var rowNum = i + 4;
+    var rowUpdated = false;
+    
+    // Signature / Thumb
+    var thumbVal = thumbColIdx !== -1 ? String(row[thumbColIdx] || '').trim() : '';
+    var isThumbRaw = thumbVal && !thumbVal.startsWith('http');
+    
+    // Receipt
+    var receiptVal = receiptColIdx !== -1 ? String(row[receiptColIdx] || '').trim() : '';
+    var isReceiptRaw = receiptVal && !receiptVal.startsWith('http');
+    
+    // Marksheet
+    var marksheetVal = marksheetColIdx !== -1 ? String(row[marksheetColIdx] || '').trim() : '';
+    var isMarksheetRaw = marksheetVal && !marksheetVal.startsWith('http');
+    
+    if (isThumbRaw || isReceiptRaw || isMarksheetRaw) {
+      try {
+        var sub = _fetchKoboSubmissionByUuid(uuid);
+        if (sub) {
+          var links = extractAttachmentLinks_(sub);
+          
+          if (isThumbRaw && links.thumb && thumbColIdx !== -1) {
+            var driveUrl = downloadAndSaveToDrive_(links.thumb, "signature", rowNum);
+            if (driveUrl) {
+              sheet.getRange(rowNum, thumbColIdx + 1).setValue(driveUrl);
+              rowUpdated = true;
+            }
+          }
+          if (isReceiptRaw && links.receipt && receiptColIdx !== -1) {
+            var driveUrl = downloadAndSaveToDrive_(links.receipt, "receipt", rowNum);
+            if (driveUrl) {
+              sheet.getRange(rowNum, receiptColIdx + 1).setValue(driveUrl);
+              rowUpdated = true;
+            }
+          }
+          if (isMarksheetRaw && links.marksheet && marksheetColIdx !== -1) {
+            var driveUrl = downloadAndSaveToDrive_(links.marksheet, "marksheet", rowNum);
+            if (driveUrl) {
+              sheet.getRange(rowNum, marksheetColIdx + 1).setValue(driveUrl);
+              rowUpdated = true;
+            }
+          }
+        }
+      } catch (err) {
+        Logger.log("Failed row " + rowNum + ": " + err.message);
+      }
+      if (rowUpdated) updatedCount++;
+    }
+  }
+  
+  return "Successfully migrated raw links in " + updatedCount + " rows.";
+}
+
+function _fetchKoboSubmissionByUuid(uuid) {
+  var cleanUuid = uuid.replace(/^uuid:/, "");
+  var queryObj = { "_uuid": cleanUuid };
+  var url = CONFIG.KOBO_BASE_URL + "/api/v2/assets/" + CONFIG.KOBO_ASSET_UID + "/data/?format=json&limit=1&query=" + encodeURIComponent(JSON.stringify(queryObj));
+  
+  var options = {
+    method: "get",
+    headers: { "Authorization": "Token " + CONFIG.KOBO_API_TOKEN },
+    muteHttpExceptions: true
+  };
+  
+  var response = UrlFetchApp.fetch(url, options);
+  if (response.getResponseCode() === 200) {
+    var json = JSON.parse(response.getContentText());
+    var results = json.results || [];
+    return results.length > 0 ? results[0] : null;
+  }
+  return null;
+}
+
+function safeColIndex_(key) {
+  const idx = CONFIG.COLUMN_MAP.findIndex(col => col[0] === key);
+  return idx !== -1 ? idx + 1 : -1;
+}
+
+function getOrCreateFolder(parentFolder, folderName) {
+  var folders = parentFolder.getFoldersByName(folderName);
+  return folders.hasNext() ? folders.next() : parentFolder.createFolder(folderName);
+}
+
+/* ── DASHBOARD AGGREGATORS & EMPTY STATE FALLBACKS ───────────── */
+
+function addDerivedDashboardMetrics_(m) {
+  var total = Math.max(m.totalChildren || 0, 1);
+  m.underweightRate    = Math.round((m.underweightCount   / total) * 100);
+  m.vlSuppressedRate   = Math.round((m.vlSuppressedCount  / total) * 100);
+  m.goodAttendanceCount = m.attendanceRegular;
+  m.goodAttendanceRate  = Math.round((m.attendanceRegular / total) * 100);
+  return m;
+}
+
+function buildDashboardTrend_(data) {
+  var byMonth = {};
+  function keyFromDate(val) {
+    if (!val) return null;
+    var d = (val instanceof Date) ? val : new Date(val);
+    if (isNaN(d.getTime())) return null;
+    return Utilities.formatDate(d, Session.getScriptTimeZone(), 'MMM yyyy');
+  }
+  data.forEach(function(row) {
+    var dateVal = row[safeColIndex_('visitdate') - 1];
+    var k = keyFromDate(dateVal);
+    if (!k) return;
+    if (!byMonth[k]) byMonth[k] = { bmi: [], attendance: [] };
+    var bmi = parseFloat(row[safeColIndex_('bmicalc') - 1]);
+    if (!isNaN(bmi)) byMonth[k].bmi.push(bmi);
+    var att = String(row[safeColIndex_('attendancestatus') - 1] || '').toLowerCase();
+    if (/regular|present|good/.test(att))   byMonth[k].attendance.push(1);
+    else if (/irregular|partial/.test(att)) byMonth[k].attendance.push(0.5);
+    else if (/absent|drop/.test(att))       byMonth[k].attendance.push(0);
+  });
+  var labels = Object.keys(byMonth);
+  return {
+    labels: labels,
+    avgBmi: labels.map(function(k) {
+      var arr = byMonth[k].bmi;
+      return arr.length ? +(arr.reduce(function(a,b){return a+b;},0)/arr.length).toFixed(1) : 0;
+    }),
+    attendance: labels.map(function(k) {
+      var arr = byMonth[k].attendance;
+      return arr.length ? Math.round((arr.reduce(function(a,b){return a+b;},0)/arr.length)*100) : 0;
+    })
+  };
+}
+
+function buildDashboardWarnings_(rows, metrics) {
+  var out = [];
+  rows.forEach(function(r) {
+    if (r.riskLevel === 'high') out.push({
+      severity: 'high',
+      title: r.childName + ' needs priority review',
+      detail: [r.state, r.district, r.bmiCategory, r.vlCategory].filter(Boolean).join(' - ')
+    });
+  });
+  if (metrics.attendanceAbsent > 0) out.push({
+    severity: 'medium', title: 'Attendance gaps detected',
+    detail: metrics.attendanceAbsent + ' records indicate absenteeism or dropout risk.'
+  });
+  if (metrics.underweightCount > 0) out.push({
+    severity: 'medium', title: 'Nutrition risk cluster',
+    detail: metrics.underweightCount + ' children are marked underweight.'
+  });
+  return out.slice(0, 24);
+}
+
+function emptyDashboardPayload_() {
+  return {
+    syncedAt: Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'dd-MMM-yyyy HH:mm'),
+    metrics: addDerivedDashboardMetrics_({
+      totalChildren:0, underweightCount:0, normalCount:0, overweightCount:0, obeseCount:0,
+      vlSuppressedCount:0, vlDetectableCount:0, attendanceRegular:0, attendanceIrregular:0,
+      attendanceAbsent:0, fundingRequested:0, fundingDisbursed:0, bmiAssessed:0, schoolSupport:0, vlTested:0,
+      consentGiven:0, consentNotGiven:0
+    }),
+    rows: [], trend: { labels:[], avgBmi:[], attendance:[] },
+    scatter: [], stateSummary: [], warnings: []
+  };
 }
 
 // ── Add new record (from VoiceForm) ─────────────────────────────
