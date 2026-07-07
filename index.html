@@ -2406,7 +2406,7 @@ tbody tr:hover td{background:var(--amber-pale)}
       <span class="material-icons-outlined" style="font-size:14px">refresh</span>
       Refresh
     </button>
-    <button class="btn-top" onclick="google.script.run.openFlowchartDashboard()">
+    <button class="btn-top" onclick="showFlowchart()">
       <span class="material-icons-outlined" style="font-size:14px">account_tree</span>
       Flowchart
     </button>
@@ -2480,7 +2480,7 @@ tbody tr:hover td{background:var(--amber-pale)}
 
 <!-- ═══ CHILDREN TAB ═══ -->
 <div id="tab-children" class="tab-pane">
-  <div class="filter-bar" style="display: none;">
+  <div class="filter-bar">
     <div class="custom-multiselect" id="filter-state">
       <div class="multiselect-toggle">
         <span class="multiselect-toggle-text">All States</span>
@@ -2787,6 +2787,16 @@ tbody tr:hover td{background:var(--amber-pale)}
 
 
 <script>
+var WEB_APP_URL = "<?= webAppUrl ?>";
+
+function showFlowchart() {
+  google.script.run
+    .withFailureHandler(function(err) {
+      window.open(WEB_APP_URL + '?action=flowchart', '_blank');
+    })
+    .openFlowchartDashboard();
+}
+
 // DIAGNOSTIC CLICK LISTENER
 document.addEventListener('click', function(e) {
   var btn = e.target.closest('.btn-top');

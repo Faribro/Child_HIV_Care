@@ -593,10 +593,21 @@ function doGet(e) {
       }
       return result.pdf;
     }
+
+    // Handle Flowchart web app view
+    if (e && e.parameter && e.parameter.action === 'flowchart') {
+      var template = HtmlService.createTemplateFromFile('FlowchartDashboard');
+      template.webAppUrl = ScriptApp.getService().getUrl();
+      return template.evaluate()
+        .setTitle('Data Pipeline & Sync Flowchart')
+        .setSandboxMode(HtmlService.SandboxMode.IFRAME)
+        .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+    }
     
     // Default dashboard response
-    return HtmlService.createTemplateFromFile('index')
-      .evaluate()
+    var template = HtmlService.createTemplateFromFile('index');
+    template.webAppUrl = ScriptApp.getService().getUrl();
+    return template.evaluate()
       .setTitle(CONFIG.TITLE_TEXT)
       .setSandboxMode(HtmlService.SandboxMode.IFRAME)
       .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
